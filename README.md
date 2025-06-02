@@ -1,6 +1,6 @@
 # Clueless
 
-A real-time AI-powered open-source assistant built with Electron, React, and Google's Gemini AI.
+A real-time AI-powered open-source assistant built with Electron, React, and Google's Gemini AI, Cluely inspired.
 
 ## 🚀 Features
 
