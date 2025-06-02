@@ -1,0 +1,33 @@
+{
+  "appId": "com.clueless.app",
+  "files": [
+    "dist/**/*",
+    "package.json"
+  ],
+  "directories": {
+    "buildResources": "resources",
+    "output": "dist"
+  },
+  "win": {
+    "target": [
+      {
+        "target": "portable",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "mac": {
+    "target": "dmg",
+    "category": "public.app-category.developer-tools",
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false,
+    "entitlements": "build/entitlements.mac.plist",
+    "entitlementsInherit": "build/entitlements.mac.plist"
+  },
+  "portable": {
+    "artifactName": "clueless-portable.exe"
+  },
+  "extraMetadata": {
+    "main": "dist/electron/main.js"
+  }
+}

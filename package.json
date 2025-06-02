@@ -1,0 +1,72 @@
+{
+  "name": "clueless",
+  "version": "1.0.0",
+  "description": "Clueless real-time AI-powered open-source assistant",
+  "main": "dist/electron/main.js",
+  "prettier": {
+    "printWidth": 100,
+    "tabWidth": 2,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": false,
+    "quoteProps": "as-needed",
+    "jsxSingleQuote": false,
+    "trailingComma": "all",
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "arrowParens": "always",
+    "endOfLine": "lf"
+  },
+  "scripts": {
+    "clean": "rd /s /q dist",
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron .",
+    "package:portable": "electron-vite build && electron-builder --config electron-builder.json"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@alexanderolsen/libsamplerate-js": "^2.1.2",
+    "@google/genai": "^0.10.0",
+    "@tailwindcss/vite": "^4.1.5",
+    "audify": "^1.9.0",
+    "dotenv": "^16.5.0",
+    "dotenv-webpack": "^8.1.0",
+    "framer-motion": "^12.9.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-icons": "^5.5.0",
+    "react-markdown": "^10.1.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.6.12",
+    "@types/node": "^22.15.2",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^8.2.2",
+    "electron": "^35.2.1",
+    "electron-builder": "^26.0.12",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-vite": "^3.1.0",
+    "eslint": "^9.25.1",
+    "prettier": "^3.5.3",
+    "tailwindcss": "^4.1.5",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vite-plugin-electron": "^0.29.0",
+    "vite-plugin-electron-renderer": "^0.14.6"
+  },
+  "build": {
+    "appId": "com.example.clueless",
+    "files": [
+      "dist/**/*"
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}
