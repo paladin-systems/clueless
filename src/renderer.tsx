@@ -471,7 +471,7 @@ const App = () => {
 
       {/* Header */}
       <div className="flex justify-between items-center mt-4">
-        <h1 className="text-lg font-semibold"><span className="text-red-500">Red</span> Voice</h1>
+        <h1 className="text-lg font-semibold">Clueless</h1>
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-1.5">
             <span className="text-xs opacity-75">Mic:</span>
