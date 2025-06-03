@@ -34,7 +34,8 @@
 - [ ] **Streaming Response Improvements**
   - [ ] Don't generate response if the user is reading the AI response
   - [ ] Improve UI/UX so that the AI response is more readable
-  - [ ] Implement advices like post-it notes, follow-up questions, etc.
+  - [ ] Implement advices like post-it notes
+  - [ ] Divide screen in sections for better readability, be able to collapse sections, ex. "Follow-up questions", "Reference Information", "Contextual Notes", etc.
   - [ ] Be able to edit/improve the previous response
   - [ ] Create pause/resume controls for AI responses
 
