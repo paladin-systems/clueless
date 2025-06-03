@@ -33,9 +33,10 @@
 ### Real-time Output Management
 - [ ] **Streaming Response Improvements**
   - [ ] Don't generate response if the user is reading the AI response
-  - [ ] Add typing indicators and response status
+  - [ ] Improve UI/UX so that the AI response is more readable
+  - [ ] Implement advices like post-it notes, follow-up questions, etc.
+  - [ ] Be able to edit/improve the previous response
   - [ ] Create pause/resume controls for AI responses
-  - [ ] Implement response cancellation functionality
 
 - [ ] **Output Formatting**
   - [ ] Add better markdown rendering for AI responses
