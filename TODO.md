@@ -32,11 +32,10 @@
 
 ### Real-time Output Management
 - [ ] **Streaming Response Improvements**
-  - [ ] Don't generate response if the user is reading the AI response
-  - [ ] Improve UI/UX so that the AI response is more readable
-  - [ ] Implement advices like post-it notes
-  - [ ] Divide screen in sections for better readability, be able to collapse sections, ex. "Follow-up questions", "Reference Information", "Contextual Notes", etc.
-  - [ ] Be able to edit/improve the previous response
+  - [ ] Change the UI to be like post-it notes, like Miro. You can resize them (to view more details), move them around, delete them etc. Order by most recent, fade infinity scrollable list. Be able to pin them to the top of the screen.
+  - [ ] The AI can also edit previous post-it notes, so that the user can see the changes made by the AI.
+  - [ ] Divide screen in sections for better readability, be able to collapse sections, ex. "Follow-up questions", "Reference Information", "Contextual Notes", etc. Need to think more about this on how to best structure it (some options are: using tabs, collapsible sections, color different the post-it notes, etc).
+  - [ ] The post-it should show in the entire screen but there are a top-menu with the configurations, the post-its are transparent.
   - [ ] Create pause/resume controls for AI responses
 
 - [ ] **Output Formatting**
