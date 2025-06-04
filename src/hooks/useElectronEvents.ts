@@ -1,45 +1,42 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useStore } from '../store';
+import { GeminiResponse } from '../types/gemini';
 
 export const useElectronEvents = () => {
   const store = useStore();
+  const micLevelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const systemLevelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Audio activity handler
     const handleAudioActivity = (_event: any, levels: { mic: number; system: number }) => {
-      if (store.micLevelTimeout) clearTimeout(store.micLevelTimeout);
-      if (store.systemLevelTimeout) clearTimeout(store.systemLevelTimeout);
+      if (micLevelTimeoutRef.current) clearTimeout(micLevelTimeoutRef.current);
+      if (systemLevelTimeoutRef.current) clearTimeout(systemLevelTimeoutRef.current);
 
-      const micTimeout = setTimeout(() => useStore.setState({ micLevel: 0 }), 150);
-      const sysTimeout = setTimeout(() => useStore.setState({ systemLevel: 0 }), 150);
+      micLevelTimeoutRef.current = setTimeout(() => useStore.setState({ micLevel: 0 }), 150);
+      systemLevelTimeoutRef.current = setTimeout(() => useStore.setState({ systemLevel: 0 }), 150);
 
       useStore.setState({
         micLevel: levels.mic,
         systemLevel: levels.system,
-        micLevelTimeout: micTimeout,
-        systemLevelTimeout: sysTimeout
       });
     };
 
     // Gemini response handler
-    const handleGeminiResponse = (_event: any, chunk: string) => {
-      const isStartingNew = !store.isBuildingResponse;
-      const lastIndex = store.geminiResponses.length - 1;
+    const handleGeminiResponse = (_event: any, response: GeminiResponse) => {
+      useStore.setState({
+        geminiResponses: [...useStore.getState().geminiResponses, response],
+        isBuildingResponse: true, // Set to true when a response chunk is received
+        audioStatus: 'Receiving response...'
+      });
+    };
 
-      if (isStartingNew || store.geminiResponses.length === 0) {
-        useStore.setState({
-          geminiResponses: [...store.geminiResponses, chunk],
-          isBuildingResponse: true,
-          audioStatus: 'Receiving response...'
-        });
-      } else {
-        const updatedResponses = [...store.geminiResponses];
-        updatedResponses[lastIndex] = updatedResponses[lastIndex] + chunk;
-        useStore.setState({
-          geminiResponses: updatedResponses,
-          isBuildingResponse: true
-        });
-      }
+    // Gemini turn complete handler
+    const handleGeminiTurnComplete = () => {
+      useStore.setState({
+        isBuildingResponse: false,
+        audioStatus: undefined
+      });
     };
 
     // Audio status handler
