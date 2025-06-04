@@ -3,6 +3,8 @@ import DraggablePostIt from './DraggablePostIt';
 import PostItInstructions from './PostItInstructions';
 import { PostItNote, NotePosition } from '../../types/ui';
 import clsx from 'clsx';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { restrictToParentElement, createSnapModifier } from '@dnd-kit/modifiers';
 
 interface PostItCanvasProps {
   notes: PostItNote[];
@@ -131,64 +133,81 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
     }
   }, [onNoteSelect]);
 
-  return (
-    <div
-      id={id}
-      tabIndex={tabIndex}
-      className={clsx(
-        "absolute top-14 left-0 right-0 bottom-0 bg-transparent",
-        "pointer-events-none", // Enable click-through by default
-        "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500",
-        className
-      )}
-      onClick={handleCanvasClick}
-      role="region"
-      aria-label="Post-it notes canvas"
-    >
-      {/* Layout Controls */}
-      <div className="absolute top-4 right-4 flex items-center space-x-2 z-50">
-        <button
-          onClick={() => setLayout('grid')}
-          className={clsx(
-            'glass-button-secondary text-xs px-2 py-1',
-            layout === 'grid' && 'ring-1 ring-blue-400'
-          )}
-        >
-          Grid
-        </button>
-        <button
-          onClick={() => setLayout('cascade')}
-          className={clsx(
-            'glass-button-secondary text-xs px-2 py-1',
-            layout === 'cascade' && 'ring-1 ring-blue-400'
-          )}
-        >
-          Cascade
-        </button>
-      </div>
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, delta } = event;
+    const noteId = active.id as string;
+    const note = notes.find(n => n.id === noteId);
 
-      {/* Post-it Notes */}
-      {notes.map(note => (
-        <DraggablePostIt
-          key={note.id}
-          note={{
-            ...note,
-            zIndex: getZIndex(note)
-          }}
-          onMove={(position) => onNoteMove(note.id, position)}
-          onResize={(size) => onNoteResize(note.id, size)}
-          onPin={() => onNotePinToggle(note.id)}
-          onSelect={() => onNoteSelect?.(note.id)}
-          onDelete={() => onNoteDelete?.(note.id)}
-          isSelected={selectedNoteId === note.id}
-          canvasBounds={canvasBounds}
-          className="pointer-events-auto"
-        />
-      ))}
-      
-      {/* Keyboard Instructions */}
-      <PostItInstructions />
-    </div>
+    if (note) {
+      onNoteMove(noteId, {
+        x: note.position.x + delta.x,
+        y: note.position.y + delta.y,
+      });
+    }
+  }, [notes, onNoteMove]);
+
+  return (
+    <DndContext
+      onDragEnd={handleDragEnd}
+      modifiers={[createSnapModifier(GRID_SIZE), restrictToParentElement]}
+    >
+      <div
+        id={id}
+        tabIndex={tabIndex}
+        className={clsx(
+          "absolute top-14 left-0 right-0 bottom-0 bg-transparent",
+          "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500",
+          className
+        )}
+        onClick={handleCanvasClick}
+        role="region"
+        aria-label="Post-it notes canvas"
+      >
+        {/* Layout Controls */}
+        <div className="absolute top-4 right-4 flex items-center space-x-2 z-50">
+          <button
+            onClick={() => setLayout('grid')}
+            className={clsx(
+              'glass-button-secondary text-xs px-2 py-1',
+              layout === 'grid' && 'ring-1 ring-blue-400'
+            )}
+          >
+            Grid
+          </button>
+          <button
+            onClick={() => setLayout('cascade')}
+            className={clsx(
+              'glass-button-secondary text-xs px-2 py-1',
+              layout === 'cascade' && 'ring-1 ring-blue-400'
+            )}
+          >
+            Cascade
+          </button>
+        </div>
+
+        {/* Post-it Notes */}
+        {notes.map(note => (
+          <DraggablePostIt
+            key={note.id}
+            note={{
+              ...note,
+              zIndex: getZIndex(note)
+            }}
+            onMove={(position) => onNoteMove(note.id, position)}
+            onResize={(size) => onNoteResize(note.id, size)}
+            onPin={() => onNotePinToggle(note.id)}
+            onSelect={() => onNoteSelect?.(note.id)}
+            onDelete={() => onNoteDelete?.(note.id)}
+            isSelected={selectedNoteId === note.id}
+            canvasBounds={canvasBounds}
+            className="pointer-events-auto"
+          />
+        ))}
+        
+        {/* Keyboard Instructions */}
+        <PostItInstructions />
+      </div>
+    </DndContext>
   );
 };
 

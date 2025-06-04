@@ -314,7 +314,13 @@ ipcMain.handle('list-audio-devices', () => {
     const defaultInput = rtAudio.getDefaultInputDevice();
     const defaultOutput = rtAudio.getDefaultOutputDevice();
     console.log('Devices found:', devices, 'Default Input:', defaultInput, 'Default Output:', defaultOutput);
-    return { devices, defaultInput, defaultOutput };
+    // Add inputChannels and outputChannels to each device
+    const devicesWithChannels = devices.map(d => ({
+      ...d,
+      inputChannels: d.inputChannels,
+      outputChannels: d.outputChannels
+    }));
+    return { devices: devicesWithChannels, defaultInput, defaultOutput };
   } catch (error) {
     console.error('Error listing audio devices with RtAudio:', error);
     mainWindow?.webContents.send('audio-error', `Error listing devices: ${(error as Error).message}`);

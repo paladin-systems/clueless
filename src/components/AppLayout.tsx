@@ -75,11 +75,17 @@ const AppLayout: React.FC = () => {
         deviceInfo: {
           mic: selectedMicDeviceId ? {
             id: selectedMicDeviceId,
-            name: micAudioDevices.find((d: any) => d.id === selectedMicDeviceId)?.name || 'Unknown'
+            name: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.name || 'Unknown',
+            isDefault: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.isDefault || false,
+            inputChannels: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.inputChannels || 0,
+            outputChannels: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.outputChannels || 0
           } : null,
           system: selectedSystemDeviceId ? {
             id: selectedSystemDeviceId,
-            name: systemAudioDevices.find((d: any) => d.id === selectedSystemDeviceId)?.name || 'Unknown'
+            name: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.name || 'Unknown',
+            isDefault: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.isDefault || false,
+            inputChannels: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.inputChannels || 0,
+            outputChannels: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.outputChannels || 0
           } : null
         }
       }));

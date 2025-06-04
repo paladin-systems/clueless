@@ -3,9 +3,9 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 contextBridge.exposeInMainWorld('electron', {
   captureScreen: (sendToGemini: boolean = false): Promise<Buffer> => ipcRenderer.invoke('capture-screen', sendToGemini),
   openSettings: (type: 'sound' | 'input' | 'output'): void => ipcRenderer.send('open-settings', type),
-  listAudioDevices: (): Promise<any[]> => ipcRenderer.invoke('list-audio-devices'),
+  listAudioDevices: (): Promise<{ devices: import('./types/ui').AudioDevice[], defaultInput: number | null, defaultOutput: number | null }> => ipcRenderer.invoke('list-audio-devices'),
   // Update to accept both mic and system audio device IDs
-  startAudioCapture: (micDeviceId: number, systemDeviceId: number): Promise<boolean> => 
+  startAudioCapture: (micDeviceId: number, systemDeviceId: number): Promise<boolean> =>
     ipcRenderer.invoke('start-audio-capture', micDeviceId, systemDeviceId),
   stopAudioCapture: (): Promise<boolean> => ipcRenderer.invoke('stop-audio-capture'),
   // Add window control functions

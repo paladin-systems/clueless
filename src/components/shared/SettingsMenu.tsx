@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import clsx from 'clsx';
 import { useStore } from '../../store';
 import { useModalFocus } from '../../hooks/useModalFocus';
-import { ViewOptions } from '../../types/ui';
+import { ViewOptions, AudioDevice } from '../../types/ui';
 
 interface Props {
   isOpen: boolean;
@@ -12,6 +12,14 @@ interface Props {
 const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const viewOptions = useStore(state => state.viewOptions);
   const updateViewOptions = useStore(state => state.updateViewOptions);
+  const micAudioDevices = useStore(state => state.micAudioDevices);
+  const systemAudioDevices = useStore(state => state.systemAudioDevices);
+  const selectedMicDeviceId = useStore(state => state.selectedMicDeviceId);
+  const selectedSystemDeviceId = useStore(state => state.selectedSystemDeviceId);
+  const setSelectedMicDevice = useStore(state => state.setSelectedMicDevice);
+  const setSelectedSystemDevice = useStore(state => state.setSelectedSystemDevice);
+  const setMicAudioDevices = useStore(state => state.setMicAudioDevices);
+  const setSystemAudioDevices = useStore(state => state.setSystemAudioDevices);
 
   const handleOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateViewOptions({
@@ -29,9 +37,31 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
     });
   };
 
-  if (!isOpen) return null;
-
   const modalRef = useModalFocus({ isOpen, onClose });
+
+  useEffect(() => {
+    const electron = (window as any).electron;
+    if (electron) {
+      electron.listAudioDevices().then((devices: { devices: AudioDevice[], defaultInput: number | null, defaultOutput: number | null }) => {
+        const micDevices = devices.devices.filter(d => d.inputChannels > 0);
+        const systemDevices = devices.devices.filter(d => d.outputChannels > 0);
+
+        setMicAudioDevices(micDevices.map(d => ({ ...d, isDefault: d.id === devices.defaultInput })));
+        setSystemAudioDevices(systemDevices.map(d => ({ ...d, isDefault: d.id === devices.defaultOutput })));
+
+        if (!selectedMicDeviceId && devices.defaultInput !== null) {
+          setSelectedMicDevice(devices.defaultInput);
+        }
+        if (!selectedSystemDeviceId && devices.defaultOutput !== null) {
+          setSelectedSystemDevice(devices.defaultOutput);
+        }
+      }).catch((error: Error) => {
+        console.error('Failed to list audio devices:', error);
+      });
+    }
+  }, [selectedMicDeviceId, selectedSystemDeviceId, setMicAudioDevices, setSystemAudioDevices, setSelectedMicDevice, setSelectedSystemDevice]);
+
+  if (!isOpen) return null;
 
   return (
     <div
@@ -126,6 +156,62 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               />
               <span>Always on Top</span>
             </label>
+          </div>
+  
+          {/* Audio Input Device Selection */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-300">Microphone Input</h3>
+            <select
+              value={selectedMicDeviceId || ''}
+              onChange={(e) => setSelectedMicDevice(Number(e.target.value))}
+              className="w-full p-2 rounded-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Select microphone input device"
+            >
+              {micAudioDevices.length === 0 && (
+                <option value="">No microphone devices found</option>
+              )}
+              {micAudioDevices.map(device => (
+                <option key={device.id} value={device.id}>
+                  {device.name} {device.isDefault ? '(Default)' : ''}
+                </option>
+              ))}
+            </select>
+            {micAudioDevices.length === 0 && (
+              <p className="text-xs text-red-400">
+                No microphone devices detected. Please check your system settings.
+              </p>
+            )}
+          </div>
+  
+          {/* System Audio Device Selection */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-gray-300">System Audio Input (Stereo Mix)</h3>
+            <select
+              value={selectedSystemDeviceId || ''}
+              onChange={(e) => setSelectedSystemDevice(Number(e.target.value))}
+              className="w-full p-2 rounded-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Select system audio input device"
+            >
+              {systemAudioDevices.length === 0 && (
+                <option value="">No system audio devices found</option>
+              )}
+              {systemAudioDevices.map(device => (
+                <option key={device.id} value={device.id}>
+                  {device.name} {device.isDefault ? '(Default)' : ''}
+                </option>
+              ))}
+            </select>
+            {systemAudioDevices.length === 0 && (
+              <p className="text-xs text-red-400">
+                No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in Sound Control Panel.
+                <button
+                  onClick={() => (window as any).electron.openSettings('sound')}
+                  className="text-blue-400 hover:underline ml-1"
+                >
+                  Open Sound Settings
+                </button>
+              </p>
+            )}
           </div>
         </div>
 

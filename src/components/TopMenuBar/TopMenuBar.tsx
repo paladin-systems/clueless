@@ -67,12 +67,14 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
               <div style={getAudioLevelStyle(audioLevels.mic.level)} />
               <span className="text-gray-300 text-sm">
                 {sessionInfo.deviceInfo.mic?.name || "No Mic"}
+                {sessionInfo.deviceInfo.mic?.isDefault && ' (Default)'}
               </span>
             </div>
             <div className="flex items-center space-x-2">
               <div style={getAudioLevelStyle(audioLevels.system.level)} />
               <span className="text-gray-300 text-sm">
                 {sessionInfo.deviceInfo.system?.name || "No System Audio"}
+                {sessionInfo.deviceInfo.system?.isDefault && ' (Default)'}
               </span>
             </div>
           </div>

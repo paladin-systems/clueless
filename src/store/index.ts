@@ -8,8 +8,8 @@ interface AppState {
   systemLevel: number;
   micLevelTimeout: NodeJS.Timeout | null;
   systemLevelTimeout: NodeJS.Timeout | null;
-  micAudioDevices: { id: number; name: string }[];
-  systemAudioDevices: { id: number; name: string }[];
+  micAudioDevices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[];
+  systemAudioDevices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[];
   selectedMicDeviceId?: number;
   selectedSystemDeviceId?: number;
   isRecording: boolean;
@@ -41,6 +41,8 @@ interface AppState {
   capture: () => Promise<void>;
   setSelectedMicDevice: (deviceId: number) => void;
   setSelectedSystemDevice: (deviceId: number) => void;
+  setMicAudioDevices: (devices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[]) => void;
+  setSystemAudioDevices: (devices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[]) => void;
   addGeminiResponse: (response: GeminiResponse) => void;
   clearResponses: () => void;
   updateViewOptions: (options: Partial<ViewOptions>) => void;
@@ -80,6 +82,8 @@ export const useStore = create<AppState>((set, get) => ({
   // Methods
   setMicLevel: (level) => set({ micLevel: level }),
   setSystemLevel: (level) => set({ systemLevel: level }),
+  setMicAudioDevices: (devices) => set({ micAudioDevices: devices }),
+  setSystemAudioDevices: (devices) => set({ systemAudioDevices: devices }),
 
   startRecording: async () => {
     const { selectedMicDeviceId, selectedSystemDeviceId } = get();

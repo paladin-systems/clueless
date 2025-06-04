@@ -36,12 +36,20 @@ export interface ViewOptions {
   showInstructions: boolean;
 }
 
+export interface AudioDevice {
+  id: number;
+  name: string;
+  isDefault: boolean;
+  inputChannels: number;
+  outputChannels: number;
+}
+
 export interface SessionInfo {
   startTime: number;
   duration: number;
   isRecording: boolean;
   deviceInfo: {
-    mic: { id: number; name: string } | null;
-    system: { id: number; name: string } | null;
+    mic: AudioDevice | null;
+    system: AudioDevice | null;
   };
 }
