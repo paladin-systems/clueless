@@ -150,6 +150,7 @@ function createWindow() {
     width: 800,
     height: 600,
     hasShadow: false,
+    resizable: false, // Prevent window from being resized
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'), // Vite builds preload here
       nodeIntegration: false, // Keep false
