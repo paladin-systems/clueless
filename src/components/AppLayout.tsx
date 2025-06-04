@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import TopMenuBar from './TopMenuBar/TopMenuBar';
 import PostItCanvas from './PostItCanvas/PostItCanvas';
 import { PostItNote, SessionInfo } from '../types/ui';
 import { useStore } from '../store';
-import { useCallback } from 'react';
 import { useElectronEvents } from '../hooks/useElectronEvents';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useDebounceStorage } from '../hooks/useDebounceStorage';
@@ -255,8 +254,8 @@ const AppLayout: React.FC = () => {
 
   // Note handlers
   const handleNoteMove = (id: string, position: { x: number; y: number }) => {
-    setNotes(prev => 
-      prev.map(note => 
+    setNotes(prev =>
+      prev.map(note =>
         note.id === id ? { ...note, position, zIndex: Date.now() } : note
       )
     );
@@ -265,8 +264,8 @@ const AppLayout: React.FC = () => {
   const handleMultiNoteMove = (movedNotes: { id: string; position: { x: number; y: number } }[]) => {
     setNotes(prev => {
       const updates = new Map(movedNotes.map(n => [n.id, n.position]));
-      return prev.map(note => 
-        updates.has(note.id) 
+      return prev.map(note =>
+        updates.has(note.id)
           ? { ...note, position: updates.get(note.id)!, zIndex: Date.now() }
           : note
       );
@@ -274,8 +273,8 @@ const AppLayout: React.FC = () => {
   };
 
   const handleNoteResize = (id: string, size: { width: number; height: number }) => {
-    setNotes(prev => 
-      prev.map(note => 
+    setNotes(prev =>
+      prev.map(note =>
         note.id === id ? { ...note, size, zIndex: Date.now() } : note
       )
     );
@@ -284,8 +283,8 @@ const AppLayout: React.FC = () => {
   const handleNotePinToggle = (id: string) => {
     setNotes(prev => {
       const maxZ = Math.max(...prev.map(n => n.zIndex || 0));
-      return prev.map(note => 
-        note.id === id 
+      return prev.map(note =>
+        note.id === id
           ? { ...note, isPinned: !note.isPinned, zIndex: maxZ + 1 }
           : note
       );
