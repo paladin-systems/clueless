@@ -64,9 +64,9 @@ export const useElectronEvents = () => {
       // We can use this to ensure the UI is fully reset if needed.
       useStore.setState(state => ({
         // Only turn off building response if it's still on,
-        // and reset audio status if it was 'Gemini is generating...'
-        isBuildingResponse: state.audioStatus === 'Gemini is generating...' ? false : state.isBuildingResponse,
-        audioStatus: state.audioStatus === 'Gemini is generating...' ? undefined : state.audioStatus,
+        // and reset audio status if it was 'Gemini is generating...' or 'Processing recording...'
+        isBuildingResponse: ['Gemini is generating...', 'Processing recording...'].includes(state.audioStatus || '') ? false : state.isBuildingResponse,
+        audioStatus: ['Gemini is generating...', 'Processing recording...'].includes(state.audioStatus || '') ? undefined : state.audioStatus,
       }));
     };
 
