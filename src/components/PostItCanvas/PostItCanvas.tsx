@@ -39,28 +39,20 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
   // Update canvas bounds and organize notes on resize
   const [canvasBounds, setCanvasBounds] = useState({ width: 0, height: 0 });
   
-  const updateBounds = useCallback(() => {
-    const newBounds = {
-      width: window.innerWidth,
-      height: window.innerHeight - MENU_HEIGHT
-    };
-    setCanvasBounds(newBounds);
-    organizeNotes(notes, newBounds, layout);
-  }, [notes, layout]);
-
-  // Debounce the updateBounds function to prevent excessive re-renders
-  const debouncedUpdateBounds = useCallback(
-    () => {
-      updateBounds();
-    },
-    [updateBounds]
-  );
-
   useEffect(() => {
-    debouncedUpdateBounds();
-    window.addEventListener('resize', debouncedUpdateBounds);
-    return () => window.removeEventListener('resize', debouncedUpdateBounds);
-  }, [debouncedUpdateBounds]);
+    const updateBounds = () => {
+      const newBounds = {
+        width: window.innerWidth,
+        height: window.innerHeight - MENU_HEIGHT
+      };
+      setCanvasBounds(newBounds);
+      organizeNotes(notes, newBounds, layout);
+    };
+
+    updateBounds();
+    window.addEventListener('resize', updateBounds);
+    return () => window.removeEventListener('resize', updateBounds);
+  }, [notes, layout]);
 
   // Organize notes in grid or cascade layout
   const organizeNotes = (
@@ -102,16 +94,26 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
       });
     }
     
-    // Update notes with new positions through callback
+    // Update notes with new positions only if they have changed
     if (onNoteMoveMultiple) {
-      onNoteMoveMultiple(organizedNotes.map(note => ({
-        id: note.id,
-        position: note.position
-      })));
+      const movedNotes = organizedNotes.filter((note, index) => {
+        const originalNote = notes[index];
+        return originalNote.position.x !== note.position.x || originalNote.position.y !== note.position.y;
+      });
+
+      if (movedNotes.length > 0) {
+        onNoteMoveMultiple(movedNotes.map(note => ({
+          id: note.id,
+          position: note.position
+        })));
+      }
     } else {
       // Fallback to single note updates if multiple update not supported
-      organizedNotes.forEach(note => {
-        onNoteMove(note.id, note.position);
+      organizedNotes.forEach((note, index) => {
+        const originalNote = notes[index];
+        if (originalNote.position.x !== note.position.x || originalNote.position.y !== note.position.y) {
+          onNoteMove(note.id, note.position);
+        }
       });
     }
   };

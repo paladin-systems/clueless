@@ -127,12 +127,18 @@ export const useStore = create<AppState>((set, get) => ({
   clearResponses: () => set({ geminiResponses: [] }),
 
   updateViewOptions: (options) => {
-    if ('showInstructions' in options) {
-      localStorage.setItem('showPostItInstructions', String(options.showInstructions));
-    }
-    set((state) => ({
-      viewOptions: { ...state.viewOptions, ...options }
-    }));
+    set((state) => {
+      const newViewOptions = { ...state.viewOptions, ...options };
+      // Perform a shallow comparison to avoid unnecessary re-renders
+      if (Object.keys(newViewOptions).every(key => newViewOptions[key as keyof ViewOptions] === state.viewOptions[key as keyof ViewOptions])) {
+        return state; // No actual change, return current state to prevent re-render
+      }
+
+      if ('showInstructions' in options) {
+        localStorage.setItem('showPostItInstructions', String(options.showInstructions));
+      }
+      return { viewOptions: newViewOptions };
+    });
   },
 
   addNote: (note) => set((state) => ({

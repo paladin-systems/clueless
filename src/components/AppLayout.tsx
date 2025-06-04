@@ -21,36 +21,18 @@ const AppLayout: React.FC = () => {
   useElectronEvents();
   useKeyboardShortcuts(setShowKeyboardHelp, setShowSettings);
 
-  // Memoize the selector to prevent infinite loop
-  const selector = useCallback((state: any) => ({
-    micLevel: state.micLevel,
-    systemLevel: state.systemLevel,
-    isRecording: state.isRecording,
-    startRecording: state.startRecording,
-    stopRecording: state.stopRecording,
-    capture: state.capture,
-    selectedMicDeviceId: state.selectedMicDeviceId,
-    selectedSystemDeviceId: state.selectedSystemDeviceId,
-    micAudioDevices: state.micAudioDevices,
-    systemAudioDevices: state.systemAudioDevices,
-    geminiResponses: state.geminiResponses,
-    isBuildingResponse: state.isBuildingResponse
-  }), []);
-
-  const {
-    micLevel,
-    systemLevel,
-    isRecording,
-    startRecording,
-    stopRecording,
-    capture,
-    selectedMicDeviceId,
-    selectedSystemDeviceId,
-    micAudioDevices,
-    systemAudioDevices,
-    geminiResponses,
-    isBuildingResponse
-  } = useStore(selector);
+  const micLevel = useStore(state => state.micLevel);
+  const systemLevel = useStore(state => state.systemLevel);
+  const isRecording = useStore(state => state.isRecording);
+  const startRecording = useStore(state => state.startRecording);
+  const stopRecording = useStore(state => state.stopRecording);
+  const capture = useStore(state => state.capture);
+  const selectedMicDeviceId = useStore(state => state.selectedMicDeviceId);
+  const selectedSystemDeviceId = useStore(state => state.selectedSystemDeviceId);
+  const micAudioDevices = useStore(state => state.micAudioDevices);
+  const systemAudioDevices = useStore(state => state.systemAudioDevices);
+  const geminiResponses = useStore(state => state.geminiResponses);
+  const isBuildingResponse = useStore(state => state.isBuildingResponse);
 
   // Initialize notes from storage with debounced saves
   const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({

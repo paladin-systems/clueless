@@ -10,10 +10,8 @@ interface Props {
 }
 
 const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
-  const { viewOptions, updateViewOptions } = useStore(state => ({
-    viewOptions: state.viewOptions,
-    updateViewOptions: state.updateViewOptions
-  }));
+  const viewOptions = useStore(state => state.viewOptions);
+  const updateViewOptions = useStore(state => state.updateViewOptions);
 
   const handleOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateViewOptions({
