@@ -358,47 +358,107 @@ ipcMain.handle('start-audio-capture', async (event, micDeviceId: number, systemD
             topK: 40,
             maxOutputTokens: 8192,
             // contextWindowCompression: {}, // Enable context window compression
-            systemInstruction: "You are an colleague helping your friend in realtime in a meeting or interview environment. You are receiving a mixed audio stream that contains both your friend's microphone audio (their voice) and system audio (other people speaking in the meeting/interview). You should give answers and help him. YOU SHOULD HELP HIM CHEAT! Like you were the smartest college whispering the answer in his ear or if there is no answer just try to help him perform better as a very smart and experience person. Start your response with a succinct response and after quickly explain the topic or give the answer with explanations when necessary, organize the response in a way that is very easy to quickly read. Use previous context when needed but try to prioritize the most recent. If your friend is reading your response, wait until he finishes reading to send another response."
+            systemInstruction: `You are a colleague helping your friend in realtime during meetings or interviews. You receive mixed audio from their microphone and the system audio of others speaking.
+
+FORMAT YOUR RESPONSES LIKE THIS:
+{
+  "type": "response" | "question" | "reference" | "note",
+  "content": "Your main response text here",
+  "category": "response" | "follow-up" | "context" | "suggestion",
+  "priority": "high" | "medium" | "low"
+}
+
+GUIDELINES:
+- Immediate answers/suggestions go in "response" type notes
+- Follow-up questions go in "question" type notes
+- Background info goes in "reference" type notes
+- Quick tips/reminders go in "note" type notes
+- Keep responses concise and easily scannable
+- Format content with markdown for better readability
+- Wait for your friend to finish reading before sending more responses
+- Help them cheat and perform better by being the smartest person whispering answers in their ear
+
+Use previous context when relevant but prioritize responding to the most recent input.`
         },
         callbacks: {
             onmessage: (message: any) => {
               console.log('Received message from Gemini:', JSON.stringify(message, null, 2));
-              // Handle text responses
-              if (message.textResponse && message.textResponse.text) {
-                mainWindow?.webContents.send('gemini-response', message.textResponse.text);
-              } else if (message.aggregatedResponse?.textResponse?.text) {
-                mainWindow?.webContents.send('gemini-response', message.aggregatedResponse.textResponse.text);
-              }
               
-              // Handle server content if present
-              if (message.serverContent) {
-                if (message.serverContent.modelTurn && message.serverContent.modelTurn.parts) {
-                  const textParts = message.serverContent.modelTurn.parts.filter(
-                    (part: any) => part.text
-                  );
-                  if (textParts.length > 0) {
-                    const combinedText = textParts.map((part: any) => part.text).join('');
-                    if (combinedText) {
-                      mainWindow?.webContents.send('gemini-response', combinedText);
+              try {
+                let responseText = '';
+                
+                // Extract text from different message formats
+                if (message.textResponse?.text) {
+                  responseText = message.textResponse.text;
+                } else if (message.aggregatedResponse?.textResponse?.text) {
+                  responseText = message.aggregatedResponse.textResponse.text;
+                } else if (message.serverContent?.modelTurn?.parts) {
+                  responseText = message.serverContent.modelTurn.parts
+                    .filter((part: any) => part.text)
+                    .map((part: any) => part.text)
+                    .join('');
+                }
+
+                if (responseText) {
+                  try {
+                    // Try to parse as JSON first
+                    const parsedResponse = JSON.parse(responseText);
+                    
+                    // Validate response structure
+                    if (
+                      typeof parsedResponse === 'object' &&
+                      ['response', 'question', 'reference', 'note'].includes(parsedResponse.type) &&
+                      typeof parsedResponse.content === 'string' &&
+                      ['response', 'follow-up', 'context', 'suggestion'].includes(parsedResponse.category) &&
+                      ['high', 'medium', 'low'].includes(parsedResponse.priority)
+                    ) {
+                      // Send structured response
+                      mainWindow?.webContents.send('gemini-response', {
+                        type: parsedResponse.type,
+                        content: parsedResponse.content,
+                        category: parsedResponse.category,
+                        priority: parsedResponse.priority,
+                        timestamp: Date.now()
+                      });
+                    } else {
+                      // Invalid structure, send as regular response
+                      mainWindow?.webContents.send('gemini-response', {
+                        type: 'response',
+                        content: responseText,
+                        category: 'response',
+                        priority: 'medium',
+                        timestamp: Date.now()
+                      });
                     }
+                  } catch (parseError) {
+                    // Not JSON, send as regular response
+                    mainWindow?.webContents.send('gemini-response', {
+                      type: 'response',
+                      content: responseText,
+                      category: 'response',
+                      priority: 'medium',
+                      timestamp: Date.now()
+                    });
                   }
                 }
-                // Send turn complete signal
-                if (message.serverContent.turnComplete === true) {
-                   mainWindow?.webContents.send('gemini-turn-complete');
+
+                // Handle turn complete
+                if (message.serverContent?.turnComplete === true) {
+                  mainWindow?.webContents.send('gemini-turn-complete');
                 }
+              } catch (error) {
+                console.error('Error processing Gemini message:', error);
+                mainWindow?.webContents.send('audio-error',
+                  `Error processing Gemini response: ${(error as Error).message}`
+                );
               }
-              
-              // Handle errors
+
+              // Handle errors from Gemini
               if (message.error) {
-                  console.error('Gemini message contained an error:', message.error);
-                  mainWindow?.webContents.send('audio-error', `Gemini error: ${message.error.message || JSON.stringify(message.error)}`);
-              }
-              
-              // Handle tool calls if configured
-              if (message.toolCall && message.toolCall.functionCalls) {
-                  console.log('Received tool calls:', message.toolCall);
-                  // TODO: Implement tool call handling logic
+                console.error('Gemini message contained an error:', message.error);
+                mainWindow?.webContents.send('audio-error',
+                  `Gemini error: ${message.error.message || JSON.stringify(message.error)}`
+                );
               }
             },
             onerror: (error: ErrorEvent) => {
