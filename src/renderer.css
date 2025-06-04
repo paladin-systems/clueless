@@ -37,7 +37,7 @@
 @layer components {
   /* Menu Bar */
   .menu-bar {
-    @apply fixed top-0 left-0 right-0 h-14 bg-gray-900/95 backdrop-blur-md z-[1000] border-b border-gray-700/50;
+    @apply fixed top-0 w-full h-14 bg-gray-900/95 backdrop-blur-md z-[1000] border-b border-gray-700/50 flex justify-center;
   }
 
   .menu-section {
@@ -45,15 +45,15 @@
   }
 
   .menu-section.left {
-    @apply w-64;
+    @apply w-auto; /* Remove fixed width */
   }
 
   .menu-section.center {
-    @apply flex-grow flex items-center justify-between space-x-8;
+    @apply flex items-center justify-center space-x-8; /* Remove flex-grow and center content */
   }
 
   .menu-section.right {
-    @apply w-64 justify-end;
+    @apply w-auto justify-end; /* Remove fixed width */
   }
 
   /* Glass Effect Buttons */

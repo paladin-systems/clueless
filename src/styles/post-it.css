@@ -44,7 +44,8 @@
 /* Hover and interactive states */
 .post-it:hover {
   @apply shadow-xl;
-  transform: scale(1.02) rotate(0deg) !important;
+  /* Removed transform: scale(1.02) to prevent cutting on hover */
+  transform: rotate(0deg) !important;
 }
 
 .post-it:active {

@@ -149,13 +149,13 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
   return (
     <DndContext
       onDragEnd={handleDragEnd}
-      modifiers={[createSnapModifier(GRID_SIZE), restrictToParentElement]}
+      modifiers={[restrictToParentElement]}
     >
       <div
         id={id}
         tabIndex={tabIndex}
         className={clsx(
-          "absolute top-14 left-0 right-0 bottom-0 bg-transparent",
+          "absolute top-14 left-0 right-0 bottom-0 bg-transparent p-4", /* Increased padding to p-4 */
           "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500",
           className
         )}

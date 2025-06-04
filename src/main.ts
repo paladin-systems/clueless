@@ -158,6 +158,7 @@ function createWindow() {
     frame: false, // Keep false for transparency
     transparent: true, // Enable window transparency
     autoHideMenuBar: true, // Hide the menu bar
+    fullscreen: true, // Set to true for fullscreen
     // Configuration for overlay window (example)
     // frame: false,
     // transparent: true,

@@ -36,9 +36,11 @@ const DraggablePostIt: React.FC<Props> = ({
     },
   });
 
-  const style = transform ? {
-    transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-  } : undefined;
+  const style = {
+    left: note.position.x,
+    top: note.position.y,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : 'none',
+  };
 
   // Handle resize
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -125,7 +127,13 @@ const DraggablePostIt: React.FC<Props> = ({
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style, width: note.size.width, height: note.size.height, zIndex: note.zIndex }}
+      style={{
+        ...style,
+        width: note.size.width,
+        height: note.size.height,
+        zIndex: note.zIndex,
+        position: 'absolute', /* Ensure absolute positioning for left/top to work */
+      }}
       className={clsx(
         'post-it',
         `category-${note.category}`,
@@ -179,7 +187,7 @@ const DraggablePostIt: React.FC<Props> = ({
       </div>
 
       {/* Note Content */}
-      <div className="p-4 pt-0 h-[calc(100%-2.5rem)] flex flex-col">
+      <div className="p-4 h-[calc(100%-2.5rem)] flex flex-col">
         <div className="flex-grow overflow-auto text-gray-800 prose prose-sm max-w-none">
           {note.content}
         </div>
