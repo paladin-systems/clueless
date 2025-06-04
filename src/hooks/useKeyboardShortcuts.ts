@@ -1,10 +1,31 @@
 import { useEffect, useCallback, Dispatch, SetStateAction } from 'react';
 import { useStore } from '../store';
 
+type StoreSelector = {
+  startRecording: () => Promise<void>;
+  stopRecording: () => Promise<void>;
+  capture: () => Promise<void>;
+  isRecording: boolean;
+  clearResponses: () => void;
+  viewOptions: any;
+  updateViewOptions: (options: any) => void;
+};
+
 export const useKeyboardShortcuts = (
   setShowKeyboardHelp: Dispatch<SetStateAction<boolean>>,
   setShowSettings: Dispatch<SetStateAction<boolean>>
 ) => {
+  // Memoize the selector to prevent infinite loop
+  const selector = useCallback((state: any): StoreSelector => ({
+    startRecording: state.startRecording,
+    stopRecording: state.stopRecording,
+    capture: state.capture,
+    isRecording: state.isRecording,
+    clearResponses: state.clearResponses,
+    viewOptions: state.viewOptions,
+    updateViewOptions: state.updateViewOptions,
+  }), []);
+
   const {
     startRecording,
     stopRecording,
@@ -13,15 +34,7 @@ export const useKeyboardShortcuts = (
     clearResponses,
     viewOptions,
     updateViewOptions
-  } = useStore(state => ({
-    startRecording: state.startRecording,
-    stopRecording: state.stopRecording,
-    capture: state.capture,
-    isRecording: state.isRecording,
-    clearResponses: state.clearResponses,
-    viewOptions: state.viewOptions,
-    updateViewOptions: state.updateViewOptions
-  }));
+  } = useStore(selector);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     // Don't trigger shortcuts when typing in input fields

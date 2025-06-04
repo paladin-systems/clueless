@@ -1,0 +1,111 @@
+/* Base post-it styles */
+.post-it {
+  @apply relative bg-white/90 backdrop-blur-sm shadow-lg;
+  @apply border border-gray-200/50 rounded-lg overflow-hidden;
+  @apply transition-all duration-200;
+}
+
+/* Category-based styles */
+.post-it.category-response {
+  @apply bg-blue-50/90;
+}
+
+.post-it.category-question {
+  @apply bg-yellow-50/90;
+}
+
+.post-it.category-reference {
+  @apply bg-purple-50/90;
+}
+
+.post-it.category-note {
+  @apply bg-green-50/90;
+}
+
+/* Selected state */
+.post-it.selected,
+.post-it:focus-visible {
+  @apply ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent;
+  @apply shadow-xl;
+}
+
+/* Pinned state */
+.post-it.pinned {
+  @apply shadow-xl;
+}
+
+.post-it.pinned::before {
+  content: '';
+  @apply absolute -top-1 right-4 w-3 h-6;
+  @apply bg-yellow-400 rounded-b transform rotate-12;
+  @apply transition-transform duration-300;
+}
+
+/* Hover and interactive states */
+.post-it:hover {
+  @apply shadow-xl;
+  transform: scale(1.02) rotate(0deg) !important;
+}
+
+.post-it:active {
+  @apply shadow-md;
+  transform: scale(0.98) rotate(0deg) !important;
+}
+
+/* Drag handle */
+.post-it .drag-handle {
+  @apply cursor-move bg-gray-50/50 border-b border-gray-200/50;
+}
+
+/* AI modified indicator */
+.post-it.ai-modified .drag-handle {
+  background: linear-gradient(90deg, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0) 100%);
+}
+
+/* Content area */
+.post-it .prose {
+  @apply prose-sm prose-slate;
+  @apply prose-headings:text-gray-700 prose-headings:font-medium;
+  @apply prose-p:text-gray-600;
+  @apply prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline;
+  @apply prose-code:text-gray-800 prose-code:bg-gray-100/50 prose-code:px-1 prose-code:rounded;
+}
+
+/* Resize handle */
+.post-it .react-resizable-handle {
+  @apply absolute bottom-1 right-1 w-4 h-4 cursor-se-resize;
+  @apply transition-opacity duration-200 opacity-0;
+}
+
+.post-it:hover .react-resizable-handle,
+.post-it.selected .react-resizable-handle {
+  @apply opacity-100;
+}
+
+/* Animations */
+.post-it {
+  animation: post-it-in 0.3s ease-out;
+}
+
+@keyframes post-it-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Delete animation */
+.post-it.deleting {
+  animation: post-it-out 0.2s ease-in forwards;
+}
+
+@keyframes post-it-out {
+  to {
+    opacity: 0;
+    transform: scale(0.9) rotate(5deg);
+  }
+}

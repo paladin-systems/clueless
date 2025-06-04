@@ -24,6 +24,13 @@ const shortcuts: Shortcut[] = [
   // Note management
   { keys: ['Ctrl/⌘', 'Shift', 'X'], description: 'Clear All Notes', category: 'notes' },
   { keys: ['Ctrl/⌘', 'Shift', 'I'], description: 'Toggle Instructions', category: 'notes' },
+  { keys: ['Tab'], description: 'Navigate Between Notes', category: 'notes' },
+  { keys: ['Space/Enter'], description: 'Toggle Pin Selected Note', category: 'notes' },
+  
+  // Selected Note Controls
+  { keys: ['↑/↓/←/→'], description: 'Move Selected Note', category: 'notes' },
+  { keys: ['Shift', '↑/↓/←/→'], description: 'Resize Selected Note', category: 'notes' },
+  { keys: ['Delete/Backspace'], description: 'Delete Selected Note', category: 'notes' },
 ];
 
 interface Props {

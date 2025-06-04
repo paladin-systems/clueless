@@ -30,34 +30,39 @@ export const formatTimestamp = (timestamp: number): string => {
 };
 
 /**
- * Get relative time string (e.g., "2 minutes ago")
+ * Get elapsed time since timestamp in human-readable format
  */
-export const getRelativeTime = (timestamp: number): string => {
-  const now = Date.now();
-  const diff = now - timestamp;
+export const getElapsedTime = (timestamp: number): string => {
+  const elapsed = Date.now() - timestamp;
+  const seconds = Math.floor(elapsed / 1000);
   
-  const seconds = Math.floor(diff / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  
-  if (hours > 0) {
-    return `${hours}h ago`;
+  if (seconds < 60) {
+    return `${seconds}s ago`;
   }
-  if (minutes > 0) {
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) {
     return `${minutes}m ago`;
   }
-  return `${seconds}s ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours}h ago`;
+  }
+  
+  const days = Math.floor(hours / 24);
+  return `${days}d ago`;
 };
 
 /**
- * Format duration for display in post-it notes
+ * Format time for tooltip display
  */
-export const formatNoteDuration = (duration: number): string => {
-  const minutes = Math.floor(duration / (1000 * 60));
-  const seconds = Math.floor((duration % (1000 * 60)) / 1000);
-  
-  if (minutes > 0) {
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
-  return `${seconds}s`;
+export const formatTooltipTime = (timestamp: number): string => {
+  const date = new Date(timestamp);
+  return date.toLocaleString([], {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };

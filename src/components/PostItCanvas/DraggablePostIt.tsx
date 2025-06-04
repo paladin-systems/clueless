@@ -1,47 +1,49 @@
 import React, { useCallback } from 'react';
-import Draggable, { DraggableData, DraggableEvent } from 'react-draggable';
-import { Resizable, ResizeCallbackData } from 'react-resizable';
-import { PostItNote } from '../../types/ui';
 import clsx from 'clsx';
+import { PostItNote } from '../../types/ui';
+import Draggable from 'react-draggable';
+import { Resizable } from 'react-resizable';
+import 'react-resizable/css/styles.css';
+import Tooltip from '../shared/Tooltip';
+import { formatTimestamp, formatTooltipTime, getElapsedTime } from '../../utils/timeUtils';
 
-interface DraggablePostItProps {
-  note: PostItNote;
+interface Props {
+  note: PostItNote & { zIndex?: number };
   onMove: (position: { x: number; y: number }) => void;
   onResize: (size: { width: number; height: number }) => void;
   onPin: () => void;
+  onSelect?: () => void;
+  onDelete?: () => void;
+  isSelected?: boolean;
   canvasBounds: { width: number; height: number };
   className?: string;
 }
 
-const DraggablePostIt: React.FC<DraggablePostItProps> = ({
+const DraggablePostIt: React.FC<Props> = ({
   note,
   onMove,
   onResize,
   onPin,
   canvasBounds,
-  className
+  className,
+  onSelect,
+  onDelete,
+  isSelected
 }) => {
-  // Handle drag stop event
-  const handleDragStop = (_e: DraggableEvent, data: DraggableData) => {
-    // Ensure the note stays within canvas bounds
-    const x = Math.max(0, Math.min(data.x, canvasBounds.width - note.size.width));
-    const y = Math.max(0, Math.min(data.y, canvasBounds.height - note.size.height));
-    onMove({ x, y });
-  };
+  // Handle drag stop
+  const handleDragStop = useCallback((_e: any, data: { x: number; y: number }) => {
+    onMove({ x: data.x, y: data.y });
+  }, [onMove]);
 
-  // Handle resize stop event
-  const handleResizeStop = (_e: React.SyntheticEvent, data: ResizeCallbackData) => {
-    const { width, height } = data.size;
-    // Ensure minimum size
-    const newWidth = Math.max(200, width);
-    const newHeight = Math.max(150, height);
-    onResize({ width: newWidth, height: newHeight });
-  };
+  // Handle resize stop
+  const handleResizeStop = useCallback((newSize: { width: number; height: number }) => {
+    onResize(newSize);
+  }, [onResize]);
 
   // Keyboard navigation for the post-it note
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     const MOVE_AMOUNT = 20; // Pixels to move (matching grid size)
-    const { key, shiftKey, ctrlKey, metaKey } = event;
+    const { key, shiftKey } = event;
     
     // Prevent default scrolling
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
@@ -86,10 +88,13 @@ const DraggablePostIt: React.FC<DraggablePostItProps> = ({
       onResize(newSize);
     }
 
-    // Toggle pin with Space or Enter
+    // Handle keyboard shortcuts
     if (key === ' ' || key === 'Enter') {
       event.preventDefault();
       onPin();
+    } else if (key === 'Delete' || key === 'Backspace') {
+      event.preventDefault();
+      onDelete?.();
     }
   }, [note.position, note.size, onMove, onResize, onPin]);
 
@@ -106,14 +111,13 @@ const DraggablePostIt: React.FC<DraggablePostItProps> = ({
         height={note.size.height}
         minConstraints={[200, 150]}
         maxConstraints={[600, 400]}
-        onResizeStop={handleResizeStop}
-        onResize={(e, data) => {
-          // Update size during resize for smooth feedback
-          const { width, height } = data.size;
-          onResize({ width, height });
-        }}
-        handle={<div className="resize-handle" />}
-        resizeHandles={['se']} // Only allow bottom-right resize
+        onResizeStop={(_e, { size }) => handleResizeStop(size)}
+        resizeHandles={['se']}
+        handle={
+          <div className="absolute bottom-1 right-1 w-4 h-4 cursor-se-resize">
+            <div className="absolute bottom-0 right-0 w-2 h-2 bg-gray-400/50 rounded-full" />
+          </div>
+        }
       >
         <div
           className={clsx(
@@ -121,39 +125,56 @@ const DraggablePostIt: React.FC<DraggablePostItProps> = ({
             `category-${note.category}`,
             note.isPinned && 'pinned',
             note.isAiModified && 'ai-modified',
+            isSelected && 'ring-2 ring-blue-500',
             className
           )}
+          onClick={onSelect}
+          style={{
+            width: note.size.width,
+            height: note.size.height,
+            zIndex: note.zIndex,
+            transform: `rotate(${Math.random() * 2 - 1}deg)` // Slight random rotation
+          }}
           tabIndex={0}
           role="article"
           aria-label={`${note.category} note`}
           onKeyDown={handleKeyDown}
-          style={{
-            width: note.size.width,
-            height: note.size.height,
-            transform: `rotate(${Math.random() * 2 - 1}deg)` // Slight random rotation
-          }}
         >
           {/* Note Header with Drag Handle */}
-          <div className="drag-handle group">
+          <div className="drag-handle">
             <div className="flex items-center justify-between p-2">
-              <div className="flex items-center space-x-2 opacity-50 group-hover:opacity-100 transition-opacity">
-                <span className="text-xs">
-                  {new Date(note.timestamp).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </span>
-                {note.isAiModified && (
-                  <span className="text-xs bg-blue-100 text-blue-800 px-1.5 rounded">AI</span>
-                )}
-              </div>
-              <button
-                onClick={onPin}
-                className="text-gray-400 hover:text-yellow-500 transition-colors opacity-50 group-hover:opacity-100"
-                title={note.isPinned ? "Unpin" : "Pin"}
+              <Tooltip
+                content={
+                  <div className="space-y-1">
+                    <div>Created: {formatTooltipTime(note.timestamp)}</div>
+                    <div>Last modified: {getElapsedTime(note.lastModified)}</div>
+                    {note.isAiModified && <div>Modified by AI</div>}
+                  </div>
+                }
+                placement="top"
               >
-                📌
-              </button>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-gray-600">
+                    {formatTimestamp(note.timestamp)}
+                  </span>
+                  {note.isAiModified && (
+                    <span className="text-xs bg-blue-100 text-blue-800 px-1.5 rounded">AI</span>
+                  )}
+                </div>
+              </Tooltip>
+              <Tooltip
+                content={note.isPinned ? "Unpin note" : "Pin note to top"}
+                placement="left"
+                delay={500}
+              >
+                <button
+                  onClick={onPin}
+                  className="text-gray-400 hover:text-yellow-500 transition-colors"
+                  aria-label={note.isPinned ? "Unpin" : "Pin"}
+                >
+                  📌
+                </button>
+              </Tooltip>
             </div>
           </div>
 

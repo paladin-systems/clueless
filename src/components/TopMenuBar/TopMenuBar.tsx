@@ -1,8 +1,8 @@
 import React from 'react';
-import { SessionInfo, AudioIndicator } from '../../types/ui';
-import { formatDuration } from '../../utils/timeUtils';
-import { useCallback } from 'react';
 import clsx from 'clsx';
+import { formatDuration } from '../../utils/timeUtils';
+import { SessionInfo, AudioIndicator } from '../../types/ui';
+import LoadingSpinner from '../shared/LoadingSpinner';
 
 interface TopMenuBarProps {
   sessionInfo: SessionInfo;
@@ -25,6 +25,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
   onStopRecording,
   onCapture,
   onSettingsClick,
+  onKeyboardHelpClick,
   className
 }) => {
   // Audio level indicator styles
@@ -85,15 +86,23 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
             >
               📸 Capture
             </button>
-            <button
-              onClick={sessionInfo.isRecording ? onStopRecording : onStartRecording}
-              className={clsx(
-                "glass-button",
-                sessionInfo.isRecording && "bg-red-600 hover:bg-red-700"
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={sessionInfo.isRecording ? onStopRecording : onStartRecording}
+                className={clsx(
+                  "glass-button",
+                  sessionInfo.isRecording && "bg-red-600 hover:bg-red-700"
+                )}
+              >
+                {sessionInfo.isRecording ? "⏹️ Stop" : "⏺️ Record"}
+              </button>
+              {sessionInfo.isRecording && (
+                <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-1.5 rounded-md">
+                  <LoadingSpinner size="sm" />
+                  <span className="text-xs text-gray-300">Recording...</span>
+                </div>
               )}
-            >
-              {sessionInfo.isRecording ? "⏹️ Stop" : "⏺️ Record"}
-            </button>
+            </div>
           </div>
         </div>
 
@@ -103,7 +112,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
             {/* Keyboard Shortcuts Button */}
             <div className="relative">
               <button
-                onClick={onSettingsClick}
+                onClick={onKeyboardHelpClick}
                 className={clsx(
                   "glass-button-secondary group",
                   "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900"
@@ -130,7 +139,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
             {/* Settings Button */}
             <div className="relative">
               <button
-                onClick={onKeyboardHelpClick}
+                onClick={onSettingsClick}
                 className={clsx(
                   "glass-button-secondary group",
                   "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900"

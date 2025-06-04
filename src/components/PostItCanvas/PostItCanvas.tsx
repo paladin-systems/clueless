@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { PostItNote, NotePosition } from '../../types/ui';
 import DraggablePostIt from './DraggablePostIt';
 import PostItInstructions from './PostItInstructions';
+import { PostItNote, NotePosition } from '../../types/ui';
 import clsx from 'clsx';
 
 interface PostItCanvasProps {
@@ -10,6 +10,9 @@ interface PostItCanvasProps {
   onNoteMoveMultiple?: (notes: NotePosition[]) => void;
   onNoteResize: (id: string, size: { width: number; height: number }) => void;
   onNotePinToggle: (id: string) => void;
+  onNoteSelect?: (id: string | null) => void;
+  onNoteDelete?: (id: string) => void;
+  selectedNoteId?: string | null;
   className?: string;
   id?: string;
   tabIndex?: number;
@@ -21,6 +24,9 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
   onNoteMoveMultiple,
   onNoteResize,
   onNotePinToggle,
+  onNoteSelect,
+  onNoteDelete,
+  selectedNoteId,
   className,
   id,
   tabIndex
@@ -108,12 +114,12 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
     return baseZ + Math.floor((Date.now() - note.timestamp) / 1000);
   };
 
-  // Handle click-through for empty canvas areas
+  // Handle canvas click to deselect notes
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      // Click was on empty canvas area
+      onNoteSelect?.(null);
     }
-  }, []);
+  }, [onNoteSelect]);
 
   return (
     <div
@@ -162,6 +168,9 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
           onMove={(position) => onNoteMove(note.id, position)}
           onResize={(size) => onNoteResize(note.id, size)}
           onPin={() => onNotePinToggle(note.id)}
+          onSelect={() => onNoteSelect?.(note.id)}
+          onDelete={() => onNoteDelete?.(note.id)}
+          isSelected={selectedNoteId === note.id}
           canvasBounds={canvasBounds}
           className="pointer-events-auto"
         />

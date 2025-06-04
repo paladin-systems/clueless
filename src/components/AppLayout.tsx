@@ -1,22 +1,25 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import TopMenuBar from './TopMenuBar/TopMenuBar';
 import PostItCanvas from './PostItCanvas/PostItCanvas';
 import { PostItNote, SessionInfo } from '../types/ui';
-import { GeminiResponse } from '../types/gemini';
 import { useStore } from '../store';
+import { useCallback } from 'react';
 import { useElectronEvents } from '../hooks/useElectronEvents';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { useDebounceStorage } from '../hooks/useDebounceStorage';
 import KeyboardShortcutsHelp from './shared/KeyboardShortcutsHelp';
 import SettingsMenu from './shared/SettingsMenu';
+import ModalErrorBoundary from './shared/ModalErrorBoundary';
+import LoadingSpinner from './shared/LoadingSpinner';
 
 const AppLayout: React.FC = () => {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
   // Initialize electron event listeners and keyboard shortcuts
   useElectronEvents();
   useKeyboardShortcuts(setShowKeyboardHelp, setShowSettings);
-
 
   const {
     micLevel,
@@ -29,7 +32,8 @@ const AppLayout: React.FC = () => {
     selectedSystemDeviceId,
     micAudioDevices,
     systemAudioDevices,
-    geminiResponses
+    geminiResponses,
+    isBuildingResponse
   } = useStore(state => ({
     micLevel: state.micLevel,
     systemLevel: state.systemLevel,
@@ -41,10 +45,27 @@ const AppLayout: React.FC = () => {
     selectedSystemDeviceId: state.selectedSystemDeviceId,
     micAudioDevices: state.micAudioDevices,
     systemAudioDevices: state.systemAudioDevices,
-    geminiResponses: state.geminiResponses
+    geminiResponses: state.geminiResponses,
+    isBuildingResponse: state.isBuildingResponse
   }));
 
-  const [notes, setNotes] = useState<PostItNote[]>([]);
+  // Initialize notes from storage with debounced saves
+  const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({
+    key: 'post-it-notes',
+    delay: 1000
+  });
+
+  const [notes, setNotes] = useState<PostItNote[]>(() => {
+    const savedNotes = loadFromStorage();
+    return savedNotes || [];
+  });
+
+  // Save notes when they change
+  useEffect(() => {
+    if (notes.length > 0) {
+      saveToStorage(notes);
+    }
+  }, [notes, saveToStorage]);
   
   // Track session info
   const [sessionInfo, setSessionInfo] = useState<SessionInfo>({
@@ -181,18 +202,70 @@ const AppLayout: React.FC = () => {
     };
 
     setNotes(prev => [...prev, newNote]);
-  }, [geminiResponses, notes]);
+  }, [geminiResponses.length, notes]);
 
-  // Note handlers with multi-note support
-  const handleNoteMove = useCallback((id: string, position: { x: number; y: number }) => {
+  // Handle note deletion
+  const handleNoteDelete = useCallback((id: string) => {
+    setNotes(prev => prev.filter(note => note.id !== id));
+  }, []);
+
+  // Handle global keyboard shortcuts for notes
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't handle if typing in an input or if modals are open
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        showKeyboardHelp ||
+        showSettings
+      ) {
+        return;
+      }
+
+      // Delete selected note
+      if (
+        selectedNoteId &&
+        (event.key === 'Delete' || event.key === 'Backspace')
+      ) {
+        event.preventDefault();
+        handleNoteDelete(selectedNoteId);
+        setSelectedNoteId(null);
+      }
+
+      // Tab navigation between notes
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        if (notes.length === 0) return;
+
+        const currentIndex = selectedNoteId
+          ? notes.findIndex(n => n.id === selectedNoteId)
+          : -1;
+
+        let nextIndex = event.shiftKey
+          ? currentIndex - 1
+          : currentIndex + 1;
+
+        if (nextIndex >= notes.length) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = notes.length - 1;
+
+        setSelectedNoteId(notes[nextIndex].id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [notes, selectedNoteId, showKeyboardHelp, showSettings, handleNoteDelete]);
+
+  // Note handlers
+  const handleNoteMove = (id: string, position: { x: number; y: number }) => {
     setNotes(prev => 
       prev.map(note => 
         note.id === id ? { ...note, position, zIndex: Date.now() } : note
       )
     );
-  }, []);
+  };
 
-  const handleMultiNoteMove = useCallback((movedNotes: { id: string; position: { x: number; y: number } }[]) => {
+  const handleMultiNoteMove = (movedNotes: { id: string; position: { x: number; y: number } }[]) => {
     setNotes(prev => {
       const updates = new Map(movedNotes.map(n => [n.id, n.position]));
       return prev.map(note => 
@@ -201,17 +274,17 @@ const AppLayout: React.FC = () => {
           : note
       );
     });
-  }, []);
+  };
 
-  const handleNoteResize = useCallback((id: string, size: { width: number; height: number }) => {
+  const handleNoteResize = (id: string, size: { width: number; height: number }) => {
     setNotes(prev => 
       prev.map(note => 
         note.id === id ? { ...note, size, zIndex: Date.now() } : note
       )
     );
-  }, []);
+  };
 
-  const handleNotePinToggle = useCallback((id: string) => {
+  const handleNotePinToggle = (id: string) => {
     setNotes(prev => {
       const maxZ = Math.max(...prev.map(n => n.zIndex || 0));
       return prev.map(note => 
@@ -220,16 +293,19 @@ const AppLayout: React.FC = () => {
           : note
       );
     });
-  }, []);
+  };
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-transparent">
+      {/* Skip to content link */}
       <a
         href="#post-it-canvas"
         className="skip-to-content"
       >
         Skip to post-it notes
       </a>
+
+      {/* Top Menu Bar */}
       <TopMenuBar
         sessionInfo={sessionInfo}
         audioLevels={{
@@ -242,6 +318,8 @@ const AppLayout: React.FC = () => {
         onSettingsClick={() => setShowSettings(true)}
         onKeyboardHelpClick={() => setShowKeyboardHelp(true)}
       />
+
+      {/* Post-it Canvas */}
       <PostItCanvas
         id="post-it-canvas"
         tabIndex={-1}
@@ -250,19 +328,33 @@ const AppLayout: React.FC = () => {
         onNoteMoveMultiple={handleMultiNoteMove}
         onNoteResize={handleNoteResize}
         onNotePinToggle={handleNotePinToggle}
+        selectedNoteId={selectedNoteId}
+        onNoteSelect={setSelectedNoteId}
+        onNoteDelete={handleNoteDelete}
       />
-      <KeyboardShortcutsHelp
-        isOpen={showKeyboardHelp}
-        onClose={() => setShowKeyboardHelp(false)}
-      />
-      <KeyboardShortcutsHelp
-        isOpen={showKeyboardHelp}
-        onClose={() => setShowKeyboardHelp(false)}
-      />
-      <SettingsMenu
-        isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
+
+      {/* Loading Indicator */}
+      {isBuildingResponse && (
+        <div className="fixed bottom-4 left-4 flex items-center space-x-2 bg-gray-900/95 backdrop-blur-sm rounded-lg p-3 border border-gray-700/50">
+          <LoadingSpinner size="sm" />
+          <span className="text-sm text-gray-300">Processing response...</span>
+        </div>
+      )}
+
+      {/* Modal Windows */}
+      <ModalErrorBoundary onClose={() => setShowKeyboardHelp(false)}>
+        <KeyboardShortcutsHelp
+          isOpen={showKeyboardHelp}
+          onClose={() => setShowKeyboardHelp(false)}
+        />
+      </ModalErrorBoundary>
+
+      <ModalErrorBoundary onClose={() => setShowSettings(false)}>
+        <SettingsMenu
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      </ModalErrorBoundary>
     </div>
   );
 };

@@ -1,23 +1,15 @@
-@import "tailwindcss";
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import './styles/focus.css';
+@import './styles/post-it.css';
 
 /* Base styles for the app */
 @layer base {
   html {
     /* Make html background transparent */
     background-color: transparent;
-    color: var(--color-white); /* Assuming white text is desired */
-  }
-  /* Style select elements for readability */
-  select {
-    background-color: rgba(30, 30, 30, 0.5); /* Example dark semi-transparent */
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 0.5rem 0.75rem; /* Equivalent to p-2 px-3 */
-    border-radius: 0.375rem; /* Equivalent to rounded-md */
-  }
-  select option {
-    background-color: #1c1c1c; /* Dark background for options */
-    color: white;
+    color: var(--color-white);
   }
 
   body {
@@ -27,235 +19,89 @@
     background-attachment: fixed;
   }
 
-  /* Optional: Add glow effect if needed */
-  /* body::before { ... } */
+  /* Style select elements for readability */
+  select {
+    background-color: rgba(30, 30, 30, 0.5);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+  }
+
+  select option {
+    background-color: #1c1c1c;
+    color: white;
+  }
 }
 
 /* Custom component classes */
-/* Skip to content link for keyboard navigation */
-.skip-to-content {
-  @apply sr-only;
-}
-
-.skip-to-content:focus {
-  @apply not-sr-only fixed top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-[1001];
-}
-
 @layer components {
-  /* Glassmorphism container styles */
-  .glass-container {
-    background-color: rgba(20, 20, 20, 0.65);
-    backdrop-filter: blur(12px);
-    border-radius: 0.75rem;
-    padding: 1.5rem;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* Post-it Note styles */
-  .post-it {
-    @apply absolute rounded-lg p-4 shadow-lg backdrop-blur-sm transition-all duration-200;
-    background-color: rgba(255, 255, 255, 0.85);
-    min-width: 200px;
-    min-height: 150px;
-    max-width: 600px;
-    max-height: 400px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-
-    &.pinned {
-      @apply ring-2 ring-yellow-400 shadow-yellow-400/50;
-    }
-
-    &.ai-modified {
-      @apply ring-1 ring-blue-400/50;
-    }
-
-    /* Category colors with transparency */
-    &.category-response {
-      @apply bg-blue-200/80 text-blue-900;
-    }
-
-    &.category-question {
-      @apply bg-yellow-200/80 text-yellow-900;
-    }
-
-    &.category-reference {
-      @apply bg-purple-200/80 text-purple-900;
-    }
-
-    &.category-note {
-      @apply bg-green-200/80 text-green-900;
-    }
-
-    /* Drag handle */
-    .drag-handle {
-      @apply absolute top-0 left-0 right-0 h-6 cursor-move rounded-t-lg bg-white/10;
-    }
-
-    /* Resize handle */
-    .resize-handle {
-      @apply absolute bottom-1 right-1 w-4 h-4 cursor-se-resize;
-      &::after {
-        content: '';
-        @apply absolute bottom-0 right-0 w-2 h-2 bg-gray-400/50 rounded-full;
-      }
-    }
-  }
-
-  /* Menu bar styles */
+  /* Menu Bar */
   .menu-bar {
-    @apply fixed top-0 left-0 right-0 h-14 bg-gray-900/95 backdrop-blur-md z-50 border-b border-gray-700/50;
-    
-    .menu-section {
-      @apply flex items-center h-full px-4;
-      
-      &.left {
-        @apply justify-start;
-      }
-      
-      &.center {
-        @apply justify-center space-x-4;
-      }
-      
-      &.right {
-        @apply justify-end space-x-4;
-      }
-    }
+    @apply fixed top-0 left-0 right-0 h-14 bg-gray-900/95 backdrop-blur-md z-[1000] border-b border-gray-700/50;
   }
 
-  /* Button styles */
-  .glass-button {
-    @apply cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md transition-all duration-200;
+  .menu-section {
+    @apply flex items-center space-x-4 px-4;
+  }
 
-    &:hover {
-      @apply bg-blue-700 transform scale-102 shadow-lg;
-    }
+  .menu-section.left {
+    @apply w-64;
+  }
+
+  .menu-section.center {
+    @apply flex-grow flex items-center justify-between space-x-8;
+  }
+
+  .menu-section.right {
+    @apply w-64 justify-end;
+  }
+
+  /* Glass Effect Buttons */
+  .glass-button {
+    @apply px-4 py-1.5 rounded-md text-sm font-medium;
+    @apply bg-blue-600/90 text-white hover:bg-blue-700/90;
+    @apply backdrop-blur-sm transition-colors;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900;
   }
 
   .glass-button-secondary {
-    @apply cursor-pointer bg-white/10 border border-white/10 text-white px-3 py-1.5 rounded-md
-           shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.1)] transition-all duration-200;
-
-    &:hover {
-      @apply bg-white/20 shadow-[0_0_15px_rgba(255,255,255,0.05)];
-    }
+    @apply px-3 py-1.5 rounded-md text-sm;
+    @apply bg-gray-800/90 text-gray-300 hover:bg-gray-700/90;
+    @apply backdrop-blur-sm transition-colors;
+    @apply focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:ring-offset-gray-900;
   }
 
-  /* Panel styles */
-  .glass-panel {
-    @apply bg-gray-900/65 backdrop-blur-md rounded-xl border border-white/8
-           shadow-[0_8px_32px_0_rgba(0,0,0,0.2),inset_0_1px_0_0_rgba(255,255,255,0.05)]
-           p-4 mb-4 relative overflow-hidden;
+  .glass-button:disabled,
+  .glass-button-secondary:disabled {
+    @apply opacity-50 cursor-not-allowed;
   }
 
-  /* Markdown Content Styling */
-  .markdown-content p,
-  .markdown-content h1,
-  .markdown-content h2,
-  .markdown-content ul,
-  .markdown-content ol,
-  .markdown-content code {
-    margin-bottom: 0.5rem; /* mb-2 */
+  /* Skip to content link for keyboard navigation */
+  .skip-to-content {
+    @apply sr-only;
   }
 
-  .markdown-content code {
-    background-color: rgba(30, 30, 30, 0.3); /* glass-dark-300 */
-    padding: 0.125rem 0.25rem; /* p-0.5 px-1 */
-    border-radius: 0.125rem; /* rounded-sm */
-    font-size: 0.875rem; /* text-sm */
-  }
-}
-
-/* Custom Scrollbar Styles */
-@layer utilities {
-  /* Works in WebKit browsers (Chrome, Safari, Edge, Electron) */
-  ::-webkit-scrollbar {
-    width: 6px; /* Width of vertical scrollbar */
-    height: 6px; /* Height of horizontal scrollbar */
+  .skip-to-content:focus {
+    @apply not-sr-only fixed top-4 left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-[1001];
   }
 
-  ::-webkit-scrollbar-track {
-    background: transparent; /* Make track invisible */
-    border-radius: 9999px; /* rounded-full */
+  /* Loading animations */
+  .animate-in {
+    animation: fade-in 0.2s ease-out forwards;
   }
 
-  ::-webkit-scrollbar-thumb {
-    background-color: rgba(255, 255, 255, 0.3); /* glass-300 */
-    border-radius: 9999px; /* rounded-full */
-    /* border: 1px solid rgba(255, 255, 255, 0.4); /* glass-400 */ /* Removed border */
+  .animate-out {
+    animation: fade-out 0.2s ease-in forwards;
   }
 
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(255, 255, 255, 0.5); /* glass-500 */
+  @keyframes fade-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 
-  /* Hide scrollbar buttons (arrows) */
-  ::-webkit-scrollbar-button {
-    display: none;
-  }
-
-  /* For Firefox (requires newer versions) */
-  /* Note: Firefox scrollbar styling is less customizable than WebKit */
-  * {
-    scrollbar-width: thin; /* "auto" or "thin" */
-    scrollbar-color: rgba(255, 255, 255, 0.3) transparent; /* thumb color track color */
+  @keyframes fade-out {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(0.95); }
   }
 }
-
-/* Custom styles */
-/* make entire window draggable */
-html, body {
-  -webkit-app-region: drag;
-  /* Ensure no default background interferes with transparency */
-  background: none;
-}
-
-/* make buttons/links non-draggable */
-button, a, input, textarea, select, audio, [data-no-drag] {
-  -webkit-app-region: no-drag;
-}
-
-/* Window Controls */
-.window-controls {
-  position: fixed;
-  top: 10px; /* Adjust as needed */
-  left: 10px; /* Adjust as needed */
-  display: flex;
-  gap: 8px;
-  z-index: 1000; /* Ensure they are on top */
-  -webkit-app-region: no-drag; /* Make sure controls themselves are not draggable */
-}
-
-.window-control {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: filter 0.2s ease-in-out;
-}
-
-.window-control:hover {
-  filter: brightness(1.2);
-}
-
-.window-control.close {
-  background-color: #ff5f57; /* Red */
-}
-
-.window-control.minimize {
-  background-color: #ffbd2e; /* Yellow */
-}
-
-.window-control.maximize {
-  background-color: #28c940; /* Green */
-}
-
-/* Optional: Define shimmer animation if needed */
-/* @keyframes shimmer { ... } */
-/* Example usage of shimmer on glass-panel */
-/* .glass-panel::after { ... } */
