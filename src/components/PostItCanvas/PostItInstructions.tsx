@@ -3,10 +3,8 @@ import clsx from 'clsx';
 import { useStore } from '../../store';
 
 const PostItInstructions: React.FC = () => {
-  const { showInstructions, updateViewOptions } = useStore(state => ({
-    showInstructions: state.viewOptions.showInstructions,
-    updateViewOptions: state.updateViewOptions
-  }));
+  const showInstructions = useStore(state => state.viewOptions.showInstructions);
+  const updateViewOptions = useStore(state => state.updateViewOptions);
 
   const hideInstructions = () => {
     updateViewOptions({ showInstructions: false });

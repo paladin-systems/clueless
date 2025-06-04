@@ -39,20 +39,28 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
   // Update canvas bounds and organize notes on resize
   const [canvasBounds, setCanvasBounds] = useState({ width: 0, height: 0 });
   
-  useEffect(() => {
-    const updateBounds = () => {
-      const newBounds = {
-        width: window.innerWidth,
-        height: window.innerHeight - MENU_HEIGHT
-      };
-      setCanvasBounds(newBounds);
-      organizeNotes(notes, newBounds, layout);
+  const updateBounds = useCallback(() => {
+    const newBounds = {
+      width: window.innerWidth,
+      height: window.innerHeight - MENU_HEIGHT
     };
-
-    updateBounds();
-    window.addEventListener('resize', updateBounds);
-    return () => window.removeEventListener('resize', updateBounds);
+    setCanvasBounds(newBounds);
+    organizeNotes(notes, newBounds, layout);
   }, [notes, layout]);
+
+  // Debounce the updateBounds function to prevent excessive re-renders
+  const debouncedUpdateBounds = useCallback(
+    () => {
+      updateBounds();
+    },
+    [updateBounds]
+  );
+
+  useEffect(() => {
+    debouncedUpdateBounds();
+    window.addEventListener('resize', debouncedUpdateBounds);
+    return () => window.removeEventListener('resize', debouncedUpdateBounds);
+  }, [debouncedUpdateBounds]);
 
   // Organize notes in grid or cascade layout
   const organizeNotes = (

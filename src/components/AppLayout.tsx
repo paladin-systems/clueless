@@ -21,6 +21,22 @@ const AppLayout: React.FC = () => {
   useElectronEvents();
   useKeyboardShortcuts(setShowKeyboardHelp, setShowSettings);
 
+  // Memoize the selector to prevent infinite loop
+  const selector = useCallback((state: any) => ({
+    micLevel: state.micLevel,
+    systemLevel: state.systemLevel,
+    isRecording: state.isRecording,
+    startRecording: state.startRecording,
+    stopRecording: state.stopRecording,
+    capture: state.capture,
+    selectedMicDeviceId: state.selectedMicDeviceId,
+    selectedSystemDeviceId: state.selectedSystemDeviceId,
+    micAudioDevices: state.micAudioDevices,
+    systemAudioDevices: state.systemAudioDevices,
+    geminiResponses: state.geminiResponses,
+    isBuildingResponse: state.isBuildingResponse
+  }), []);
+
   const {
     micLevel,
     systemLevel,
@@ -34,20 +50,7 @@ const AppLayout: React.FC = () => {
     systemAudioDevices,
     geminiResponses,
     isBuildingResponse
-  } = useStore(state => ({
-    micLevel: state.micLevel,
-    systemLevel: state.systemLevel,
-    isRecording: state.isRecording,
-    startRecording: state.startRecording,
-    stopRecording: state.stopRecording,
-    capture: state.capture,
-    selectedMicDeviceId: state.selectedMicDeviceId,
-    selectedSystemDeviceId: state.selectedSystemDeviceId,
-    micAudioDevices: state.micAudioDevices,
-    systemAudioDevices: state.systemAudioDevices,
-    geminiResponses: state.geminiResponses,
-    isBuildingResponse: state.isBuildingResponse
-  }));
+  } = useStore(selector);
 
   // Initialize notes from storage with debounced saves
   const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({
@@ -90,11 +93,11 @@ const AppLayout: React.FC = () => {
         deviceInfo: {
           mic: selectedMicDeviceId ? {
             id: selectedMicDeviceId,
-            name: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.name || 'Unknown'
+            name: micAudioDevices.find((d: any) => d.id === selectedMicDeviceId)?.name || 'Unknown'
           } : null,
           system: selectedSystemDeviceId ? {
             id: selectedSystemDeviceId,
-            name: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.name || 'Unknown'
+            name: systemAudioDevices.find((d: any) => d.id === selectedSystemDeviceId)?.name || 'Unknown'
           } : null
         }
       }));

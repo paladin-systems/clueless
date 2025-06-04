@@ -15,26 +15,14 @@ export const useKeyboardShortcuts = (
   setShowKeyboardHelp: Dispatch<SetStateAction<boolean>>,
   setShowSettings: Dispatch<SetStateAction<boolean>>
 ) => {
-  // Memoize the selector to prevent infinite loop
-  const selector = useCallback((state: any): StoreSelector => ({
-    startRecording: state.startRecording,
-    stopRecording: state.stopRecording,
-    capture: state.capture,
-    isRecording: state.isRecording,
-    clearResponses: state.clearResponses,
-    viewOptions: state.viewOptions,
-    updateViewOptions: state.updateViewOptions,
-  }), []);
-
-  const {
-    startRecording,
-    stopRecording,
-    capture,
-    isRecording,
-    clearResponses,
-    viewOptions,
-    updateViewOptions
-  } = useStore(selector);
+  // Use stable selectors to prevent infinite loops
+  const startRecording = useStore(state => state.startRecording);
+  const stopRecording = useStore(state => state.stopRecording);
+  const capture = useStore(state => state.capture);
+  const isRecording = useStore(state => state.isRecording);
+  const clearResponses = useStore(state => state.clearResponses);
+  const viewOptions = useStore(state => state.viewOptions);
+  const updateViewOptions = useStore(state => state.updateViewOptions);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     // Don't trigger shortcuts when typing in input fields
