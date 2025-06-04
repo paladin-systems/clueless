@@ -14,14 +14,22 @@ contextBridge.exposeInMainWorld('electron', {
   closeWindow: (): void => ipcRenderer.send('close-window'),
   on: (channel: string, listener: (event: IpcRendererEvent, ...args: any[]) => void): void => {
     // Whitelist channels
-    const validChannels = ['audio-data', 'audio-error', 'mixed-audio', 'gemini-response', 'audio-status', 'audio-activity', 'recording-complete'];
+    const validChannels = [
+      'audio-data', 'audio-error', 'mixed-audio',
+      'gemini-response', 'gemini-processing-start', 'gemini-processing-end', 'gemini-turn-complete',
+      'audio-status', 'audio-activity', 'recording-complete'
+    ];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, listener);
     }
   },
   // Add remove listener if needed, especially for frequent component mounts/unmounts
   removeListener: (channel: string, listener: (...args: any[]) => void): void => {
-     const validChannels = ['audio-data', 'audio-error', 'mixed-audio', 'gemini-response', 'audio-status', 'audio-activity', 'recording-complete'];
+     const validChannels = [
+      'audio-data', 'audio-error', 'mixed-audio',
+      'gemini-response', 'gemini-processing-start', 'gemini-processing-end', 'gemini-turn-complete',
+      'audio-status', 'audio-activity', 'recording-complete'
+    ];
      if (validChannels.includes(channel)) {
         ipcRenderer.removeListener(channel, listener);
      }

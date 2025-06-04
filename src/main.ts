@@ -346,6 +346,7 @@ ipcMain.handle('start-audio-capture', async (event, micDeviceId: number, systemD
   latestSystemChunk = null;
   currentRecordingChunks = []; // Initialize for new recording
   isClosingIntentionally = false; // Ensure flag is reset before starting new session
+  let currentResponseText = ''; // Buffer for Gemini response parts
 
   let micSuccess = false;
   let systemSuccess = false;
@@ -389,82 +390,93 @@ Use previous context when relevant but prioritize responding to the most recent 
         callbacks: {
             onmessage: (message: any) => {
               console.log('Received message from Gemini:', JSON.stringify(message, null, 2));
-              
+
               try {
-                let responseText = '';
-                
-                // Extract text from different message formats
-                if (message.textResponse?.text) {
-                  responseText = message.textResponse.text;
-                } else if (message.aggregatedResponse?.textResponse?.text) {
-                  responseText = message.aggregatedResponse.textResponse.text;
-                } else if (message.serverContent?.modelTurn?.parts) {
-                  responseText = message.serverContent.modelTurn.parts
-                    .filter((part: any) => part.text)
-                    .map((part: any) => part.text)
-                    .join('');
+                // Handle text parts from modelTurn
+                if (message.serverContent?.modelTurn?.parts?.[0]?.text) {
+                  if (currentResponseText === '') {
+                    // First part of a new response stream
+                    mainWindow?.webContents.send('gemini-processing-start');
+                  }
+                  currentResponseText += message.serverContent.modelTurn.parts[0].text;
                 }
 
-                if (responseText) {
-                  try {
-                    // Try to parse as JSON first
-                    const parsedResponse = JSON.parse(responseText);
-                    
-                    // Validate response structure
-                    if (
-                      typeof parsedResponse === 'object' &&
-                      ['response', 'question', 'reference', 'note'].includes(parsedResponse.type) &&
-                      typeof parsedResponse.content === 'string' &&
-                      ['response', 'follow-up', 'context', 'suggestion'].includes(parsedResponse.category) &&
-                      ['high', 'medium', 'low'].includes(parsedResponse.priority)
-                    ) {
-                      // Send structured response
-                      mainWindow?.webContents.send('gemini-response', {
-                        type: parsedResponse.type,
-                        content: parsedResponse.content,
-                        category: parsedResponse.category,
-                        priority: parsedResponse.priority,
-                        timestamp: Date.now()
-                      });
-                    } else {
-                      // Invalid structure, send as regular response
+                // Handle generation complete
+                if (message.serverContent?.generationComplete === true) {
+                  if (currentResponseText) {
+                    let contentToParse = currentResponseText;
+                    // Try to extract content from ```json ... ```
+                    const jsonBlockMatch = currentResponseText.match(/```json\n([\s\S]*?)\n```/);
+                    if (jsonBlockMatch && jsonBlockMatch[1]) {
+                      contentToParse = jsonBlockMatch[1];
+                    }
+
+                    try {
+                      const parsedJson = JSON.parse(contentToParse);
+                      // Basic validation for the expected structure
+                      if (
+                        typeof parsedJson === 'object' && parsedJson !== null &&
+                        ['response', 'question', 'reference', 'note'].includes(parsedJson.type) &&
+                        typeof parsedJson.content === 'string' &&
+                        ['response', 'follow-up', 'context', 'suggestion'].includes(parsedJson.category) &&
+                        ['high', 'medium', 'low'].includes(parsedJson.priority)
+                      ) {
+                        mainWindow?.webContents.send('gemini-response', { ...parsedJson, timestamp: Date.now() });
+                      } else {
+                        // Valid JSON but not matching expected structure, send as plain text
+                        mainWindow?.webContents.send('gemini-response', {
+                          type: 'response',
+                          content: currentResponseText, // Send original full text
+                          category: 'response',
+                          priority: 'medium',
+                          timestamp: Date.now()
+                        });
+                      }
+                    } catch (parseError) {
+                      // Not JSON, send as plain text response
                       mainWindow?.webContents.send('gemini-response', {
                         type: 'response',
-                        content: responseText,
+                        content: currentResponseText,
                         category: 'response',
                         priority: 'medium',
                         timestamp: Date.now()
                       });
                     }
-                  } catch (parseError) {
-                    // Not JSON, send as regular response
-                    mainWindow?.webContents.send('gemini-response', {
-                      type: 'response',
-                      content: responseText,
-                      category: 'response',
-                      priority: 'medium',
-                      timestamp: Date.now()
-                    });
                   }
+                  currentResponseText = ''; // Reset buffer
+                  mainWindow?.webContents.send('gemini-processing-end');
                 }
 
                 // Handle turn complete
                 if (message.serverContent?.turnComplete === true) {
                   mainWindow?.webContents.send('gemini-turn-complete');
+                  // Ensure buffer is cleared if turn completes, possibly before generation if an error occurs
+                  if (currentResponseText !== '') {
+                     console.warn('Gemini turn completed, but response buffer was not empty. Clearing buffer.');
+                     currentResponseText = '';
+                     // If processing was ongoing, ensure it's marked as ended
+                     mainWindow?.webContents.send('gemini-processing-end');
+                  }
                 }
-              } catch (error) {
-                console.error('Error processing Gemini message:', error);
-                mainWindow?.webContents.send('audio-error',
-                  `Error processing Gemini response: ${(error as Error).message}`
-                );
-              }
 
-              // Handle errors from Gemini
-              if (message.error) {
-                console.error('Gemini message contained an error:', message.error);
+                // Handle errors from Gemini
+                if (message.error) {
+                  console.error('Gemini message contained an error:', message.error);
+                  mainWindow?.webContents.send('audio-error',
+                    `Gemini error: ${message.error.message || JSON.stringify(message.error)}`
+                  );
+                  // If an error occurs, clear buffer and signal end of processing
+                  currentResponseText = '';
+                  mainWindow?.webContents.send('gemini-processing-end');
+                }
+
+              } catch (error) {
+                console.error('Error processing Gemini message in onmessage:', error);
                 mainWindow?.webContents.send('audio-error',
-                  `Gemini error: ${message.error.message || JSON.stringify(message.error)}`
+                  `Internal error processing Gemini response: ${(error as Error).message}`
                 );
+                currentResponseText = '';
+                mainWindow?.webContents.send('gemini-processing-end');
               }
             },
             onerror: (error: ErrorEvent) => {

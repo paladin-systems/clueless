@@ -33,17 +33,22 @@ const AppLayout: React.FC = () => {
   const systemAudioDevices = useStore(state => state.systemAudioDevices);
   const geminiResponses = useStore(state => state.geminiResponses);
   const isBuildingResponse = useStore(state => state.isBuildingResponse);
+  const audioStatus = useStore(state => state.audioStatus); // Get audioStatus
+
+  console.log('AppLayout: geminiResponses count:', geminiResponses.length);
+  console.log('AppLayout: isBuildingResponse:', isBuildingResponse);
 
   // Initialize notes from storage with debounced saves
   const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({
     key: 'post-it-notes',
     delay: 1000
   });
-
   const [notes, setNotes] = useState<PostItNote[]>(() => {
     const savedNotes = loadFromStorage();
     return savedNotes || [];
   });
+
+  console.log('AppLayout: notes count:', notes.length);
 
   // Save notes when they change
   useEffect(() => {
@@ -109,12 +114,12 @@ const AppLayout: React.FC = () => {
       }
     };
   }, [isRecording, selectedMicDeviceId, selectedSystemDeviceId, micAudioDevices, systemAudioDevices]);
-
   // Handle new Gemini responses
   useEffect(() => {
     if (geminiResponses.length === 0) return;
 
     const response = geminiResponses[geminiResponses.length - 1];
+    console.log('Processing new Gemini response:', response);
     
     // Skip if missing required fields
     if (!response.type || !response.content) {
@@ -192,8 +197,9 @@ const AppLayout: React.FC = () => {
       zIndex: Date.now()
     };
 
+    console.log('Creating new note:', newNote);
     setNotes(prev => [...prev, newNote]);
-  }, [geminiResponses.length, notes]);
+  }, [geminiResponses]);
 
   // Handle note deletion
   const handleNoteDelete = useCallback((id: string) => {
@@ -328,7 +334,7 @@ const AppLayout: React.FC = () => {
       {isBuildingResponse && (
         <div className="fixed bottom-4 left-4 flex items-center space-x-2 bg-gray-900/95 backdrop-blur-sm rounded-lg p-3 border border-gray-700/50">
           <LoadingSpinner size="sm" />
-          <span className="text-sm text-gray-300">Processing response...</span>
+          <span className="text-sm text-gray-300">{audioStatus || 'Processing response...'}</span>
         </div>
       )}
 

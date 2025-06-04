@@ -22,52 +22,77 @@ export const useElectronEvents = () => {
       });
     };
 
-    // Gemini response handler
-    const handleGeminiResponse = (_event: any, response: GeminiResponse) => {
+    // Handler for when Gemini starts processing a response stream
+    const handleGeminiProcessingStart = () => {
       useStore.setState({
-        geminiResponses: [...useStore.getState().geminiResponses, response],
-        isBuildingResponse: true, // Set to true when a response chunk is received
-        audioStatus: 'Receiving response...'
+        isBuildingResponse: true,
+        audioStatus: 'Gemini is generating...'
       });
+    };
+
+    // Handler for when Gemini finishes processing a response stream
+    const handleGeminiProcessingEnd = () => {
+      useStore.setState({
+        isBuildingResponse: false,
+        // audioStatus: undefined // Keep audioStatus as is, or set to a "completed" message if desired
+      });
+    };
+
+    // Simplified Gemini response handler (receives complete, parsed response from main.ts)
+    const handleGeminiResponse = (_event: any, response: GeminiResponse) => {
+      // Validate the response structure slightly before adding
+      if (response && response.type && response.content) {
+        useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });
+      } else {
+        console.warn('Received invalid or incomplete Gemini response object:', response);
+        // Optionally, add a fallback error note to the UI
+        useStore.getState().addGeminiResponse({
+          type: 'response',
+          content: 'Received an improperly formatted response from AI.',
+          category: 'response', // Changed from 'error' to 'response'
+          priority: 'medium',
+          timestamp: Date.now()
+        });
+      }
+      // isBuildingResponse and audioStatus are now managed by processing-start/end and turn-complete
     };
 
     // Gemini turn complete handler
     const handleGeminiTurnComplete = () => {
-      useStore.setState({
-        isBuildingResponse: false,
-        audioStatus: undefined
-      });
+      // This event signifies the end of a conversational turn with Gemini.
+      // It might arrive after generationComplete.
+      // We can use this to ensure the UI is fully reset if needed.
+      useStore.setState(state => ({
+        // Only turn off building response if it's still on,
+        // and reset audio status if it was 'Gemini is generating...'
+        isBuildingResponse: state.audioStatus === 'Gemini is generating...' ? false : state.isBuildingResponse,
+        audioStatus: state.audioStatus === 'Gemini is generating...' ? undefined : state.audioStatus,
+      }));
     };
 
     // Audio status handler
     const handleAudioStatus = (_event: any, status: string) => {
-      const shouldStopBuilding = status.includes('complete') || 
-                                status.includes('Error') || 
-                                status.includes('Stopping');
-      
-      useStore.setState({ 
-        audioStatus: status,
-        isBuildingResponse: !shouldStopBuilding
-      });
+      // Avoid overwriting "Gemini is generating..." if it's active
+      if (useStore.getState().audioStatus !== 'Gemini is generating...') {
+        useStore.setState({ audioStatus: status });
+      }
     };
 
     // Audio error handler
     const handleAudioError = (_event: any, error: string) => {
-      useStore.setState({ 
+      useStore.setState({
         audioError: error,
         isBuildingResponse: false
       });
-    };
-
-    // Recording complete handler
+    };    // Recording complete handler
     const handleRecordingComplete = (_event: any, recordingPayload: any) => {
       // Validate payload
-      const isValidBuffer = recordingPayload?.buffer && 
+      const isValidBuffer = recordingPayload?.buffer &&
                           typeof recordingPayload.buffer.length === 'number';
-      
-      if (!recordingPayload || 
-          !isValidBuffer || 
-          typeof recordingPayload.timestamp !== 'number' || 
+
+      if (!recordingPayload ||
+          !isValidBuffer ||
+          typeof recordingPayload.timestamp !== 'number' ||
           isNaN(recordingPayload.timestamp)) {
         useStore.setState({ audioError: 'Received invalid recording data.' });
         return;
@@ -83,16 +108,25 @@ export const useElectronEvents = () => {
         dataUrl: dataUrl
       };
 
+      useStore.setState({
+        isBuildingResponse: true,
+        audioStatus: 'Processing recording...'
+      });
+
       useStore.setState(state => ({
         recordings: [...state.recordings, recording],
-        isBuildingResponse: false
+        isBuildingResponse: true, // Keep building response true as processing starts
+        audioStatus: 'Processing recording...'
       }));
     };
 
     // Register event listeners
     const electron = (window as any).electron;
     electron.on('audio-activity', handleAudioActivity);
+    electron.on('gemini-processing-start', handleGeminiProcessingStart); // New listener
+    electron.on('gemini-processing-end', handleGeminiProcessingEnd);   // New listener
     electron.on('gemini-response', handleGeminiResponse);
+    electron.on('gemini-turn-complete', handleGeminiTurnComplete);
     electron.on('audio-status', handleAudioStatus);
     electron.on('audio-error', handleAudioError);
     electron.on('recording-complete', handleRecordingComplete);
@@ -104,7 +138,10 @@ export const useElectronEvents = () => {
       if (systemLevelTimeout) clearTimeout(systemLevelTimeout);
 
       electron.removeListener('audio-activity', handleAudioActivity);
+      electron.removeListener('gemini-processing-start', handleGeminiProcessingStart); // New cleanup
+      electron.removeListener('gemini-processing-end', handleGeminiProcessingEnd);   // New cleanup
       electron.removeListener('gemini-response', handleGeminiResponse);
+      electron.removeListener('gemini-turn-complete', handleGeminiTurnComplete);
       electron.removeListener('audio-status', handleAudioStatus);
       electron.removeListener('audio-error', handleAudioError);
       electron.removeListener('recording-complete', handleRecordingComplete);

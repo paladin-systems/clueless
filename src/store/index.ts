@@ -26,6 +26,7 @@ interface AppState {
   // UI-related state
   geminiResponses: GeminiResponse[];
   isBuildingResponse: boolean;
+  // currentGeminiTextBuffer: string; // This will be removed
   viewOptions: ViewOptions;
   screenCapture?: string;
 
@@ -68,6 +69,7 @@ export const useStore = create<AppState>((set, get) => ({
   recordings: [],
   geminiResponses: [] as GeminiResponse[],
   isBuildingResponse: false,
+  // currentGeminiTextBuffer: '', // This will be removed
   notes: [],
   viewOptions: {
     layout: 'cascade',
