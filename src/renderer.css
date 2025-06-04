@@ -1,6 +1,6 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@reference "../tailwind.config.ts";
+@import "tailwindcss/preflight";
+@tailwind utilities;
 @import './styles/focus.css';
 @import './styles/post-it.css';
 
