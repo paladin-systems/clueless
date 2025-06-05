@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { useStore } from '../../store';
 import { useModalFocus } from '../../hooks/useModalFocus';
 import { ViewOptions, AudioDevice } from '../../types/ui';
-import { FaXmark, FaEye, FaDesktop, FaMicrophone, FaVolumeHigh } from 'react-icons/fa6';
+import { exportNotes, ExportFormat } from '../../utils/exportUtils';
+import { FaXmark, FaEye, FaDesktop, FaMicrophone, FaVolumeHigh, FaDownload, FaChevronDown } from 'react-icons/fa6';
 
 interface Props {
   isOpen: boolean;
@@ -11,6 +12,8 @@ interface Props {
 }
 
 const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
+  const [showExportOptions, setShowExportOptions] = useState(false);
+  
   const viewOptions = useStore(state => state.viewOptions);
   const updateViewOptions = useStore(state => state.updateViewOptions);
   const micAudioDevices = useStore(state => state.micAudioDevices);
@@ -21,6 +24,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const setSelectedSystemDevice = useStore(state => state.setSelectedSystemDevice);
   const setMicAudioDevices = useStore(state => state.setMicAudioDevices);
   const setSystemAudioDevices = useStore(state => state.setSystemAudioDevices);
+  const notes = useStore(state => state.notes);
 
   const handleOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateViewOptions({
@@ -31,12 +35,32 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const handleLayoutChange = (layout: ViewOptions['layout']) => {
     updateViewOptions({ layout });
   };
-
   const handleAlwaysOnTopChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateViewOptions({
       alwaysOnTop: event.target.checked
     });
+  };  const handleExport = (format: ExportFormat) => {
+    console.log('Exporting notes as:', format, 'Total notes:', notes.length);
+    exportNotes(notes, format);
+    setShowExportOptions(false);
   };
+
+  // Close export dropdown when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      // Don't close if clicking on the export button or dropdown
+      if (target?.closest('.export-dropdown-container')) {
+        return;
+      }
+      setShowExportOptions(false);
+    };
+
+    if (showExportOptions) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showExportOptions]);
 
   const modalRef = useModalFocus({ isOpen, onClose });
 
@@ -73,10 +97,9 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="settings-title"
-    >
-      <div
+    >      <div
         className={clsx(
-          "bg-gray-900/95 border border-gray-700/50 rounded-lg shadow-xl w-96 max-w-lg p-6",
+          "bg-gray-900/95 border border-gray-700/50 rounded-lg shadow-xl w-96 max-w-lg max-h-[80vh] overflow-y-auto p-6",
           "transform transition-all duration-200",
           "animate-in fade-in zoom-in-95",
           "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95"
@@ -94,7 +117,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="space-y-6">          {/* Opacity Section */}
+        <div className="space-y-4">          {/* Opacity Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
               <FaEye />
@@ -208,32 +231,85 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             Display helpful keyboard shortcuts for moving and managing post-it notes
           </p>        </div>
 
-        <button
-            onClick={() => {
-              const notes = useStore.getState().notes;
-              console.log('🔍 === DEBUG: ALL NOTES INFORMATION ===');
-              console.log(`Total notes: ${notes.length}`);
-              notes.forEach((note, index) => {
-                console.log(`\n📝 Note ${index + 1}:`);
-                console.log(`  ID: ${note.id}`);
-                console.log(`  Category: ${note.category}`);
-                console.log(`  Timestamp: ${new Date(note.timestamp).toLocaleString()}`);
-                console.log(`  Last Modified: ${new Date(note.lastModified).toLocaleString()}`);
-                console.log(`  Is AI Modified: ${note.isAiModified}`);
-                console.log(`  Content Length: ${note.content.length} characters`);                console.log(`  Content Preview (first 100 chars): "${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}"`);
-                console.log(`  Full Content: "${note.content}"`);
-                console.log(`  Position: x=${note.position.x}, y=${note.position.y}`);
-                console.log(`  Size: ${note.size.width}x${note.size.height}`);
-                console.log(`  Z-Index: ${note.zIndex}`);
-                console.log(`  Color: ${note.color}`);
-              });
-              console.log('🔍 === END DEBUG NOTES ===\n');
-              alert(`📊 Logged ${notes.length} notes to console. Open DevTools to see details.`);
-            }}
-            className="w-full px-3 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-          >
-            🔍 Debug: Log All Notes to Console
-          </button>
+        {/* Export Notes Section */}
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+            <FaDownload />
+            <span>Export Notes</span>
+          </h3>          <p className="text-xs text-gray-500 mb-2">
+            Export your {notes.length} note{notes.length !== 1 ? 's' : ''} in various formats
+          </p>
+            <div className="relative export-dropdown-container">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                console.log('Export button clicked, current showExportOptions:', showExportOptions);
+                setShowExportOptions(!showExportOptions);
+              }}
+              disabled={notes.length === 0}
+              className={clsx(
+                "w-full px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between",
+                notes.length === 0
+                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white"
+              )}
+            >
+              <div className="flex items-center space-x-2">
+                <FaDownload />
+                <span>Export Notes</span>
+              </div>
+              <FaChevronDown className={clsx(
+                "transition-transform",
+                showExportOptions && "rotate-180"
+              )} />
+            </button>
+            
+            {showExportOptions && notes.length > 0 && (              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10">
+                <div className="p-1 space-y-0.5">                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExport('json');
+                    }}
+                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <strong>JSON</strong> - Structured data with metadata
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExport('markdown');
+                    }}
+                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <strong>Markdown</strong> - Formatted documentation
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExport('text');
+                    }}
+                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <strong>Plain Text</strong> - Simple text format
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleExport('csv');
+                    }}
+                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <strong>CSV</strong> - Spreadsheet compatible
+                  </button>
+                </div>
+              </div>
+            )}          </div>
+            {notes.length === 0 && (
+            <p className="text-xs text-amber-400">
+              Create some notes first to enable export
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

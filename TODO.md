@@ -1,5 +1,29 @@
 # TODO - Clueless AI Assistant Improvements
 
+## ✅ Recently Completed
+
+### Data Export & Management
+- [x] **Notes Export System (Completed 2025-06-05)**
+  - [x] Created comprehensive export utility (`exportUtils.ts`)
+  - [x] Implemented multiple export formats:
+    - [x] JSON - Structured data with all metadata including timestamps, positions, etc.
+    - [x] Markdown - Formatted text grouped by category with proper headings
+    - [x] Plain Text - Simple text format with organized sections
+    - [x] CSV - Spreadsheet compatible format for data analysis
+  - [x] Added export functionality to Settings menu with dropdown selection
+  - [x] Implemented proper file download with automatic filename generation
+  - [x] Added export validation and error handling
+  - [x] Replaced debug console logging with proper export functionality
+  - [x] Made Settings menu more compact and responsive (fixed screen overflow issue)
+
+## 🚀 Feature Enhancements
+
+- [ ] Improve the top menu bar UI
+- [ ] Fix auto-arrange, use dnd sorting library
+- [ ] Fix he selected note to z-index front
+- [ ] Fix click-through on the transparent background
+- [ ] Use a logging library for better debugging
+
 ## 🧠 Memory & Context Management (RAG Implementation)
 
 ### Core Memory System
@@ -32,10 +56,9 @@
 
 ### Real-time Output Management
 - [ ] **Streaming Response Improvements**
-  - [ ] Change the UI to be like post-it notes, like Miro. You can resize them (to view more details), move them around, delete them etc. Order by most recent, fade infinity scrollable list. Be able to pin them to the top of the screen.
+  - [ ] Change the UI to be like post-it notes fade infinity scrollable list.
   - [ ] The AI can also edit previous post-it notes, so that the user can see the changes made by the AI.
   - [ ] Divide screen in sections for better readability, be able to collapse sections, ex. "Follow-up questions", "Reference Information", "Contextual Notes", etc. Need to think more about this on how to best structure it (some options are: using tabs, collapsible sections, color different the post-it notes, etc).
-  - [ ] The post-it should show in the entire screen but there are a top-menu with the configurations, the post-its are transparent.
   - [ ] Create pause/resume controls for AI responses
 
 - [ ] **Output Formatting**

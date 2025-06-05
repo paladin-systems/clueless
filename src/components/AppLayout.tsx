@@ -49,21 +49,12 @@ const AppLayout: React.FC = () => {
     key: 'post-it-notes',
     delay: 1000
   });
-    // Load notes from storage on startup
+  // Load notes from storage on startup
   useEffect(() => {
     const storedNotes = loadFromStorage();
-    console.log('🔍 Loading notes from storage:', storedNotes?.length || 0, 'notes found');
+    console.log('� Loading notes from storage:', storedNotes?.length || 0, 'notes found');
     
-    if (storedNotes && storedNotes.length > 0) {
-      // Log all notes content for debugging
-      console.log('📝 All stored notes content:');      storedNotes.forEach((note, index) => {
-        console.log(`Note ${index + 1} (${note.id}):`, {
-          category: note.category,
-          contentPreview: note.content.substring(0, 100) + (note.content.length > 100 ? '...' : ''),
-          fullContent: note.content
-        });
-      });
-      
+    if (storedNotes && storedNotes.length > 0) {      
       // Update store with loaded notes only if store is empty
       const currentNotes = useStore.getState().notes;
       if (currentNotes.length === 0) {
@@ -284,39 +275,10 @@ const AppLayout: React.FC = () => {
   const handleNoteSelect = useCallback((id: string | null) => {
     selectNote(id || undefined);
   }, [selectNote]);
-
-  // Debug: Log all notes when notes array changes (Improved Version)
+  // Debug: Log notes count when notes array changes
   useEffect(() => {
-    console.log('--- DEBUG START: Notes Logging Effect (AppLayout) ---');
-    if (notes) {
-      console.log(`DEBUG (AppLayout): notes variable is defined. Type: ${typeof notes}, IsArray: ${Array.isArray(notes)}, Length: ${notes.length}`);
-      if (notes.length > 0) {
-        console.log('DEBUG (AppLayout): Iterating through notes:');
-        notes.forEach((note, index) => {
-          if (note && typeof note === 'object') {
-            // Ensure note.content is accessed safely, especially if it could be non-string temporarily
-            const contentType = typeof note.content;
-            let contentPreview = note.content;
-            if (contentType !== 'string') {
-              contentPreview = `[Content is not a string, type: ${contentType}]`;
-            } else if (note.content.length > 100) {
-              contentPreview = note.content.substring(0, 100) + '...'; // Preview long content
-            }
-            console.log(`DEBUG (AppLayout): Note[${index}] ID: ${note.id}, Content Type: ${contentType}, Content Preview:`, contentPreview);
-            // If you need to see the full content regardless of type/length for debugging:
-            // console.log(`DEBUG (AppLayout): Note[${index}] ID: ${note.id}, Raw Content:`, note.content);
-          } else {
-            console.log(`DEBUG (AppLayout): Note[${index}] is not a valid object or is null/undefined:`, note);
-          }
-        });
-      } else {
-        console.log('DEBUG (AppLayout): Notes array is empty.');
-      }
-    } else {
-      console.log('DEBUG (AppLayout): notes variable is null or undefined.');
-    }
-    console.log('--- DEBUG END: Notes Logging Effect (AppLayout) ---');
-  }, [notes]);
+    console.log(`📝 Notes updated: ${notes.length} total notes`);
+  }, [notes.length]);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-transparent">
