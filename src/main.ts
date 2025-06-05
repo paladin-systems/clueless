@@ -85,7 +85,7 @@ let genAI: GoogleGenAI | null = null;
 if (GEMINI_API_KEY) {
   genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 } else {
-  console.error('Gemini API key not found. Please set the GEMINI_API_KEY environment variable.');
+  mainLogger.error('Gemini API key not found. Please set the GEMINI_API_KEY environment variable.');
   // Optionally, quit the app or disable functionality
   // app.quit();
 }
