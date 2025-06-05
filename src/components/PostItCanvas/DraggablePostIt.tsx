@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { PostItNote } from '../../types/ui';
 import { useDraggable } from '@dnd-kit/core';
 import { formatTimestamp } from '../../utils/timeUtils';
-import { FaGripVertical, FaExpand, FaXmark } from 'react-icons/fa6';
+import { FaGripVertical, FaUpRightAndDownLeftFromCenter, FaXmark } from 'react-icons/fa6';
 
 interface Props {
   note: PostItNote & { zIndex?: number };
@@ -216,13 +216,12 @@ const DraggablePostIt: React.FC<Props> = ({
         <div className="flex-grow overflow-auto text-gray-800 prose prose-sm max-w-none">
           {note.content}
         </div>
-      </div>      {/* Resize Handle (manual implementation) */}
-      <div
+      </div>      {/* Resize Handle (manual implementation) */}      <div
         className="absolute bottom-1 right-1 w-4 h-4 cursor-se-resize flex items-center justify-center"
         onMouseDown={handleMouseDown}
         title="Drag to resize"
       >
-        <FaExpand className="text-gray-400/70 text-xs hover:text-gray-600 transition-colors" />
+        <FaUpRightAndDownLeftFromCenter className="text-gray-400/70 text-xs hover:text-gray-600 transition-colors scale-x-[-1]" />
       </div>
     </div>
   );
