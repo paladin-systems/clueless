@@ -144,11 +144,11 @@ if (require('electron-squirrel-startup')) {
   app.quit();
 }
 
-function createWindow() {
-  // Create the browser window.
+function createWindow() {  // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    title: '', // Set empty title to prevent any title bar display
     hasShadow: false,
     resizable: false, // Prevent window from being resized
     webPreferences: {
@@ -160,6 +160,8 @@ function createWindow() {
     transparent: true, // Enable window transparency
     autoHideMenuBar: true, // Hide the menu bar
     fullscreen: true, // Set to true for fullscreen
+    alwaysOnTop: true, // Keep window always on top for overlay behavior
+    skipTaskbar: true, // Hide from taskbar for true overlay experience
     // Configuration for overlay window (example)
     // frame: false,
     // transparent: true,

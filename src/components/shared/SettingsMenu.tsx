@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { useStore } from '../../store';
 import { useModalFocus } from '../../hooks/useModalFocus';
 import { ViewOptions, AudioDevice } from '../../types/ui';
+import { FaXmark, FaEye, FaDesktop, FaMicrophone, FaVolumeHigh } from 'react-icons/fa6';
 
 interface Props {
   isOpen: boolean;
@@ -83,21 +84,21 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
         <div className="flex justify-between items-center mb-6">
           <h2 id="settings-title" className="text-lg font-semibold text-white">
             Settings
-          </h2>
-          <button
+          </h2>          <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800"
             aria-label="Close settings"
           >
-            ✕
+            <FaXmark />
           </button>
         </div>
 
-        <div className="space-y-6">
-
-          {/* Opacity Section */}
+        <div className="space-y-6">          {/* Opacity Section */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300">Window Opacity</h3>
+            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+              <FaEye />
+              <span>Window Opacity</span>
+            </h3>
             <div className="flex items-center space-x-4">
               <input
                 type="range"
@@ -113,11 +114,12 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 {Math.round(viewOptions.opacity * 100)}%
               </span>
             </div>
-          </div>
-
-          {/* Window Behavior */}
+          </div>          {/* Window Behavior */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300">Window Behavior</h3>
+            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+              <FaDesktop />
+              <span>Window Behavior</span>
+            </h3>
             <label className="flex items-center space-x-2 text-sm text-gray-300">
               <input
                 type="checkbox"
@@ -128,11 +130,12 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               />
               <span>Always on Top</span>
             </label>
-          </div>
-  
-          {/* Audio Input Device Selection */}
+          </div>          {/* Audio Input Device Selection */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300">Microphone Input</h3>
+            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+              <FaMicrophone />
+              <span>Microphone Input</span>
+            </h3>
             <select
               value={selectedMicDeviceId || ''}
               onChange={(e) => setSelectedMicDevice(Number(e.target.value))}
@@ -153,11 +156,12 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 No microphone devices detected. Please check your system settings.
               </p>
             )}
-          </div>
-  
-          {/* System Audio Device Selection */}
+          </div>          {/* System Audio Device Selection */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300">System Audio Input (Stereo Mix)</h3>
+            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+              <FaVolumeHigh />
+              <span>System Audio Input (Stereo Mix)</span>
+            </h3>
             <select
               value={selectedSystemDeviceId || ''}
               onChange={(e) => setSelectedSystemDevice(Number(e.target.value))}

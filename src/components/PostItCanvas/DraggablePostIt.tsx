@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { PostItNote } from '../../types/ui';
 import { useDraggable } from '@dnd-kit/core';
 import { formatTimestamp } from '../../utils/timeUtils';
+import { FaGripVertical, FaExpand } from 'react-icons/fa6';
 
 interface Props {
   note: PostItNote & { zIndex?: number };
@@ -187,6 +188,7 @@ const DraggablePostIt: React.FC<Props> = ({
       <div className="drag-handle" {...customListeners} {...attributes}>
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center space-x-2">
+            <FaGripVertical className="text-gray-500 text-xs" />
             <span className="text-xs font-medium text-gray-700 capitalize">
               {note.category}
             </span>
@@ -202,13 +204,13 @@ const DraggablePostIt: React.FC<Props> = ({
         <div className="flex-grow overflow-auto text-gray-800 prose prose-sm max-w-none">
           {note.content}
         </div>
-      </div>
-      {/* Resize Handle (manual implementation) */}
+      </div>      {/* Resize Handle (manual implementation) */}
       <div
-        className="absolute bottom-1 right-1 w-4 h-4 cursor-se-resize"
+        className="absolute bottom-1 right-1 w-4 h-4 cursor-se-resize flex items-center justify-center"
         onMouseDown={handleMouseDown}
+        title="Drag to resize"
       >
-        <div className="absolute bottom-0 right-0 w-2 h-2 bg-gray-400/50 rounded-full" />
+        <FaExpand className="text-gray-400/70 text-xs hover:text-gray-600 transition-colors" />
       </div>
     </div>
   );

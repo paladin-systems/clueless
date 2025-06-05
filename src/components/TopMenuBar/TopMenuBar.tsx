@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { formatDuration } from '../../utils/timeUtils';
 import { SessionInfo, AudioIndicator } from '../../types/ui';
 import LoadingSpinner from '../shared/LoadingSpinner';
+import { FaCamera, FaPlay, FaStop, FaKeyboard, FaGear } from 'react-icons/fa6';
 
 interface TopMenuBarProps {
   sessionInfo: SessionInfo;
@@ -80,23 +81,29 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
           </div>
 
           {/* Main Actions */}
-          <div className="flex items-center space-x-2">
-            <button
+          <div className="flex items-center space-x-2">            <button
               onClick={onCapture}
               className="glass-button-secondary"
               disabled={sessionInfo.isRecording}
             >
-              📸 Capture
+              <FaCamera className="inline-block mr-2" /> Capture
             </button>
             <div className="flex items-center space-x-2">
-              <button
-                onClick={sessionInfo.isRecording ? onStopRecording : onStartRecording}
+              <button                onClick={sessionInfo.isRecording ? onStopRecording : onStartRecording}
                 className={clsx(
                   "glass-button",
                   sessionInfo.isRecording && "bg-red-600 hover:bg-red-700"
                 )}
               >
-                {sessionInfo.isRecording ? "⏹️ Stop" : "⏺️ Record"}
+                {sessionInfo.isRecording ? (
+                  <>
+                    <FaStop className="inline-block mr-2" /> Stop
+                  </>
+                ) : (
+                  <>
+                    <FaPlay className="inline-block mr-2" /> Record
+                  </>
+                )}
               </button>
               {sessionInfo.isRecording && (
                 <div className="flex items-center space-x-2 bg-gray-800/50 px-3 py-1.5 rounded-md">
@@ -118,10 +125,9 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
                 className={clsx(
                   "glass-button-secondary group",
                   "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900"
-                )}
-                aria-label="Show Keyboard Shortcuts"
+                )}                aria-label="Show Keyboard Shortcuts"
               >
-                <span className="group-hover:scale-110 transition-transform inline-block">⌨️</span>
+                <FaKeyboard className="group-hover:scale-110 transition-transform" />
                 <div className={clsx(
                   "absolute hidden group-hover:block right-0 top-full mt-2 p-2",
                   "bg-gray-900/95 backdrop-blur-sm rounded-md",
@@ -145,10 +151,9 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
                 className={clsx(
                   "glass-button-secondary group",
                   "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900"
-                )}
-                aria-label="Open Settings"
+                )}                aria-label="Open Settings"
               >
-                <span className="group-hover:rotate-90 transition-transform inline-block duration-300">⚙️</span>
+                <FaGear className="group-hover:rotate-90 transition-transform duration-300" />
                 <div className={clsx(
                   "absolute hidden group-hover:block right-0 top-full mt-2 p-2",
                   "bg-gray-900/95 backdrop-blur-sm rounded-md",
