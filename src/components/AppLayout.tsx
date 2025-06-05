@@ -10,6 +10,7 @@ import KeyboardShortcutsHelp from './shared/KeyboardShortcutsHelp';
 import SettingsMenu from './shared/SettingsMenu';
 import ModalErrorBoundary from './shared/ModalErrorBoundary';
 import LoadingSpinner from './shared/LoadingSpinner';
+import { rendererLogger } from '../utils/logger';
 
 const AppLayout: React.FC = () => {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
@@ -41,8 +42,8 @@ const AppLayout: React.FC = () => {
   const selectNote = useStore(state => state.selectNote);
 
 
-  console.log('AppLayout: geminiResponses count:', geminiResponses.length);
-  console.log('AppLayout: isBuildingResponse:', isBuildingResponse);
+  rendererLogger.debug('AppLayout: geminiResponses count', { count: geminiResponses.length });
+  rendererLogger.debug('AppLayout: isBuildingResponse', { isBuildingResponse });
 
   // Initialize notes from storage with debounced saves
   const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({
@@ -52,7 +53,7 @@ const AppLayout: React.FC = () => {
   // Load notes from storage on startup
   useEffect(() => {
     const storedNotes = loadFromStorage();
-    console.log('� Loading notes from storage:', storedNotes?.length || 0, 'notes found');
+    rendererLogger.info('Loading notes from storage', { noteCount: storedNotes?.length || 0 });
     
     if (storedNotes && storedNotes.length > 0) {      
       // Update store with loaded notes only if store is empty
@@ -132,11 +133,11 @@ const AppLayout: React.FC = () => {
     if (geminiResponses.length === 0) return;
 
     const response = geminiResponses[geminiResponses.length - 1];
-    console.log('Processing new Gemini response:', response);
+    rendererLogger.debug('Processing new Gemini response', { response });
     
     // Skip if missing required fields
     if (!response.type || !response.content) {
-      console.warn('Invalid Gemini response format:', response);
+      rendererLogger.warn('Invalid Gemini response format', { response });
       return;
     }
     
@@ -211,7 +212,7 @@ const AppLayout: React.FC = () => {
       zIndex: Date.now()
     };
 
-    console.log('Creating new note:', newNote);
+    rendererLogger.info('Creating new note', { newNote });
     addNote(newNote);
   }, [geminiResponses, addNote]);
 
@@ -277,7 +278,7 @@ const AppLayout: React.FC = () => {
   }, [selectNote]);
   // Debug: Log notes count when notes array changes
   useEffect(() => {
-    console.log(`📝 Notes updated: ${notes.length} total notes`);
+    rendererLogger.info('Notes updated', { totalNotes: notes.length });
   }, [notes.length]);
 
   return (

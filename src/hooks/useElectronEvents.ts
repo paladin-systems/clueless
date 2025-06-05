@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '../store';
 import { GeminiResponse } from '../types/gemini';
+import { rendererLogger } from '../utils/logger';
 
 export const useElectronEvents = () => {
   const store = useStore();
@@ -44,7 +45,7 @@ export const useElectronEvents = () => {
       if (response && response.type && response.content) {
         useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });
       } else {
-        console.warn('Received invalid or incomplete Gemini response object:', response);
+        rendererLogger.warn('Received invalid or incomplete Gemini response object', { response });
         // Optionally, add a fallback error note to the UI
         useStore.getState().addGeminiResponse({
           type: 'response',

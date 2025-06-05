@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import clsx from 'clsx';
+import { uiLogger } from '../../utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -28,7 +29,7 @@ class ModalErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Modal error:', error, errorInfo);
+    uiLogger.error('Modal error', { error, errorInfo });
     this.setState({
       error,
       errorInfo

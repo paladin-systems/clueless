@@ -5,6 +5,7 @@ import { PostItNote, NotePosition } from '../../types/ui';
 import clsx from 'clsx';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { restrictToParentElement } from '@dnd-kit/modifiers';
+import { uiLogger } from '../../utils/logger';
 
 interface PostItCanvasProps {
   notes: PostItNote[];
@@ -54,7 +55,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
     notesToOrganize: PostItNote[],
     bounds: { width: number; height: number }
   ) => {
-    console.log('organizeNotes called with:', notesToOrganize, bounds);
+    uiLogger.debug('organizeNotes called', { notesToOrganize, bounds });
     const organizedNotes: NotePosition[] = [];
 
     if (notesToOrganize.length === 0) return;
@@ -110,7 +111,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         position: { x, y }
       });
     });
-    console.log('Organized notes:', organizedNotes);
+    uiLogger.debug('Organized notes', { organizedNotes });
 
     // Update notes with new positions only if they have changed
     if (onNoteMoveMultiple) {
@@ -118,7 +119,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         const originalNote = notes.find(n => n.id === note.id);
         return originalNote && (originalNote.position.x !== note.position.x || originalNote.position.y !== note.position.y);
       });
-      console.log('Moved notes:', movedNotes);
+      uiLogger.debug('Moved notes', { movedNotes });
 
       if (movedNotes.length > 0) {
         onNoteMoveMultiple(movedNotes);

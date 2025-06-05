@@ -3,6 +3,7 @@ import path from 'path';
 import { GoogleGenAI, Session, Blob as GenAIBlob, Modality } from '@google/genai';
 import dotenv from 'dotenv';
 import { RtAudio, RtAudioFormat, RtAudioErrorType, RtAudioStreamFlags } from 'audify'; // Import audify, RtAudioErrorType, and RtAudioStreamFlags
+import { mainLogger, audioLogger, geminiLogger } from './utils/logger';
 
 // Load environment variables from .env file
 dotenv.config({
@@ -98,7 +99,7 @@ if (GEMINI_API_KEY) {
 function mixChunks(mic: Buffer, system: Buffer): Buffer {
   // Ensure both buffers exist and contain some data
   if (!mic || !system || mic.length === 0 || system.length === 0) {
-    console.warn('Invalid or empty buffers provided to mixChunks. Returning empty buffer.');
+    audioLogger.warn('Invalid or empty buffers provided to mixChunks. Returning empty buffer.');
     return Buffer.alloc(0);
   }
 
@@ -108,7 +109,7 @@ function mixChunks(mic: Buffer, system: Buffer): Buffer {
   const mixLength = length % 2 === 0 ? length : length - 1; // Ensure even length
 
   if (mixLength <= 0) {
-     console.warn('Zero mixable length after adjusting for Int16. Returning empty buffer.');
+     audioLogger.warn('Zero mixable length after adjusting for Int16. Returning empty buffer.');
      return Buffer.alloc(0);
   }
 
@@ -176,7 +177,7 @@ function createWindow() {  // Create the browser window.
     mainWindow.webContents.openDevTools();
   } else {
     // In production, use the built index.html file
-    console.log("Loading production build:", path.join(__dirname, "../dist/index.html"));
+    mainLogger.info("Loading production build", { path: path.join(__dirname, "../dist/index.html") });
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 
@@ -204,7 +205,7 @@ function startHeartbeat() {
         // This is similar to a WebSocket ping/pong
         geminiSession.sendClientContent({ turnComplete: false });
       } catch (error) {
-        console.warn('Error sending heartbeat:', error);
+        geminiLogger.warn('Error sending heartbeat', { error });
         // If we have persistent errors, stop the heartbeat
         if (heartbeatInterval) {
           clearInterval(heartbeatInterval);
@@ -240,27 +241,27 @@ async function stopAllAudioStreamsAndSession() {
   }
 
   if (micAudioIO) {
-    console.log('Stopping mic audio capture.');
+    audioLogger.info('Stopping mic audio capture');
     try {
       if (micAudioIO.isStreamOpen()) {
         micAudioIO.stop();
         micAudioIO.closeStream();
       }
     } catch (error) {
-      console.error('Error stopping mic audio stream:', error);
+      audioLogger.error('Error stopping mic audio stream', { error });
     }
     micAudioIO = null;
   }
 
   if (systemAudioIO) {
-    console.log('Stopping system audio capture.');
+    audioLogger.info('Stopping system audio capture');
     try {
       if (systemAudioIO.isStreamOpen()) {
         systemAudioIO.stop();
         systemAudioIO.closeStream();
       }
     } catch (error) {
-      console.error('Error stopping system audio stream:', error);
+      audioLogger.error('Error stopping system audio stream', { error });
     }
     systemAudioIO = null;
   }
@@ -269,13 +270,13 @@ async function stopAllAudioStreamsAndSession() {
   // if (resampleWorker) { ... }
 
   if (geminiSession) {
-    console.log('Closing Gemini session intentionally.');
+    geminiLogger.info('Closing Gemini session intentionally');
     isClosingIntentionally = true; // <<< SET FLAG HERE
     try {
       await geminiSession.close();
-      console.log('Gemini session closed.');
+      geminiLogger.info('Gemini session closed');
     } catch (error) {
-      console.error('Error closing Gemini session:', error);
+      geminiLogger.error('Error closing Gemini session', { error });
       isClosingIntentionally = false; // Reset flag on error too
     }
     // Note: geminiSession is set to null *after* onclose callback potentially runs
@@ -311,13 +312,18 @@ app.on('activate', () => {
 
 // IPC: List audio input devices using RtAudio
 ipcMain.handle('list-audio-devices', () => {
-  console.log('Listing all audio devices using RtAudio...');
+  audioLogger.info('Listing all audio devices using RtAudio');
   try {
     const rtAudio = new RtAudio();
     const devices = rtAudio.getDevices();
     const defaultInput = rtAudio.getDefaultInputDevice();
     const defaultOutput = rtAudio.getDefaultOutputDevice();
-    console.log('Devices found:', devices, 'Default Input:', defaultInput, 'Default Output:', defaultOutput);
+    audioLogger.info('Devices found', {
+      deviceCount: devices.length,
+      defaultInput,
+      defaultOutput,
+      devices: devices.map(d => ({ id: d.id, name: d.name, inputChannels: d.inputChannels, outputChannels: d.outputChannels }))
+    });
     // Add inputChannels and outputChannels to each device
     const devicesWithChannels = devices.map(d => ({
       ...d,
@@ -326,7 +332,7 @@ ipcMain.handle('list-audio-devices', () => {
     }));
     return { devices: devicesWithChannels, defaultInput, defaultOutput };
   } catch (error) {
-    console.error('Error listing audio devices with RtAudio:', error);
+    audioLogger.error('Error listing audio devices with RtAudio', { error });
     mainWindow?.webContents.send('audio-error', `Error listing devices: ${(error as Error).message}`);
     return { devices: [], defaultInput: null, defaultOutput: null };
   }
@@ -334,10 +340,10 @@ ipcMain.handle('list-audio-devices', () => {
 
 // IPC: Start audio capture - Refactored for RtAudio
 ipcMain.handle('start-audio-capture', async (event, micDeviceId: number, systemDeviceId: number) => {
-  console.log(`Starting audio capture with Mic ID: ${micDeviceId}, System ID: ${systemDeviceId} using RtAudio`);
+  audioLogger.info('Starting audio capture using RtAudio', { micDeviceId, systemDeviceId });
 
   if (!genAI) {
-    console.error('Gemini AI client not initialized. Cannot start capture.');
+    mainLogger.error('Gemini AI client not initialized. Cannot start capture');
     mainWindow?.webContents.send('audio-error', 'Gemini AI client not initialized (API Key missing?).');
     return false;
   }
@@ -359,7 +365,7 @@ ipcMain.handle('start-audio-capture', async (event, micDeviceId: number, systemD
 
   try {
     // --- Start Gemini Session ---
-    console.log('Starting Gemini Live session...');
+    geminiLogger.info('Starting Gemini Live session');
     const systemInstructionText = `You are a colleague helping your friend in realtime during meetings or interviews. You receive mixed audio from their microphone and the system audio of others speaking.
 
 IMPORTANT: ALWAYS respond with ONLY a valid JSON object, no additional text or formatting:
@@ -401,7 +407,7 @@ Use previous context when relevant but prioritize responding to the most recent 
         },
         callbacks: {
             onmessage: (message: any) => {
-              console.log('Received message from Gemini:', JSON.stringify(message, null, 2));
+              geminiLogger.debug('Received message from Gemini', { message });
 
               try {
                 // Handle text parts from modelTurn
@@ -416,7 +422,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                 // Handle generation complete
                 if (message.serverContent?.generationComplete === true) {
                   if (currentResponseText) {
-                    console.log('Processing Gemini response:', currentResponseText);
+                    geminiLogger.debug('Processing Gemini response', { response: currentResponseText });
                     
                     let parsedResponse = null;
                     let contentToParse = currentResponseText.trim();
@@ -425,14 +431,14 @@ Use previous context when relevant but prioritize responding to the most recent 
                     const jsonBlockMatch = currentResponseText.match(/```json\s*\n([\s\S]*?)\n\s*```/);
                     if (jsonBlockMatch && jsonBlockMatch[1]) {
                       contentToParse = jsonBlockMatch[1].trim();
-                      console.log('Extracted JSON from code block:', contentToParse);
+                      geminiLogger.debug('Extracted JSON from code block', { contentToParse });
                     }
                     
                     // Strategy 2: Look for JSON object anywhere in the response
                     const jsonObjectMatch = currentResponseText.match(/\{[\s\S]*?"type"[\s\S]*?\}/);
                     if (!jsonBlockMatch && jsonObjectMatch) {
                       contentToParse = jsonObjectMatch[0].trim();
-                      console.log('Found JSON object in response:', contentToParse);
+                      geminiLogger.debug('Found JSON object in response', { contentToParse });
                     }
                     
                     // Strategy 3: Try to find the first complete JSON object
@@ -453,14 +459,14 @@ Use previous context when relevant but prioritize responding to the most recent 
                         
                         if (braceCount === 0) {
                           contentToParse = currentResponseText.substring(openBrace, endPos + 1).trim();
-                          console.log('Extracted balanced JSON:', contentToParse);
+                          geminiLogger.debug('Extracted balanced JSON', { contentToParse });
                         }
                       }
                     }
 
                     try {
                       const parsedJson = JSON.parse(contentToParse);
-                      console.log('Parsed JSON:', parsedJson);
+                      geminiLogger.debug('Parsed JSON', { parsedJson });
                       
                       // Validate the expected structure
                       if (
@@ -470,13 +476,13 @@ Use previous context when relevant but prioritize responding to the most recent 
                         ['response', 'follow-up', 'context', 'suggestion'].includes(parsedJson.category) &&
                         ['high', 'medium', 'low'].includes(parsedJson.priority)
                       ) {
-                        console.log('Valid structured response, sending:', parsedJson);
+                        geminiLogger.info('Valid structured response, sending', { parsedJson });
                         parsedResponse = { ...parsedJson, timestamp: Date.now() };
                       } else {
-                        console.log('JSON structure validation failed, expected fields missing or invalid');
+                        geminiLogger.warn('JSON structure validation failed, expected fields missing or invalid');
                       }
                     } catch (parseError) {
-                      console.log('JSON parsing failed:', parseError);
+                      geminiLogger.debug('JSON parsing failed', { parseError });
                     }
 
                     // If we successfully parsed a valid JSON response, send it
@@ -493,14 +499,14 @@ Use previous context when relevant but prioritize responding to the most recent 
                           const contentMatch = cleanContent.match(/"content"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/);
                           if (contentMatch && contentMatch[1]) {
                             cleanContent = contentMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n');
-                            console.log('Extracted content from JSON-like text:', cleanContent);
+                            geminiLogger.debug('Extracted content from JSON-like text', { cleanContent });
                           }
                         } catch (e) {
-                          console.log('Failed to extract content from JSON-like text');
+                          geminiLogger.debug('Failed to extract content from JSON-like text');
                         }
                       }
                       
-                      console.log('Sending as plain text response:', cleanContent);
+                      geminiLogger.info('Sending as plain text response', { cleanContent });
                       mainWindow?.webContents.send('gemini-response', {
                         type: 'response',
                         content: cleanContent,
@@ -519,7 +525,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                   mainWindow?.webContents.send('gemini-turn-complete');
                   // Ensure buffer is cleared if turn completes, possibly before generation if an error occurs
                   if (currentResponseText !== '') {
-                     console.warn('Gemini turn completed, but response buffer was not empty. Clearing buffer.');
+                     geminiLogger.warn('Gemini turn completed, but response buffer was not empty. Clearing buffer');
                      currentResponseText = '';
                      // If processing was ongoing, ensure it's marked as ended
                      mainWindow?.webContents.send('gemini-processing-end');
@@ -528,7 +534,7 @@ Use previous context when relevant but prioritize responding to the most recent 
 
                 // Handle errors from Gemini
                 if (message.error) {
-                  console.error('Gemini message contained an error:', message.error);
+                  geminiLogger.error('Gemini message contained an error', { error: message.error });
                   mainWindow?.webContents.send('audio-error',
                     `Gemini error: ${message.error.message || JSON.stringify(message.error)}`
                   );
@@ -538,7 +544,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                 }
 
               } catch (error) {
-                console.error('Error processing Gemini message in onmessage:', error);
+                geminiLogger.error('Error processing Gemini message in onmessage', { error });
                 mainWindow?.webContents.send('audio-error',
                   `Internal error processing Gemini response: ${(error as Error).message}`
                 );
@@ -547,17 +553,17 @@ Use previous context when relevant but prioritize responding to the most recent 
               }
             },
             onerror: (error: ErrorEvent) => {
-              console.error('Gemini session error (onerror callback):', error);
+              geminiLogger.error('Gemini session error (onerror callback)', { error });
               mainWindow?.webContents.send('audio-error', `Gemini session error: ${error.message || error.error || 'Unknown error'}`);
               stopAllAudioStreamsAndSession(); // Still stop everything on error
             },
             onopen: () => {
-                console.log('Gemini session opened successfully.');
+                geminiLogger.info('Gemini session opened successfully');
                 mainWindow?.webContents.send('audio-status', 'Connected to Gemini.');
                 startHeartbeat(); // Start sending heartbeat signals
             },
             onclose: (event: CloseEvent) => { // <<< MODIFY THIS CALLBACK
-                console.log('Gemini session closed:', event.code, event.reason);
+                geminiLogger.info('Gemini session closed', { code: event.code, reason: event.reason });
                 if (!isClosingIntentionally) { // Check the flag
                     // Only send status if closure wasn't intentional
                     mainWindow?.webContents.send('audio-status', `Disconnected from Gemini: ${event.reason || 'Unknown reason'}`);
@@ -569,10 +575,10 @@ Use previous context when relevant but prioritize responding to the most recent 
             }
         }
     });
-    console.log('Gemini Live session connect call completed.');    
+    geminiLogger.info('Gemini Live session connect call completed');    
     // Start heartbeat moved to onopen callback
     geminiSuccess = true;
-    console.log('Gemini session configuration seems successful.');
+    geminiLogger.info('Gemini session configuration seems successful');
     // --- Gemini Session Started ---
 
 
@@ -600,12 +606,12 @@ Use previous context when relevant but prioritize responding to the most recent 
               media: audioBlob
             });
           } else {
-             console.warn('Gemini session missing when trying to send audio.');
+             geminiLogger.warn('Gemini session missing when trying to send audio');
           }
           // Optionally send mixed audio to renderer for visualization/debugging
           // mainWindow?.webContents.send('mixed-audio', mixed);
         } catch (mixErr) {
-          console.error("Error mixing or sending audio:", mixErr);
+          audioLogger.error('Error mixing or sending audio', { error: mixErr });
         } finally {
           // Reset flags after processing attempt
           newMicChunkAvailable = false;
@@ -615,7 +621,7 @@ Use previous context when relevant but prioritize responding to the most recent 
     }
 
     // --- Start Microphone Capture using RtAudio ---
-    console.log(`Starting microphone capture on device ID: ${micDeviceId} with RtAudio`);
+    audioLogger.info('Starting microphone capture with RtAudio', { micDeviceId });
     micAudioIO = new RtAudio();
     
     // Define the input callback for the microphone
@@ -644,13 +650,13 @@ Use previous context when relevant but prioritize responding to the most recent 
       null // frameOutputCallback
     );
     micAudioIO.start();
-    console.log('Microphone audio capture started with RtAudio.');
+    audioLogger.info('Microphone audio capture started with RtAudio');
     micSuccess = true;
     // --- Microphone Capture Started ---
 
 
     // --- Start System Audio Capture using RtAudio ---
-    console.log(`Starting system audio capture on device ID: ${systemDeviceId} with RtAudio`);
+    audioLogger.info('Starting system audio capture with RtAudio', { systemDeviceId });
     systemAudioIO = new RtAudio();
 
     // Define the input callback for system audio
@@ -679,10 +685,10 @@ Use previous context when relevant but prioritize responding to the most recent 
       null, // No output callback (outputCallback)
       0 as RtAudioStreamFlags, // options (Cast 0 to RtAudioStreamFlags)
       (type: RtAudioErrorType, msg: string) => { // Correct error callback signature
-              console.error(`System Audio RtAudio Error (${type}): ${msg}`);
+              audioLogger.error('System Audio RtAudio Error', { type, message: msg });
               // Ignore "No open stream to close" errors as they occur during cleanup
               if (msg.includes('No open stream to close')) {
-                console.warn('Ignored No open stream to close error during cleanup.');
+                audioLogger.debug('Ignored No open stream to close error during cleanup');
                 return;
               }
               mainWindow?.webContents.send('audio-error', `System audio error: ${msg}`);
@@ -690,7 +696,7 @@ Use previous context when relevant but prioritize responding to the most recent 
             }
     );
     systemAudioIO.start();
-    console.log('System audio capture started with RtAudio.');
+    audioLogger.info('System audio capture started with RtAudio');
     systemSuccess = true;
     // --- System Audio Capture Started ---
 
@@ -715,7 +721,7 @@ Use previous context when relevant but prioritize responding to the most recent 
     return micSuccess && systemSuccess && geminiSuccess; // Success only if all started
 
   } catch (error) {
-    console.error('Failed to start audio capture or Gemini session with RtAudio:', error);
+    mainLogger.error('Failed to start audio capture or Gemini session with RtAudio', { error });
     // Use type assertion for error message
     mainWindow?.webContents.send('audio-error', `Failed to start capture: ${(error as Error).message || String(error)}`);
     // Clean up if anything failed
@@ -726,13 +732,13 @@ Use previous context when relevant but prioritize responding to the most recent 
 
 // IPC: Stop audio capture - Updated for RtAudio
 ipcMain.handle('stop-audio-capture', async () => {
-  console.log('Stopping all audio capture and Gemini session (RtAudio).');
+  audioLogger.info('Stopping all audio capture and Gemini session (RtAudio)');
   let recordingData: { timestamp: number; buffer: Buffer } | null = null; // To store buffer and timestamp
 
   try {
     // --- Process recording chunks ---
     if (currentRecordingChunks && currentRecordingChunks.length > 0) {
-      console.log(`Processing ${currentRecordingChunks.length} recorded chunks...`);
+      audioLogger.info('Processing recorded chunks', { chunkCount: currentRecordingChunks.length });
       const audioData = Buffer.concat(currentRecordingChunks);
       if (audioData.length > 0) {
         const header = createWavHeader(TARGET_SAMPLE_RATE, TARGET_CHANNELS, 16, audioData.length);
@@ -740,11 +746,11 @@ ipcMain.handle('stop-audio-capture', async () => {
         // Store buffer and timestamp together
         recordingData = { timestamp: Date.now(), buffer: wavBuffer };
       } else {
-        console.log('Concatenated audio data is empty.');
+        audioLogger.warn('Concatenated audio data is empty');
         mainWindow?.webContents.send('audio-error', 'Recording resulted in empty audio data.');
       }
     } else {
-      console.log('No recording chunks found to process.');
+      audioLogger.info('No recording chunks found to process');
     }
     // --- Recording processed ---
 
@@ -752,22 +758,22 @@ ipcMain.handle('stop-audio-capture', async () => {
 
     // Send recording data *after* stopping streams if data exists
     if (recordingData) {
-      console.log('Sending recording-complete event with timestamp and buffer.');
+      audioLogger.info('Sending recording-complete event with timestamp and buffer');
       // Send the object containing both timestamp and buffer
       mainWindow?.webContents.send('recording-complete', recordingData);
     }
 
-    console.log('All audio capture and session stopped.');
+    audioLogger.info('All audio capture and session stopped');
     return true; // Indicate success
   } catch (error) {
-    console.error('Failed to stop audio capture/session gracefully (RtAudio):', error);
+    audioLogger.error('Failed to stop audio capture/session gracefully (RtAudio)', { error });
     return false;
   }
 });
 
 // IPC: Capture screenshot on request (Keep this logic)
 ipcMain.handle('capture-screen', async (event, sendToGemini = false) => {
-  console.log('Capturing screenshot...');
+  mainLogger.info('Capturing screenshot');
   const sources = await desktopCapturer.getSources({
     types: ['screen'],
     thumbnailSize: { width: 1280, height: 720 }, // Adjust size as needed
@@ -779,13 +785,13 @@ ipcMain.handle('capture-screen', async (event, sendToGemini = false) => {
     // If requested, send the image to Gemini session
     if (sendToGemini && geminiSession) {
       try {
-        console.log('Sending screenshot to Gemini');
+        geminiLogger.info('Sending screenshot to Gemini');
         const imageBlob = bufferToGenAIBlob(pngBuffer, 'image/png');
         geminiSession.sendRealtimeInput({ 
           media: imageBlob 
         });
       } catch (error) {
-        console.error('Error sending screenshot to Gemini:', error);
+        geminiLogger.error('Error sending screenshot to Gemini', { error });
       }
     }
     

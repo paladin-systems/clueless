@@ -1,4 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react';
+import { storageLogger } from '../utils/logger';
 
 interface Options {
   key: string;
@@ -14,7 +15,7 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
       const stored = localStorage.getItem(key);
       return stored ? JSON.parse(stored) : null;
     } catch (error) {
-      console.error(`Error loading from storage (${key}):`, error);
+      storageLogger.error('Error loading from storage', { key, error });
       return null;
     }
   }, [key]);
@@ -29,7 +30,7 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
       try {
         localStorage.setItem(key, JSON.stringify(data));
       } catch (error) {
-        console.error(`Error saving to storage (${key}):`, error);
+        storageLogger.error('Error saving to storage', { key, error });
       }
     }, delay);
   }, [key, delay]);
@@ -72,6 +73,6 @@ export function migrateStorage(key: string, version: number, migrations: Record<
       localStorage.setItem(key, JSON.stringify(migratedData));
     }
   } catch (error) {
-    console.error(`Error migrating storage (${key}):`, error);
+    storageLogger.error('Error migrating storage', { key, error });
   }
 }

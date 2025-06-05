@@ -5,6 +5,7 @@ import { useModalFocus } from '../../hooks/useModalFocus';
 import { ViewOptions, AudioDevice } from '../../types/ui';
 import { exportNotes, ExportFormat } from '../../utils/exportUtils';
 import { FaXmark, FaEye, FaDesktop, FaMicrophone, FaVolumeHigh, FaDownload, FaChevronDown } from 'react-icons/fa6';
+import { uiLogger } from '../../utils/logger';
 
 interface Props {
   isOpen: boolean;
@@ -40,7 +41,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
       alwaysOnTop: event.target.checked
     });
   };  const handleExport = (format: ExportFormat) => {
-    console.log('Exporting notes as:', format, 'Total notes:', notes.length);
+    uiLogger.info('Exporting notes', { format, totalNotes: notes.length });
     exportNotes(notes, format);
     setShowExportOptions(false);
   };
@@ -81,7 +82,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           setSelectedSystemDevice(devices.defaultOutput);
         }
       }).catch((error: Error) => {
-        console.error('Failed to list audio devices:', error);
+        uiLogger.error('Failed to list audio devices', { error });
       });
     }
   }, [selectedMicDeviceId, selectedSystemDeviceId, setMicAudioDevices, setSystemAudioDevices, setSelectedMicDevice, setSelectedSystemDevice]);
@@ -243,7 +244,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                console.log('Export button clicked, current showExportOptions:', showExportOptions);
+                uiLogger.debug('Export button clicked', { showExportOptions });
                 setShowExportOptions(!showExportOptions);
               }}
               disabled={notes.length === 0}

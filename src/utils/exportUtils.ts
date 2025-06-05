@@ -1,4 +1,5 @@
 import { PostItNote } from '../types/ui';
+import { exportLogger } from './logger';
 
 export type ExportFormat = 'json' | 'markdown' | 'text' | 'csv';
 
@@ -6,14 +7,14 @@ export type ExportFormat = 'json' | 'markdown' | 'text' | 'csv';
  * Downloads a file to the user's computer
  */
 const downloadFile = (content: string, filename: string, mimeType: string) => {
-  console.log('downloadFile called with:', { filename, mimeType, contentLength: content.length });
+  exportLogger.debug('downloadFile called', { filename, mimeType, contentLength: content.length });
   
   try {
     const blob = new Blob([content], { type: mimeType });
-    console.log('Blob created:', blob);
+    exportLogger.debug('Blob created', { blobSize: blob.size, blobType: blob.type });
     
     const url = URL.createObjectURL(blob);
-    console.log('Object URL created:', url);
+    exportLogger.debug('Object URL created', { url });
     
     const link = document.createElement('a');
     link.href = url;
@@ -21,19 +22,19 @@ const downloadFile = (content: string, filename: string, mimeType: string) => {
     link.style.display = 'none'; // Hide the link
     
     document.body.appendChild(link);
-    console.log('Link appended to body, about to click');
+    exportLogger.debug('Link appended to body, about to click');
     
     link.click();
-    console.log('Link clicked');
+    exportLogger.debug('Link clicked');
     
     document.body.removeChild(link);
-    console.log('Link removed from body');
+    exportLogger.debug('Link removed from body');
     
     // Clean up the URL object
     URL.revokeObjectURL(url);
-    console.log('Object URL revoked');
+    exportLogger.debug('Object URL revoked');
   } catch (error) {
-    console.error('Error in downloadFile:', error);
+    exportLogger.error('Error in downloadFile', { error });
     throw error;
   }
 };
@@ -194,41 +195,41 @@ export const exportAsCSV = (notes: PostItNote[]): void => {
  * Main export function that handles different formats
  */
 export const exportNotes = (notes: PostItNote[], format: ExportFormat): void => {
-  console.log('exportNotes called with:', { notesCount: notes.length, format });
+  exportLogger.info('exportNotes called', { notesCount: notes.length, format });
   
   if (notes.length === 0) {
-    console.warn('No notes to export!');
+    exportLogger.warn('No notes to export');
     alert('No notes to export!');
     return;
   }
 
   try {
-    console.log('About to export notes in format:', format);
+    exportLogger.debug('About to export notes', { format });
     
     switch (format) {
       case 'json':
-        console.log('Exporting as JSON...');
+        exportLogger.debug('Exporting as JSON');
         exportAsJSON(notes);
         break;
       case 'markdown':
-        console.log('Exporting as Markdown...');
+        exportLogger.debug('Exporting as Markdown');
         exportAsMarkdown(notes);
         break;
       case 'text':
-        console.log('Exporting as Text...');
+        exportLogger.debug('Exporting as Text');
         exportAsText(notes);
         break;
       case 'csv':
-        console.log('Exporting as CSV...');
+        exportLogger.debug('Exporting as CSV');
         exportAsCSV(notes);
         break;
       default:
         throw new Error(`Unsupported export format: ${format}`);
     }
     
-    console.log(`✅ Successfully exported ${notes.length} notes as ${format.toUpperCase()}`);
+    exportLogger.info('Successfully exported notes', { noteCount: notes.length, format: format.toUpperCase() });
   } catch (error) {
-    console.error('Error exporting notes:', error);
+    exportLogger.error('Error exporting notes', { error });
     alert('Failed to export notes. Please try again.');
   }
 };
