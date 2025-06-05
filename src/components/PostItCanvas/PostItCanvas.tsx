@@ -49,7 +49,6 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
     window.addEventListener('resize', updateBounds);
     return () => window.removeEventListener('resize', updateBounds);
   }, [MENU_HEIGHT]);
-
   // Organize notes in a grid layout
   const organizeNotes = useCallback((
     notesToOrganize: PostItNote[],
@@ -75,9 +74,28 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
       const col = index % actualCols;
       const row = Math.floor(index / actualCols);
       
-      // Calculate position ensuring notes stay within bounds
-      let x = col * (maxNoteWidth + MIN_MARGIN) + MIN_MARGIN;
-      let y = row * (maxNoteHeight + MIN_MARGIN) + MIN_MARGIN;
+      // Calculate evenly distributed positions with equal spacing
+      let x, y;
+      
+      if (actualCols === 1) {
+        // Single column - center horizontally
+        x = (bounds.width - note.size.width) / 2;
+      } else {
+        // Multiple columns - distribute evenly with equal spacing
+        const totalNotesWidth = actualCols * maxNoteWidth;
+        const totalSpacing = availableWidth - totalNotesWidth;
+        const spaceBetweenNotes = totalSpacing / (actualCols + 1);
+        
+        x = spaceBetweenNotes + (col * (maxNoteWidth + spaceBetweenNotes));
+        
+        // Center the note within its allocated space if it's smaller than maxNoteWidth
+        if (note.size.width < maxNoteWidth) {
+          x += (maxNoteWidth - note.size.width) / 2;
+        }
+      }
+      
+      // Calculate vertical position with consistent spacing
+      y = row * (maxNoteHeight + MIN_MARGIN) + MIN_MARGIN;
       
       // Ensure the note doesn't exceed canvas bounds
       x = Math.min(x, bounds.width - note.size.width - MIN_MARGIN);
