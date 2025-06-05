@@ -2,8 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { PostItNote } from '../../types/ui';
 import { useDraggable } from '@dnd-kit/core';
-import Tooltip from '../shared/Tooltip';
-import { formatTimestamp, formatTooltipTime, getElapsedTime } from '../../utils/timeUtils';
+import { formatTimestamp } from '../../utils/timeUtils';
 
 interface Props {
   note: PostItNote & { zIndex?: number };
@@ -128,11 +127,9 @@ const DraggablePostIt: React.FC<Props> = ({
         height: note.size.height,
         zIndex: note.zIndex,
         position: 'absolute', /* Ensure absolute positioning for left/top to work */
-      }}
-      className={clsx(
+      }}      className={clsx(
         'post-it',
         `category-${note.category}`,
-        note.isAiModified && 'ai-modified',
         isSelected && 'ring-2 ring-blue-500',
         className
       )}
@@ -141,29 +138,17 @@ const DraggablePostIt: React.FC<Props> = ({
       role="article"
       aria-label={`${note.category} note`}
       onKeyDown={handleKeyDown}
-    >
-      {/* Note Header with Drag Handle */}
+    >      {/* Note Header with Drag Handle */}
       <div className="drag-handle" {...listeners} {...attributes}>
         <div className="flex items-center justify-between p-2">
-          <Tooltip
-            content={
-              <div className="space-y-1">
-                <div>Created: {formatTooltipTime(note.timestamp)}</div>
-                <div>Last modified: {getElapsedTime(note.lastModified)}</div>
-                {note.isAiModified && <div>Modified by AI</div>}
-              </div>
-            }
-            placement="top"
-          >
-            <div className="flex items-center space-x-2">
-              <span className="text-xs text-gray-600">
-                {formatTimestamp(note.timestamp)}
-              </span>
-              {note.isAiModified && (
-                <span className="text-xs bg-blue-100 text-blue-800 px-1.5 rounded">AI</span>
-              )}
-            </div>
-          </Tooltip>
+          <div className="flex items-center space-x-2">
+            <span className="text-xs font-medium text-gray-700 capitalize">
+              {note.category}
+            </span>
+            <span className="text-xs text-gray-500">
+              {formatTimestamp(note.timestamp)}
+            </span>
+          </div>
         </div>
       </div>
 
