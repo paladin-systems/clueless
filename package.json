@@ -19,11 +19,11 @@
   },
   "scripts": {
     "clean": "rd /s /q dist",
-    "dev": "electron-vite dev",
-    "build": "electron-vite build",
-    "preview": "electron-vite preview",
-    "start": "electron .",
-    "package:portable": "electron-vite build && electron-builder --config electron-builder.json"
+    "dev": "bunx electron-vite dev",
+    "build": "bunx electron-vite build",
+    "preview": "bunx electron-vite preview",
+    "start": "bunx electron .",
+    "package:portable": "bunx electron-vite build && bunx electron-builder --config electron-builder.json"
   },
   "author": "",
   "license": "MIT",
