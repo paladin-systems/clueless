@@ -25,6 +25,8 @@ const DraggablePostIt: React.FC<Props> = ({
   onDelete,
   isSelected
 }) => {
+  const [isResizing, setIsResizing] = useState(false);
+
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: note.id,
     data: {
@@ -43,12 +45,13 @@ const DraggablePostIt: React.FC<Props> = ({
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : 'none',
     willChange: 'transform', // Helps browser optimize transform rendering
     // Disable transitions during drag to prevent conflicts
-    transition: isDragging ? 'none' : undefined,
+    transition: isDragging || isResizing ? 'none' : undefined,
   };
 
   // Handle resize
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent drag from starting when resizing
+    setIsResizing(true);
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -62,6 +65,7 @@ const DraggablePostIt: React.FC<Props> = ({
     };
 
     const onMouseUp = () => {
+      setIsResizing(false);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseup', onMouseUp);
     };
@@ -134,6 +138,7 @@ const DraggablePostIt: React.FC<Props> = ({
         `category-${note.category}`,
         isSelected && 'ring-2 ring-blue-500',
         isDragging && 'dragging', // Add dragging class
+        isResizing && 'resizing', // Add resizing class
         className
       )}
       onClick={onSelect}

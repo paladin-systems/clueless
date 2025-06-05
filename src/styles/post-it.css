@@ -6,7 +6,8 @@
 }
 
 /* Disable transitions during drag to prevent conflicts */
-.post-it.dragging {
+.post-it.dragging,
+.post-it.resizing {
   transition: none !important;
 }
 
