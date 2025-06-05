@@ -9,7 +9,6 @@ interface Props {
   note: PostItNote & { zIndex?: number };
   onMove: (position: { x: number; y: number }) => void;
   onResize: (size: { width: number; height: number }) => void;
-  onPin: () => void;
   onSelect?: () => void;
   onDelete?: () => void;
   isSelected?: boolean;
@@ -21,7 +20,6 @@ const DraggablePostIt: React.FC<Props> = ({
   note,
   onMove,
   onResize,
-  onPin,
   canvasBounds,
   className,
   onSelect,
@@ -115,14 +113,11 @@ const DraggablePostIt: React.FC<Props> = ({
     }
 
     // Handle keyboard shortcuts
-    if (key === ' ' || key === 'Enter') {
-      event.preventDefault();
-      onPin();
-    } else if (key === 'Delete' || key === 'Backspace') {
+    if (key === 'Delete' || key === 'Backspace') {
       event.preventDefault();
       onDelete?.();
     }
-  }, [note.position, note.size, onMove, onResize, onPin]);
+  }, [note.position, note.size, onMove, onResize]);
 
   return (
     <div
@@ -137,7 +132,6 @@ const DraggablePostIt: React.FC<Props> = ({
       className={clsx(
         'post-it',
         `category-${note.category}`,
-        note.isPinned && 'pinned',
         note.isAiModified && 'ai-modified',
         isSelected && 'ring-2 ring-blue-500',
         className
@@ -169,19 +163,6 @@ const DraggablePostIt: React.FC<Props> = ({
                 <span className="text-xs bg-blue-100 text-blue-800 px-1.5 rounded">AI</span>
               )}
             </div>
-          </Tooltip>
-          <Tooltip
-            content={note.isPinned ? "Unpin note" : "Pin note to top"}
-            placement="left"
-            delay={500}
-          >
-            <button
-              onClick={onPin}
-              className="text-gray-400 hover:text-yellow-500 transition-colors"
-              aria-label={note.isPinned ? "Unpin" : "Pin"}
-            >
-              📌
-            </button>
           </Tooltip>
         </div>
       </div>

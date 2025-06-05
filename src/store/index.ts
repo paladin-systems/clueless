@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { PostItNote, AudioIndicator, ViewOptions } from '../types/ui';
+import { PostItNote, AudioIndicator, ViewOptions, NotePosition } from '../types/ui';
 import { GeminiResponse } from '../types/gemini';
 
 interface AppState {
@@ -49,6 +49,9 @@ interface AppState {
   updateViewOptions: (options: Partial<ViewOptions>) => void;
   addNote: (note: PostItNote) => void;
   updateNote: (id: string, updates: Partial<PostItNote>) => void;
+  updateNotePosition: (id: string, position: { x: number; y: number }) => void;
+  updateNoteSize: (id: string, size: { width: number; height: number }) => void;
+  updateNotesPositions: (notes: NotePosition[]) => void;
   removeNote: (id: string) => void;
   selectNote: (id: string | undefined) => void;
 }
@@ -156,6 +159,27 @@ export const useStore = create<AppState>((set, get) => ({
       note.id === id ? { ...note, ...updates } : note
     )
   })),
+
+  updateNotesPositions: (updatedNotes) => set((state) => {
+    const newNotes = state.notes.map(existingNote => {
+      const updated = updatedNotes.find(un => un.id === existingNote.id);
+      return updated ? { ...existingNote, position: updated.position } : existingNote;
+    });
+    return { notes: newNotes };
+  }),
+
+  updateNotePosition: (id, position) => set((state) => ({
+    notes: state.notes.map((note) =>
+      note.id === id ? { ...note, position, zIndex: Date.now() } : note
+    )
+  })),
+
+  updateNoteSize: (id, size) => set((state) => ({
+    notes: state.notes.map((note) =>
+      note.id === id ? { ...note, size, zIndex: Date.now() } : note
+    )
+  })),
+
 
   removeNote: (id) => set((state) => ({
     notes: state.notes.filter((note) => note.id !== id)

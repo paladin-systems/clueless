@@ -94,34 +94,6 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
         </div>
 
         <div className="space-y-6">
-          {/* Layout Section */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300">Layout</h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => handleLayoutChange('grid')}
-                className={clsx(
-                  "px-3 py-1.5 rounded text-sm",
-                  viewOptions.layout === 'grid'
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                )}
-              >
-                Grid
-              </button>
-              <button
-                onClick={() => handleLayoutChange('cascade')}
-                className={clsx(
-                  "px-3 py-1.5 rounded text-sm",
-                  viewOptions.layout === 'cascade'
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                )}
-              >
-                Cascade
-              </button>
-            </div>
-          </div>
 
           {/* Opacity Section */}
           <div className="space-y-2">

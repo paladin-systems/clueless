@@ -53,14 +53,6 @@ const PostItInstructions: React.FC = () => {
           </div>
         </div>
 
-        <div>
-          <div className="text-gray-400 mb-1">Pin/Unpin Note</div>
-          <div className="flex items-center space-x-1">
-            <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-xs border border-gray-700">Space</kbd>
-            <span>or</span>
-            <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-xs border border-gray-700">Enter</kbd>
-          </div>
-        </div>
 
         <div className="text-xs text-gray-500 mt-3 space-y-1">
           <p>Tab through notes to select and use arrow keys to move them.</p>

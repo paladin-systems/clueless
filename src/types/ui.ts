@@ -3,7 +3,6 @@ export interface PostItNote {
   content: string;
   position: { x: number; y: number };
   size: { width: number; height: number };
-  isPinned: boolean;
   timestamp: number;
   category: 'response' | 'question' | 'reference' | 'note';
   color: string;

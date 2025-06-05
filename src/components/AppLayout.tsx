@@ -33,6 +33,11 @@ const AppLayout: React.FC = () => {
   const geminiResponses = useStore(state => state.geminiResponses);
   const isBuildingResponse = useStore(state => state.isBuildingResponse);
   const audioStatus = useStore(state => state.audioStatus); // Get audioStatus
+  const updateNotesPositions = useStore(state => state.updateNotesPositions);
+  const addNote = useStore(state => state.addNote);
+  const removeNote = useStore(state => state.removeNote);
+  const notes = useStore(state => state.notes);
+
 
   console.log('AppLayout: geminiResponses count:', geminiResponses.length);
   console.log('AppLayout: isBuildingResponse:', isBuildingResponse);
@@ -42,13 +47,7 @@ const AppLayout: React.FC = () => {
     key: 'post-it-notes',
     delay: 1000
   });
-  const [notes, setNotes] = useState<PostItNote[]>(() => {
-    const savedNotes = loadFromStorage();
-    return savedNotes || [];
-  });
-
-  console.log('AppLayout: notes count:', notes.length);
-
+  
   // Save notes when they change
   useEffect(() => {
     if (notes.length > 0) {
@@ -126,11 +125,13 @@ const AppLayout: React.FC = () => {
       return;
     }
     
-    const lastNote = notes[notes.length - 1];
     const baseOffset = 20;
     
     // Calculate position based on note type and priority
     const getPosition = () => {
+      // Get current notes to avoid stale closure
+      const currentNotes = useStore.getState().notes;
+      const lastNote = currentNotes[currentNotes.length - 1];
       const baseX = lastNote ? lastNote.position.x + baseOffset : baseOffset;
       let baseY: number;
       
@@ -187,7 +188,6 @@ const AppLayout: React.FC = () => {
       content: response.content,
       position: getPosition(),
       size: getSize(),
-      isPinned: response.priority === 'high',
       timestamp: Date.now(),
       category: response.type,
       color: getColor(),
@@ -197,13 +197,8 @@ const AppLayout: React.FC = () => {
     };
 
     console.log('Creating new note:', newNote);
-    setNotes(prev => [...prev, newNote]);
-  }, [geminiResponses]);
-
-  // Handle note deletion
-  const handleNoteDelete = useCallback((id: string) => {
-    setNotes(prev => prev.filter(note => note.id !== id));
-  }, []);
+    addNote(newNote);
+  }, [geminiResponses, addNote]);
 
   // Handle global keyboard shortcuts for notes
   useEffect(() => {
@@ -224,7 +219,7 @@ const AppLayout: React.FC = () => {
         (event.key === 'Delete' || event.key === 'Backspace')
       ) {
         event.preventDefault();
-        handleNoteDelete(selectedNoteId);
+        removeNote(selectedNoteId);
         setSelectedNoteId(null);
       }
 
@@ -250,46 +245,25 @@ const AppLayout: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [notes, selectedNoteId, showKeyboardHelp, showSettings, handleNoteDelete]);
+  }, [notes, selectedNoteId, showKeyboardHelp, showSettings, removeNote]);
 
   // Note handlers
-  const handleNoteMove = (id: string, position: { x: number; y: number }) => {
-    setNotes(prev =>
-      prev.map(note =>
-        note.id === id ? { ...note, position, zIndex: Date.now() } : note
-      )
-    );
-  };
+  const updateNotePosition = useStore(state => state.updateNotePosition);
+  const updateNoteSize = useStore(state => state.updateNoteSize);
+
+  const handleNoteMove = useCallback((id: string, position: { x: number; y: number }) => {
+    updateNotePosition(id, position);
+  }, [updateNotePosition]);
 
   const handleMultiNoteMove = (movedNotes: { id: string; position: { x: number; y: number } }[]) => {
-    setNotes(prev => {
-      const updates = new Map(movedNotes.map(n => [n.id, n.position]));
-      return prev.map(note =>
-        updates.has(note.id)
-          ? { ...note, position: updates.get(note.id)!, zIndex: Date.now() }
-          : note
-      );
-    });
+    updateNotesPositions(movedNotes);
   };
 
-  const handleNoteResize = (id: string, size: { width: number; height: number }) => {
-    setNotes(prev =>
-      prev.map(note =>
-        note.id === id ? { ...note, size, zIndex: Date.now() } : note
-      )
-    );
-  };
+  const handleNoteResize = useCallback((id: string, size: { width: number; height: number }) => {
+    updateNoteSize(id, size);
+  }, [updateNoteSize]);
 
-  const handleNotePinToggle = (id: string) => {
-    setNotes(prev => {
-      const maxZ = Math.max(...prev.map(n => n.zIndex || 0));
-      return prev.map(note =>
-        note.id === id
-          ? { ...note, isPinned: !note.isPinned, zIndex: maxZ + 1 }
-          : note
-      );
-    });
-  };
+
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-transparent">
@@ -323,10 +297,9 @@ const AppLayout: React.FC = () => {
         onNoteMove={handleNoteMove}
         onNoteMoveMultiple={handleMultiNoteMove}
         onNoteResize={handleNoteResize}
-        onNotePinToggle={handleNotePinToggle}
         selectedNoteId={selectedNoteId}
         onNoteSelect={setSelectedNoteId}
-        onNoteDelete={handleNoteDelete}
+        onNoteDelete={removeNote}
       />
 
       {/* Loading Indicator */}
