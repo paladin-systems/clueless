@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { PostItNote } from '../../types/ui';
 import { useDraggable } from '@dnd-kit/core';
 import { formatTimestamp } from '../../utils/timeUtils';
-import { FaGripVertical, FaExpand } from 'react-icons/fa6';
+import { FaGripVertical, FaExpand, FaXmark } from 'react-icons/fa6';
 
 interface Props {
   note: PostItNote & { zIndex?: number };
@@ -153,16 +153,15 @@ const DraggablePostIt: React.FC<Props> = ({
       event.preventDefault();
       onDelete?.();
     }
-  }, [note.position, note.size, onMove, onResize]);
-  // Handle click to select note and bring to front
+  }, [note.position, note.size, onMove, onResize]);  // Handle click to select note and bring to front
   const handleClick = useCallback((e: React.MouseEvent) => {
     // Don't select if we're dragging or resizing
     if (isDragging || isResizing) {
       return;
     }
     
-    // Don't select if the click was on the drag handle
-    if ((e.target as HTMLElement).closest('.drag-handle')) {
+    // Don't select if the click was on the drag handle or close button
+    if ((e.target as HTMLElement).closest('.drag-handle') || (e.target as HTMLElement).closest('.close-button')) {
       return;
     }
     
@@ -198,6 +197,17 @@ const DraggablePostIt: React.FC<Props> = ({
               {formatTimestamp(note.timestamp)}
             </span>
           </div>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete?.();
+            }}
+            className="close-button p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-150 ml-2"
+            title="Delete note"
+            aria-label="Delete note"
+          >
+            <FaXmark className="text-xs" />
+          </button>
         </div>
       </div>
 

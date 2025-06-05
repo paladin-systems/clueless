@@ -68,6 +68,22 @@
   @apply cursor-move bg-gray-50/50 border-b border-gray-200/50;
 }
 
+/* Close button */
+.post-it .close-button {
+  @apply cursor-pointer;
+  @apply flex items-center justify-center;
+  @apply opacity-0 transition-all duration-200;
+}
+
+.post-it:hover .close-button,
+.post-it.selected .close-button {
+  @apply opacity-100;
+}
+
+.post-it .close-button:hover {
+  @apply scale-110;
+}
+
 /* Content area */
 .post-it .prose {
   @apply prose-sm prose-slate;
