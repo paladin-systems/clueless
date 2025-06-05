@@ -206,8 +206,34 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           </label>
           <p className="text-xs text-gray-500">
             Display helpful keyboard shortcuts for moving and managing post-it notes
-          </p>
-        </div>
+          </p>        </div>
+
+        <button
+            onClick={() => {
+              const notes = useStore.getState().notes;
+              console.log('🔍 === DEBUG: ALL NOTES INFORMATION ===');
+              console.log(`Total notes: ${notes.length}`);
+              notes.forEach((note, index) => {
+                console.log(`\n📝 Note ${index + 1}:`);
+                console.log(`  ID: ${note.id}`);
+                console.log(`  Category: ${note.category}`);
+                console.log(`  Timestamp: ${new Date(note.timestamp).toLocaleString()}`);
+                console.log(`  Last Modified: ${new Date(note.lastModified).toLocaleString()}`);
+                console.log(`  Is AI Modified: ${note.isAiModified}`);
+                console.log(`  Content Length: ${note.content.length} characters`);                console.log(`  Content Preview (first 100 chars): "${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}"`);
+                console.log(`  Full Content: "${note.content}"`);
+                console.log(`  Position: x=${note.position.x}, y=${note.position.y}`);
+                console.log(`  Size: ${note.size.width}x${note.size.height}`);
+                console.log(`  Z-Index: ${note.zIndex}`);
+                console.log(`  Color: ${note.color}`);
+              });
+              console.log('🔍 === END DEBUG NOTES ===\n');
+              alert(`📊 Logged ${notes.length} notes to console. Open DevTools to see details.`);
+            }}
+            className="w-full px-3 py-2 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+          >
+            🔍 Debug: Log All Notes to Console
+          </button>
       </div>
     </div>
   );

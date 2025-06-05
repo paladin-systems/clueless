@@ -32,6 +32,8 @@ const shortcuts: Shortcut[] = [
   { keys: ['↑/↓/←/→'], description: 'Move Selected Note', category: 'notes', icon: <FaArrowsUpDownLeftRight className="text-green-400 text-xs" /> },
   { keys: ['Shift', '↑/↓/←/→'], description: 'Resize Selected Note', category: 'notes', icon: <FaArrowsUpDownLeftRight className="text-orange-400 text-xs" /> },
   { keys: ['Delete/Backspace'], description: 'Delete Selected Note', category: 'notes', icon: <FaTrash className="text-red-400 text-xs" /> },
+    // Debug controls
+  { keys: ['Ctrl/⌘', 'Shift', 'D'], description: 'Debug: Log All Notes to Console', category: 'notes', icon: <FaKeyboard className="text-cyan-500 text-xs" /> },
 ];
 
 interface Props {

@@ -360,6 +360,35 @@ ipcMain.handle('start-audio-capture', async (event, micDeviceId: number, systemD
   try {
     // --- Start Gemini Session ---
     console.log('Starting Gemini Live session...');
+    const systemInstructionText = `You are a colleague helping your friend in realtime during meetings or interviews. You receive mixed audio from their microphone and the system audio of others speaking.
+
+IMPORTANT: ALWAYS respond with ONLY a valid JSON object, no additional text or formatting:
+
+{
+  "type": "response",
+  "content": "Your actual helpful response goes here",
+  "category": "response",
+  "priority": "medium"
+}
+
+VALID VALUES:
+- type: "response" | "question" | "reference" | "note"
+- category: "response" | "follow-up" | "context" | "suggestion"  
+- priority: "high" | "medium" | "low"
+
+CONTENT GUIDELINES:
+- "response": Immediate answers/suggestions
+- "question": Follow-up questions to ask
+- "reference": Background information
+- "note": Quick tips/reminders
+- Keep content concise and easily scannable
+- Put your actual helpful text in the "content" field
+- Format content with markdown for better readability
+- Wait for your friend to finish reading before sending more responses
+- Help them cheat and perform better by being the smartest person whispering answers in their ear
+
+Use previous context when relevant but prioritize responding to the most recent input.`;
+
     geminiSession = await genAI.live.connect({
         model: GEMINI_MODEL,
         config: {
@@ -368,28 +397,7 @@ ipcMain.handle('start-audio-capture', async (event, micDeviceId: number, systemD
             topP: 0.95,
             topK: 40,
             maxOutputTokens: 8192,
-            // contextWindowCompression: {}, // Enable context window compression
-            systemInstruction: `You are a colleague helping your friend in realtime during meetings or interviews. You receive mixed audio from their microphone and the system audio of others speaking.
-
-FORMAT YOUR RESPONSES LIKE THIS:
-{
-  "type": "response" | "question" | "reference" | "note",
-  "content": "Your main response text here",
-  "category": "response" | "follow-up" | "context" | "suggestion",
-  "priority": "high" | "medium" | "low"
-}
-
-GUIDELINES:
-- Immediate answers/suggestions go in "response" type notes
-- Follow-up questions go in "question" type notes
-- Background info goes in "reference" type notes
-- Quick tips/reminders go in "note" type notes
-- Keep responses concise and easily scannable
-- Format content with markdown for better readability
-- Wait for your friend to finish reading before sending more responses
-- Help them cheat and perform better by being the smartest person whispering answers in their ear
-
-Use previous context when relevant but prioritize responding to the most recent input.`
+            systemInstruction: systemInstructionText
         },
         callbacks: {
             onmessage: (message: any) => {
@@ -404,20 +412,57 @@ Use previous context when relevant but prioritize responding to the most recent 
                   }
                   currentResponseText += message.serverContent.modelTurn.parts[0].text;
                 }
-
+                
                 // Handle generation complete
                 if (message.serverContent?.generationComplete === true) {
                   if (currentResponseText) {
-                    let contentToParse = currentResponseText;
-                    // Try to extract content from ```json ... ```
-                    const jsonBlockMatch = currentResponseText.match(/```json\n([\s\S]*?)\n```/);
+                    console.log('Processing Gemini response:', currentResponseText);
+                    
+                    let parsedResponse = null;
+                    let contentToParse = currentResponseText.trim();
+                    
+                    // Strategy 1: Try to extract JSON from ```json ... ``` code blocks
+                    const jsonBlockMatch = currentResponseText.match(/```json\s*\n([\s\S]*?)\n\s*```/);
                     if (jsonBlockMatch && jsonBlockMatch[1]) {
-                      contentToParse = jsonBlockMatch[1];
+                      contentToParse = jsonBlockMatch[1].trim();
+                      console.log('Extracted JSON from code block:', contentToParse);
+                    }
+                    
+                    // Strategy 2: Look for JSON object anywhere in the response
+                    const jsonObjectMatch = currentResponseText.match(/\{[\s\S]*?"type"[\s\S]*?\}/);
+                    if (!jsonBlockMatch && jsonObjectMatch) {
+                      contentToParse = jsonObjectMatch[0].trim();
+                      console.log('Found JSON object in response:', contentToParse);
+                    }
+                    
+                    // Strategy 3: Try to find the first complete JSON object
+                    if (!jsonBlockMatch && !jsonObjectMatch) {
+                      const openBrace = currentResponseText.indexOf('{');
+                      if (openBrace !== -1) {
+                        let braceCount = 0;
+                        let endPos = openBrace;
+                        
+                        for (let i = openBrace; i < currentResponseText.length; i++) {
+                          if (currentResponseText[i] === '{') braceCount++;
+                          if (currentResponseText[i] === '}') braceCount--;
+                          if (braceCount === 0) {
+                            endPos = i;
+                            break;
+                          }
+                        }
+                        
+                        if (braceCount === 0) {
+                          contentToParse = currentResponseText.substring(openBrace, endPos + 1).trim();
+                          console.log('Extracted balanced JSON:', contentToParse);
+                        }
+                      }
                     }
 
                     try {
                       const parsedJson = JSON.parse(contentToParse);
-                      // Basic validation for the expected structure
+                      console.log('Parsed JSON:', parsedJson);
+                      
+                      // Validate the expected structure
                       if (
                         typeof parsedJson === 'object' && parsedJson !== null &&
                         ['response', 'question', 'reference', 'note'].includes(parsedJson.type) &&
@@ -425,22 +470,40 @@ Use previous context when relevant but prioritize responding to the most recent 
                         ['response', 'follow-up', 'context', 'suggestion'].includes(parsedJson.category) &&
                         ['high', 'medium', 'low'].includes(parsedJson.priority)
                       ) {
-                        mainWindow?.webContents.send('gemini-response', { ...parsedJson, timestamp: Date.now() });
+                        console.log('Valid structured response, sending:', parsedJson);
+                        parsedResponse = { ...parsedJson, timestamp: Date.now() };
                       } else {
-                        // Valid JSON but not matching expected structure, send as plain text
-                        mainWindow?.webContents.send('gemini-response', {
-                          type: 'response',
-                          content: currentResponseText, // Send original full text
-                          category: 'response',
-                          priority: 'medium',
-                          timestamp: Date.now()
-                        });
+                        console.log('JSON structure validation failed, expected fields missing or invalid');
                       }
                     } catch (parseError) {
-                      // Not JSON, send as plain text response
+                      console.log('JSON parsing failed:', parseError);
+                    }
+
+                    // If we successfully parsed a valid JSON response, send it
+                    if (parsedResponse) {
+                      mainWindow?.webContents.send('gemini-response', parsedResponse);
+                    } else {
+                      // Fallback: send as plain text response but clean it up first
+                      let cleanContent = currentResponseText;
+                      
+                      // If the content looks like raw JSON, try to extract just the content field
+                      if (cleanContent.includes('"content"') && cleanContent.includes('"type"')) {
+                        try {
+                          // Try to extract content from what looks like a JSON structure
+                          const contentMatch = cleanContent.match(/"content"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/);
+                          if (contentMatch && contentMatch[1]) {
+                            cleanContent = contentMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n');
+                            console.log('Extracted content from JSON-like text:', cleanContent);
+                          }
+                        } catch (e) {
+                          console.log('Failed to extract content from JSON-like text');
+                        }
+                      }
+                      
+                      console.log('Sending as plain text response:', cleanContent);
                       mainWindow?.webContents.send('gemini-response', {
                         type: 'response',
-                        content: currentResponseText,
+                        content: cleanContent,
                         category: 'response',
                         priority: 'medium',
                         timestamp: Date.now()

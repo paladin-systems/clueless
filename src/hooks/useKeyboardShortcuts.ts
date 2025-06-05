@@ -23,6 +23,8 @@ export const useKeyboardShortcuts = (
   const clearResponses = useStore(state => state.clearResponses);
   const viewOptions = useStore(state => state.viewOptions);
   const updateViewOptions = useStore(state => state.updateViewOptions);
+  const notes = useStore(state => state.notes);
+  const setNotes = useStore(state => state.setNotes);
 
   const handleKeyPress = useCallback((event: KeyboardEvent) => {
     // Don't trigger shortcuts when typing in input fields
@@ -118,6 +120,27 @@ export const useKeyboardShortcuts = (
         updateViewOptions({
           opacity: Math.max(0.3, viewOptions.opacity - 0.1)
         });
+        break;      // Debug: Log All Notes (Ctrl/Cmd + Shift + D)
+      case isCtrlOrCmd && isShift && event.key === 'D':
+        shouldPreventDefault();
+        console.log('🔍 === DEBUG: ALL NOTES INFORMATION ===');
+        console.log(`Total notes: ${notes.length}`);
+        notes.forEach((note, index) => {
+          console.log(`\n📝 Note ${index + 1}:`);
+          console.log(`  ID: ${note.id}`);
+          console.log(`  Category: ${note.category}`);
+          console.log(`  Timestamp: ${new Date(note.timestamp).toLocaleString()}`);
+          console.log(`  Last Modified: ${new Date(note.lastModified).toLocaleString()}`);
+          console.log(`  Is AI Modified: ${note.isAiModified}`);
+          console.log(`  Content Length: ${note.content.length} characters`);
+          console.log(`  Content Preview (first 100 chars): "${note.content.substring(0, 100)}${note.content.length > 100 ? '...' : ''}"`);
+          console.log(`  Full Content: "${note.content}"`);
+          console.log(`  Looks like JSON: ${note.content.trim().startsWith('{') && note.content.includes('"type"') && note.content.includes('"content"')}`);
+          console.log(`  Position: x=${note.position.x}, y=${note.position.y}`);
+          console.log(`  Size: ${note.size.width}x${note.size.height}`);
+          console.log(`  Z-Index: ${note.zIndex}`);
+          console.log(`  Color: ${note.color}`);        });
+        console.log('🔍 === END DEBUG NOTES ===\n');
         break;
     }
   }, [
@@ -129,7 +152,9 @@ export const useKeyboardShortcuts = (
     viewOptions,
     updateViewOptions,
     setShowKeyboardHelp,
-    setShowSettings
+    setShowSettings,
+    notes,
+    setNotes
   ]);
 
   useEffect(() => {
