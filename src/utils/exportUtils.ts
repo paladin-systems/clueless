@@ -7,14 +7,14 @@ export type ExportFormat = 'json' | 'markdown' | 'text' | 'csv';
  * Downloads a file to the user's computer
  */
 const downloadFile = (content: string, filename: string, mimeType: string) => {
-  exportLogger.debug('downloadFile called', { filename, mimeType, contentLength: content.length });
+  exportLogger.debug({ filename, mimeType, contentLength: content.length }, 'downloadFile called');
   
   try {
     const blob = new Blob([content], { type: mimeType });
-    exportLogger.debug('Blob created', { blobSize: blob.size, blobType: blob.type });
+    exportLogger.debug({ blobSize: blob.size, blobType: blob.type }, 'Blob created');
     
     const url = URL.createObjectURL(blob);
-    exportLogger.debug('Object URL created', { url });
+    exportLogger.debug({ url }, 'Object URL created');
     
     const link = document.createElement('a');
     link.href = url;
@@ -32,9 +32,8 @@ const downloadFile = (content: string, filename: string, mimeType: string) => {
     
     // Clean up the URL object
     URL.revokeObjectURL(url);
-    exportLogger.debug('Object URL revoked');
-  } catch (error) {
-    exportLogger.error('Error in downloadFile', { error });
+    exportLogger.debug('Object URL revoked');  } catch (error) {
+    exportLogger.error({ error }, 'Error in downloadFile');
     throw error;
   }
 };
@@ -195,7 +194,7 @@ export const exportAsCSV = (notes: PostItNote[]): void => {
  * Main export function that handles different formats
  */
 export const exportNotes = (notes: PostItNote[], format: ExportFormat): void => {
-  exportLogger.info('exportNotes called', { notesCount: notes.length, format });
+  exportLogger.info({ notesCount: notes.length, format }, 'exportNotes called');
   
   if (notes.length === 0) {
     exportLogger.warn('No notes to export');
@@ -204,7 +203,7 @@ export const exportNotes = (notes: PostItNote[], format: ExportFormat): void => 
   }
 
   try {
-    exportLogger.debug('About to export notes', { format });
+    exportLogger.debug({ format }, 'About to export notes');
     
     switch (format) {
       case 'json':
@@ -226,10 +225,9 @@ export const exportNotes = (notes: PostItNote[], format: ExportFormat): void => 
       default:
         throw new Error(`Unsupported export format: ${format}`);
     }
-    
-    exportLogger.info('Successfully exported notes', { noteCount: notes.length, format: format.toUpperCase() });
+      exportLogger.info({ noteCount: notes.length, format: format.toUpperCase() }, 'Successfully exported notes');
   } catch (error) {
-    exportLogger.error('Error exporting notes', { error });
+    exportLogger.error({ error }, 'Error exporting notes');
     alert('Failed to export notes. Please try again.');
   }
 };

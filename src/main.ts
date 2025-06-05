@@ -201,7 +201,7 @@ function startHeartbeat() {
         // This is similar to a WebSocket ping/pong
         geminiSession.sendClientContent({ turnComplete: false });
       } catch (error) {
-        geminiLogger.warn('Error sending heartbeat', { error });
+        geminiLogger.warn({ error }, 'Error sending heartbeat');
         // If we have persistent errors, stop the heartbeat
         if (heartbeatInterval) {
           clearInterval(heartbeatInterval);
@@ -244,7 +244,7 @@ async function stopAllAudioStreamsAndSession() {
         micAudioIO.closeStream();
       }
     } catch (error) {
-      audioLogger.error('Error stopping mic audio stream', { error });
+      audioLogger.error({ error }, 'Error stopping mic audio stream');
     }
     micAudioIO = null;
   }
@@ -257,7 +257,7 @@ async function stopAllAudioStreamsAndSession() {
         systemAudioIO.closeStream();
       }
     } catch (error) {
-      audioLogger.error('Error stopping system audio stream', { error });
+      audioLogger.error({ error }, 'Error stopping system audio stream');
     }
     systemAudioIO = null;
   }
@@ -272,7 +272,7 @@ async function stopAllAudioStreamsAndSession() {
       await geminiSession.close();
       geminiLogger.info('Gemini session closed');
     } catch (error) {
-      geminiLogger.error('Error closing Gemini session', { error });
+      geminiLogger.error({ error }, 'Error closing Gemini session');
       isClosingIntentionally = false; // Reset flag on error too
     }
     // Note: geminiSession is set to null *after* onclose callback potentially runs
@@ -410,7 +410,7 @@ Use previous context when relevant but prioritize responding to the most recent 
         },
         callbacks: {
             onmessage: (message: any) => {
-              geminiLogger.debug('Received message from Gemini', { message });
+              geminiLogger.debug({ message }, 'Received message from Gemini');
 
               try {
                 // Handle text parts from modelTurn
@@ -425,7 +425,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                 // Handle generation complete
                 if (message.serverContent?.generationComplete === true) {
                   if (currentResponseText) {
-                    geminiLogger.debug('Processing Gemini response', { response: currentResponseText });
+                    geminiLogger.debug({ response: currentResponseText }, 'Processing Gemini response');
                     
                     let parsedResponse = null;
                     let contentToParse = currentResponseText.trim();
@@ -434,14 +434,14 @@ Use previous context when relevant but prioritize responding to the most recent 
                     const jsonBlockMatch = currentResponseText.match(/```json\s*\n([\s\S]*?)\n\s*```/);
                     if (jsonBlockMatch && jsonBlockMatch[1]) {
                       contentToParse = jsonBlockMatch[1].trim();
-                      geminiLogger.debug('Extracted JSON from code block', { contentToParse });
+                      geminiLogger.debug({ contentToParse }, 'Extracted JSON from code block');
                     }
                     
                     // Strategy 2: Look for JSON object anywhere in the response
                     const jsonObjectMatch = currentResponseText.match(/\{[\s\S]*?"type"[\s\S]*?\}/);
                     if (!jsonBlockMatch && jsonObjectMatch) {
                       contentToParse = jsonObjectMatch[0].trim();
-                      geminiLogger.debug('Found JSON object in response', { contentToParse });
+                      geminiLogger.debug({ contentToParse }, 'Found JSON object in response');
                     }
                     
                     // Strategy 3: Try to find the first complete JSON object
@@ -462,14 +462,14 @@ Use previous context when relevant but prioritize responding to the most recent 
                         
                         if (braceCount === 0) {
                           contentToParse = currentResponseText.substring(openBrace, endPos + 1).trim();
-                          geminiLogger.debug('Extracted balanced JSON', { contentToParse });
+                          geminiLogger.debug({ contentToParse }, 'Extracted balanced JSON');
                         }
                       }
                     }
 
                     try {
                       const parsedJson = JSON.parse(contentToParse);
-                      geminiLogger.debug('Parsed JSON', { parsedJson });
+                      geminiLogger.debug({ parsedJson }, 'Parsed JSON');
                       
                       // Validate the expected structure
                       if (
@@ -479,13 +479,13 @@ Use previous context when relevant but prioritize responding to the most recent 
                         ['response', 'follow-up', 'context', 'suggestion'].includes(parsedJson.category) &&
                         ['high', 'medium', 'low'].includes(parsedJson.priority)
                       ) {
-                        geminiLogger.info('Valid structured response, sending', { parsedJson });
+                        geminiLogger.info({ parsedJson }, 'Valid structured response, sending');
                         parsedResponse = { ...parsedJson, timestamp: Date.now() };
                       } else {
                         geminiLogger.warn('JSON structure validation failed, expected fields missing or invalid');
                       }
                     } catch (parseError) {
-                      geminiLogger.debug('JSON parsing failed', { parseError });
+                      geminiLogger.debug({ parseError }, 'JSON parsing failed');
                     }
 
                     // If we successfully parsed a valid JSON response, send it
@@ -502,14 +502,14 @@ Use previous context when relevant but prioritize responding to the most recent 
                           const contentMatch = cleanContent.match(/"content"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/);
                           if (contentMatch && contentMatch[1]) {
                             cleanContent = contentMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n');
-                            geminiLogger.debug('Extracted content from JSON-like text', { cleanContent });
+                            geminiLogger.debug({ cleanContent }, 'Extracted content from JSON-like text');
                           }
                         } catch (e) {
                           geminiLogger.debug('Failed to extract content from JSON-like text');
                         }
                       }
                       
-                      geminiLogger.info('Sending as plain text response', { cleanContent });
+                      geminiLogger.info({ cleanContent }, 'Sending as plain text response');
                       mainWindow?.webContents.send('gemini-response', {
                         type: 'response',
                         content: cleanContent,
@@ -537,7 +537,7 @@ Use previous context when relevant but prioritize responding to the most recent 
 
                 // Handle errors from Gemini
                 if (message.error) {
-                  geminiLogger.error('Gemini message contained an error', { error: message.error });
+                  geminiLogger.error({ error: message.error }, 'Gemini message contained an error');
                   mainWindow?.webContents.send('audio-error',
                     `Gemini error: ${message.error.message || JSON.stringify(message.error)}`
                   );
@@ -547,7 +547,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                 }
 
               } catch (error) {
-                geminiLogger.error('Error processing Gemini message in onmessage', { error });
+                geminiLogger.error({ error }, 'Error processing Gemini message in onmessage');
                 mainWindow?.webContents.send('audio-error',
                   `Internal error processing Gemini response: ${(error as Error).message}`
                 );
@@ -556,7 +556,7 @@ Use previous context when relevant but prioritize responding to the most recent 
               }
             },
             onerror: (error: ErrorEvent) => {
-              geminiLogger.error('Gemini session error (onerror callback)', { error });
+              geminiLogger.error({ error }, 'Gemini session error (onerror callback)');
               mainWindow?.webContents.send('audio-error', `Gemini session error: ${error.message || error.error || 'Unknown error'}`);
               stopAllAudioStreamsAndSession(); // Still stop everything on error
             },
@@ -566,7 +566,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                 startHeartbeat(); // Start sending heartbeat signals
             },
             onclose: (event: CloseEvent) => { // <<< MODIFY THIS CALLBACK
-                geminiLogger.info('Gemini session closed', { code: event.code, reason: event.reason });
+                geminiLogger.info({ code: event.code, reason: event.reason }, 'Gemini session closed');
                 if (!isClosingIntentionally) { // Check the flag
                     // Only send status if closure wasn't intentional
                     mainWindow?.webContents.send('audio-status', `Disconnected from Gemini: ${event.reason || 'Unknown reason'}`);
@@ -614,7 +614,7 @@ Use previous context when relevant but prioritize responding to the most recent 
           // Optionally send mixed audio to renderer for visualization/debugging
           // mainWindow?.webContents.send('mixed-audio', mixed);
         } catch (mixErr) {
-          audioLogger.error('Error mixing or sending audio', { error: mixErr });
+          audioLogger.error({ error: mixErr }, 'Error mixing or sending audio');
         } finally {
           // Reset flags after processing attempt
           newMicChunkAvailable = false;
@@ -624,7 +624,7 @@ Use previous context when relevant but prioritize responding to the most recent 
     }
 
     // --- Start Microphone Capture using RtAudio ---
-    audioLogger.info('Starting microphone capture with RtAudio', { micDeviceId });
+    audioLogger.info({ micDeviceId }, 'Starting microphone capture with RtAudio');
     micAudioIO = new RtAudio();
     
     // Define the input callback for the microphone
@@ -659,7 +659,7 @@ Use previous context when relevant but prioritize responding to the most recent 
 
 
     // --- Start System Audio Capture using RtAudio ---
-    audioLogger.info('Starting system audio capture with RtAudio', { systemDeviceId });
+    audioLogger.info({ systemDeviceId }, 'Starting system audio capture with RtAudio');
     systemAudioIO = new RtAudio();
 
     // Define the input callback for system audio
@@ -688,7 +688,7 @@ Use previous context when relevant but prioritize responding to the most recent 
       null, // No output callback (outputCallback)
       0 as RtAudioStreamFlags, // options (Cast 0 to RtAudioStreamFlags)
       (type: RtAudioErrorType, msg: string) => { // Correct error callback signature
-              audioLogger.error('System Audio RtAudio Error', { type, message: msg });
+              audioLogger.error({ type, message: msg }, 'System Audio RtAudio Error');
               // Ignore "No open stream to close" errors as they occur during cleanup
               if (msg.includes('No open stream to close')) {
                 audioLogger.debug('Ignored No open stream to close error during cleanup');
@@ -724,7 +724,7 @@ Use previous context when relevant but prioritize responding to the most recent 
     return micSuccess && systemSuccess && geminiSuccess; // Success only if all started
 
   } catch (error) {
-    mainLogger.error('Failed to start audio capture or Gemini session with RtAudio', { error });
+    mainLogger.error({ error }, 'Failed to start audio capture or Gemini session with RtAudio');
     // Use type assertion for error message
     mainWindow?.webContents.send('audio-error', `Failed to start capture: ${(error as Error).message || String(error)}`);
     // Clean up if anything failed
@@ -741,7 +741,7 @@ ipcMain.handle('stop-audio-capture', async () => {
   try {
     // --- Process recording chunks ---
     if (currentRecordingChunks && currentRecordingChunks.length > 0) {
-      audioLogger.info('Processing recorded chunks', { chunkCount: currentRecordingChunks.length });
+      audioLogger.info({ chunkCount: currentRecordingChunks.length }, 'Processing recorded chunks');
       const audioData = Buffer.concat(currentRecordingChunks);
       if (audioData.length > 0) {
         const header = createWavHeader(TARGET_SAMPLE_RATE, TARGET_CHANNELS, 16, audioData.length);
@@ -769,7 +769,7 @@ ipcMain.handle('stop-audio-capture', async () => {
     audioLogger.info('All audio capture and session stopped');
     return true; // Indicate success
   } catch (error) {
-    audioLogger.error('Failed to stop audio capture/session gracefully (RtAudio)', { error });
+    audioLogger.error({ error }, 'Failed to stop audio capture/session gracefully (RtAudio)');
     return false;
   }
 });
@@ -794,7 +794,7 @@ ipcMain.handle('capture-screen', async (event, sendToGemini = false) => {
           media: imageBlob 
         });
       } catch (error) {
-        geminiLogger.error('Error sending screenshot to Gemini', { error });
+        geminiLogger.error({ error }, 'Error sending screenshot to Gemini');
       }
     }
     

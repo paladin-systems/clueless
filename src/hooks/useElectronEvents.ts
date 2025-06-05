@@ -43,9 +43,8 @@ export const useElectronEvents = () => {
     const handleGeminiResponse = (_event: any, response: GeminiResponse) => {
       // Validate the response structure slightly before adding
       if (response && response.type && response.content) {
-        useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });
-      } else {
-        rendererLogger.warn('Received invalid or incomplete Gemini response object', { response });
+        useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });      } else {
+        rendererLogger.warn({ response }, 'Received invalid or incomplete Gemini response object');
         // Optionally, add a fallback error note to the UI
         useStore.getState().addGeminiResponse({
           type: 'response',

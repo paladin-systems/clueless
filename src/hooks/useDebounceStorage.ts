@@ -13,9 +13,8 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
   const loadFromStorage = useCallback((): T | null => {
     try {
       const stored = localStorage.getItem(key);
-      return stored ? JSON.parse(stored) : null;
-    } catch (error) {
-      storageLogger.error('Error loading from storage', { key, error });
+      return stored ? JSON.parse(stored) : null;    } catch (error) {
+      storageLogger.error({ key, error }, 'Error loading from storage');
       return null;
     }
   }, [key]);
@@ -28,9 +27,8 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
 
     timeoutRef.current = setTimeout(() => {
       try {
-        localStorage.setItem(key, JSON.stringify(data));
-      } catch (error) {
-        storageLogger.error('Error saving to storage', { key, error });
+        localStorage.setItem(key, JSON.stringify(data));      } catch (error) {
+        storageLogger.error({ key, error }, 'Error saving to storage');
       }
     }, delay);
   }, [key, delay]);
@@ -71,8 +69,7 @@ export function migrateStorage(key: string, version: number, migrations: Record<
       // Update version and save
       migratedData._version = version;
       localStorage.setItem(key, JSON.stringify(migratedData));
-    }
-  } catch (error) {
-    storageLogger.error('Error migrating storage', { key, error });
+    }  } catch (error) {
+    storageLogger.error({ key, error }, 'Error migrating storage');
   }
 }
