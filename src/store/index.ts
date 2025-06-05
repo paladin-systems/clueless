@@ -48,10 +48,10 @@ interface AppState {
   clearResponses: () => void;
   updateViewOptions: (options: Partial<ViewOptions>) => void;
   addNote: (note: PostItNote) => void;
-  updateNote: (id: string, updates: Partial<PostItNote>) => void;
-  updateNotePosition: (id: string, position: { x: number; y: number }) => void;
+  updateNote: (id: string, updates: Partial<PostItNote>) => void;  updateNotePosition: (id: string, position: { x: number; y: number }) => void;
   updateNoteSize: (id: string, size: { width: number; height: number }) => void;
   updateNotesPositions: (notes: NotePosition[]) => void;
+  bringNoteToFront: (id: string) => void;
   setNotes: (notes: PostItNote[]) => void;
   removeNote: (id: string) => void;
   selectNote: (id: string | undefined) => void;
@@ -150,9 +150,8 @@ export const useStore = create<AppState>((set, get) => ({
       return { viewOptions: newViewOptions };
     });
   },
-
   addNote: (note) => set((state) => ({
-    notes: [...state.notes, note]
+    notes: [...state.notes, { ...note, zIndex: note.zIndex || Date.now() }]
   })),
 
   updateNote: (id, updates) => set((state) => ({
@@ -168,7 +167,6 @@ export const useStore = create<AppState>((set, get) => ({
     });
     return { notes: newNotes };
   }),
-
   updateNotePosition: (id, position) => set((state) => ({
     notes: state.notes.map((note) =>
       note.id === id ? { ...note, position, zIndex: Date.now() } : note
@@ -181,6 +179,12 @@ export const useStore = create<AppState>((set, get) => ({
     )
   })),
 
+  bringNoteToFront: (id: string) => set((state) => ({
+    notes: state.notes.map((note) =>
+      note.id === id ? { ...note, zIndex: Date.now() } : note
+    )
+  })),
+
 
   setNotes: (notes) => set({ notes }),
 
@@ -188,5 +192,15 @@ export const useStore = create<AppState>((set, get) => ({
     notes: state.notes.filter((note) => note.id !== id)
   })),
 
-  selectNote: (id) => set({ selectedNoteId: id })
+  selectNote: (id) => set((state) => {
+    // If selecting a note, bring it to front
+    if (id) {
+      const updatedNotes = state.notes.map((note) =>
+        note.id === id ? { ...note, zIndex: Date.now() } : note
+      );
+      return { selectedNoteId: id, notes: updatedNotes };
+    }
+    // If deselecting (id is undefined), just update selection
+    return { selectedNoteId: id };
+  })
 }));

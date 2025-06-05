@@ -133,10 +133,14 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
       });
     }
   }, [notes, onNoteMove, onNoteMoveMultiple, MIN_MARGIN]);
-
-  // Calculate z-index for note
+  // Calculate z-index for note - higher values for newer notes
   const getZIndex = (note: PostItNote): number => {
-    return Math.floor((Date.now() - note.timestamp) / 1000);
+    // If note already has a zIndex from interactions, use it
+    if (note.zIndex) {
+      return note.zIndex;
+    }
+    // Otherwise, use timestamp as base z-index (newer notes get higher z-index)
+    return note.timestamp;
   };
 
   // Handle canvas click to deselect notes

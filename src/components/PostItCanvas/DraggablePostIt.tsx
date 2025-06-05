@@ -34,12 +34,11 @@ const DraggablePostIt: React.FC<Props> = ({
       initialPosition: note.position,
     },
   });
-
-  // Custom drag listeners that include selection
+  // Custom drag listeners that include selection and bringing to front
   const customListeners = {
     ...listeners,
     onMouseDown: (e: React.MouseEvent) => {
-      // Select the note when starting to drag
+      // Select the note and bring to front when starting to drag
       if (!isSelected) {
         onSelect?.();
       }
@@ -49,7 +48,7 @@ const DraggablePostIt: React.FC<Props> = ({
       }
     },
     onTouchStart: (e: React.TouchEvent) => {
-      // Select the note when starting to drag on touch devices
+      // Select the note and bring to front when starting to drag on touch devices
       if (!isSelected) {
         onSelect?.();
       }
@@ -72,11 +71,15 @@ const DraggablePostIt: React.FC<Props> = ({
     // Disable transitions during drag to prevent conflicts
     transition: isDragging || isResizing ? 'none' : undefined,
   };
-
   // Handle resize
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent drag from starting when resizing
     setIsResizing(true);
+
+    // Bring note to front when starting to resize
+    if (!isSelected) {
+      onSelect?.();
+    }
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -97,7 +100,7 @@ const DraggablePostIt: React.FC<Props> = ({
 
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
-  }, [note.size, onResize]);
+  }, [note.size, onResize, isSelected, onSelect]);
 
   // Keyboard navigation for the post-it note
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
@@ -151,8 +154,7 @@ const DraggablePostIt: React.FC<Props> = ({
       onDelete?.();
     }
   }, [note.position, note.size, onMove, onResize]);
-
-  // Handle click to select note
+  // Handle click to select note and bring to front
   const handleClick = useCallback((e: React.MouseEvent) => {
     // Don't select if we're dragging or resizing
     if (isDragging || isResizing) {
@@ -165,7 +167,7 @@ const DraggablePostIt: React.FC<Props> = ({
     }
     
     e.stopPropagation();
-    onSelect?.();
+    onSelect?.(); // This will bring the note to front via selectNote in store
   }, [isDragging, isResizing, onSelect]);
 
   return (
