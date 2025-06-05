@@ -33,6 +33,9 @@ const loggerConfig = {
 // Create the main logger instance
 export const logger = pino(loggerConfig);
 
+// Log the current environment mode
+logger.info(`Application starting in ${isDevelopment ? 'development' : 'production'} mode`);
+
 // Create child loggers for different parts of the application
 export const mainLogger = logger.child({ module: 'main' });
 export const rendererLogger = logger.child({ module: 'renderer' });
