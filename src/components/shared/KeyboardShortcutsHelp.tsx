@@ -47,6 +47,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
   return (
     <div
       ref={modalRef}
+      style={{ zIndex: 9007199254740993 }}
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"

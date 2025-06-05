@@ -15,6 +15,7 @@ const PostItInstructions: React.FC = () => {
 
   return (
     <div
+      style={{ zIndex: 9007199254740991 }}
       className={clsx(
         "fixed bottom-4 right-4 bg-gray-900/95 backdrop-blur-sm",
         "p-4 rounded-lg border border-gray-700/50 shadow-lg",

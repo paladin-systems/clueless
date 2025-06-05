@@ -49,10 +49,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
       <div className="flex items-center h-full">
         {/* Left Section */}
         <div className="menu-section left">
-          <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-            CL
-          </div>
-          <span className="text-white font-medium">Clueless AI</span>
+          <span className="text-white font-medium">Clueless</span>
           {sessionInfo.startTime > 0 && (
             <span className="text-sm text-gray-400">
               Session: {formatDuration(sessionInfo.duration)}

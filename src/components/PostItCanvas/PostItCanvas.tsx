@@ -180,7 +180,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         role="region"
         aria-label="Post-it notes canvas"
       >        {/* Auto-arrange Button */}
-        <div className="absolute top-4 right-4 z-[9999]">
+        <div className="absolute top-4 right-4 z-[9999]" style={{ zIndex: 9007199254740990 }}>
           <button
             onClick={() => organizeNotes(notes, canvasBounds)}
             className="glass-button-secondary text-xs px-2 py-1"
