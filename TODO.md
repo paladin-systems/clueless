@@ -1,28 +1,17 @@
 # TODO - Clueless AI Assistant Improvements
 
-## ✅ Recently Completed
-
-### Data Export & Management
-- [x] **Notes Export System (Completed 2025-06-05)**
-  - [x] Created comprehensive export utility (`exportUtils.ts`)
-  - [x] Implemented multiple export formats:
-    - [x] JSON - Structured data with all metadata including timestamps, positions, etc.
-    - [x] Markdown - Formatted text grouped by category with proper headings
-    - [x] Plain Text - Simple text format with organized sections
-    - [x] CSV - Spreadsheet compatible format for data analysis
-  - [x] Added export functionality to Settings menu with dropdown selection
-  - [x] Implemented proper file download with automatic filename generation
-  - [x] Added export validation and error handling
-  - [x] Replaced debug console logging with proper export functionality
-  - [x] Made Settings menu more compact and responsive (fixed screen overflow issue)
-
 ## 🚀 Feature Enhancements
 
 - [ ] Improve the top menu bar UI
 - [ ] Fix auto-arrange, use dnd sorting library
-- [ ] Fix he selected note to z-index front
+- [ ] Fix the selected note to z-index front
 - [ ] Fix click-through on the transparent background
 - [ ] Use a logging library for better debugging
+- [ ] Change to use Hero UI components for the main UI
+- [ ] Fix the LLM prompt, we are generating to many notes, we should only generate relevant notes
+- [ ] Add a "clear all" button to the notes section
+- [ ] Menu tooltip is shown behind the notes
+- [ ] Backgrounf blur effect is not working properly
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 
