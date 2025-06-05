@@ -173,7 +173,7 @@ function createWindow() {  // Create the browser window.
     mainWindow.webContents.openDevTools();
   } else {
     // In production, use the built index.html file
-    mainLogger.info("Loading production build", { path: path.join(__dirname, "../dist/index.html") });
+    mainLogger.info({ path: path.join(__dirname, "../dist/index.html") }, "Loading production build");
     mainWindow.loadFile(path.join(__dirname, "../dist/index.html"));
   }
 
@@ -308,27 +308,34 @@ app.on('activate', () => {
 
 // IPC: List audio input devices using RtAudio
 ipcMain.handle('list-audio-devices', () => {
-  audioLogger.info('Listing all audio devices using RtAudio');
   try {
     const rtAudio = new RtAudio();
     const devices = rtAudio.getDevices();
     const defaultInput = rtAudio.getDefaultInputDevice();
     const defaultOutput = rtAudio.getDefaultOutputDevice();
-    audioLogger.info('Devices found', {
+      // Log devices with correct Pino parameter order: object first, message second
+    audioLogger.debug({
       deviceCount: devices.length,
       defaultInput,
       defaultOutput,
-      devices: devices.map(d => ({ id: d.id, name: d.name, inputChannels: d.inputChannels, outputChannels: d.outputChannels }))
-    });
+      devices: devices.map(d => ({ 
+        id: d.id, 
+        name: d.name, 
+        inputChannels: d.inputChannels, 
+        outputChannels: d.outputChannels 
+      }))
+    }, 'Devices found');
+
     // Add inputChannels and outputChannels to each device
-    const devicesWithChannels = devices.map(d => ({
+    const devicesWithChannels = devices ? devices.map(d => ({
       ...d,
       inputChannels: d.inputChannels,
       outputChannels: d.outputChannels
-    }));
+    })) : [];
+    
     return { devices: devicesWithChannels, defaultInput, defaultOutput };
   } catch (error) {
-    audioLogger.error('Error listing audio devices with RtAudio', { error });
+    audioLogger.error({ error }, 'Error listing audio devices with RtAudio');
     mainWindow?.webContents.send('audio-error', `Error listing devices: ${(error as Error).message}`);
     return { devices: [], defaultInput: null, defaultOutput: null };
   }
@@ -336,7 +343,7 @@ ipcMain.handle('list-audio-devices', () => {
 
 // IPC: Start audio capture - Refactored for RtAudio
 ipcMain.handle('start-audio-capture', async (event, micDeviceId: number, systemDeviceId: number) => {
-  audioLogger.info('Starting audio capture using RtAudio', { micDeviceId, systemDeviceId });
+  audioLogger.info({ micDeviceId, systemDeviceId }, 'Starting audio capture using RtAudio');
 
   if (!genAI) {
     mainLogger.error('Gemini AI client not initialized. Cannot start capture');

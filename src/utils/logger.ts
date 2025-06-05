@@ -16,7 +16,10 @@ const loggerConfig = {
         levelFirst: true,
         crlf: true, // For Windows compatibility
         singleLine: false, // Ensure multi-line output for objects
-        depth: 5, // Increase depth to show more nested object details
+        hideObject: false, // Make sure objects are shown
+        colorizeObjects: true, // Colorize objects
+        depth: 10, // Increase depth to show more nested object details
+        appendNewline: true, // Ensure proper line separation
       },
     },
   }),
@@ -35,6 +38,11 @@ export const logger = pino(loggerConfig);
 
 // Log the current environment mode
 logger.info(`Application starting in ${isDevelopment ? 'development' : 'production'} mode`);
+
+// IMPORTANT: Pino logging parameter order
+// ✅ CORRECT: logger.info({ object }, 'message')
+// ❌ WRONG:   logger.info('message', { object })
+// The object must come FIRST, then the message
 
 // Create child loggers for different parts of the application
 export const mainLogger = logger.child({ module: 'main' });
