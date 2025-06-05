@@ -52,6 +52,7 @@ interface AppState {
   updateNotePosition: (id: string, position: { x: number; y: number }) => void;
   updateNoteSize: (id: string, size: { width: number; height: number }) => void;
   updateNotesPositions: (notes: NotePosition[]) => void;
+  setNotes: (notes: PostItNote[]) => void;
   removeNote: (id: string) => void;
   selectNote: (id: string | undefined) => void;
 }
@@ -180,6 +181,8 @@ export const useStore = create<AppState>((set, get) => ({
     )
   })),
 
+
+  setNotes: (notes) => set({ notes }),
 
   removeNote: (id) => set((state) => ({
     notes: state.notes.filter((note) => note.id !== id)

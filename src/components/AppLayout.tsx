@@ -36,6 +36,7 @@ const AppLayout: React.FC = () => {
   const updateNotesPositions = useStore(state => state.updateNotesPositions);
   const addNote = useStore(state => state.addNote);
   const removeNote = useStore(state => state.removeNote);
+  const setNotes = useStore(state => state.setNotes);
   const notes = useStore(state => state.notes);
 
 
@@ -47,6 +48,18 @@ const AppLayout: React.FC = () => {
     key: 'post-it-notes',
     delay: 1000
   });
+  
+  // Load notes from storage on startup
+  useEffect(() => {
+    const storedNotes = loadFromStorage();
+    if (storedNotes && storedNotes.length > 0) {
+      // Update store with loaded notes only if store is empty
+      const currentNotes = useStore.getState().notes;
+      if (currentNotes.length === 0) {
+        setNotes(storedNotes);
+      }
+    }
+  }, [loadFromStorage, setNotes]);
   
   // Save notes when they change
   useEffect(() => {

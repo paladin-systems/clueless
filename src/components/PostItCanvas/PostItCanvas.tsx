@@ -58,13 +58,34 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
     console.log('organizeNotes called with:', notesToOrganize, bounds);
     const organizedNotes: NotePosition[] = [];
 
-    // Organize all notes in a grid
-    const cols = Math.floor(bounds.width / (300 + MIN_MARGIN));
+    if (notesToOrganize.length === 0) return;
+
+    // Calculate grid dimensions based on actual note sizes
+    const maxNoteWidth = Math.max(...notesToOrganize.map(note => note.size.width), 300);
+    const maxNoteHeight = Math.max(...notesToOrganize.map(note => note.size.height), 200);
+    
+    // Calculate available space (accounting for margins and padding)
+    const availableWidth = bounds.width - (MIN_MARGIN * 2);
+    const availableHeight = bounds.height - (MIN_MARGIN * 2);
+    
+    const cols = Math.floor(availableWidth / (maxNoteWidth + MIN_MARGIN));
+    const actualCols = Math.max(1, cols); // Ensure at least 1 column
+    
     notesToOrganize.forEach((note, index) => {
-      const col = index % cols;
-      const row = Math.floor(index / cols);
-      const x = col * (300 + MIN_MARGIN) + MIN_MARGIN;
-      const y = row * (200 + MIN_MARGIN) + MIN_MARGIN;
+      const col = index % actualCols;
+      const row = Math.floor(index / actualCols);
+      
+      // Calculate position ensuring notes stay within bounds
+      let x = col * (maxNoteWidth + MIN_MARGIN) + MIN_MARGIN;
+      let y = row * (maxNoteHeight + MIN_MARGIN) + MIN_MARGIN;
+      
+      // Ensure the note doesn't exceed canvas bounds
+      x = Math.min(x, bounds.width - note.size.width - MIN_MARGIN);
+      y = Math.min(y, bounds.height - note.size.height - MIN_MARGIN);
+      
+      // Ensure minimum margins
+      x = Math.max(x, MIN_MARGIN);
+      y = Math.max(y, MIN_MARGIN);
 
       organizedNotes.push({
         id: note.id,
