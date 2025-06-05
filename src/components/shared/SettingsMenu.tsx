@@ -208,32 +208,6 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             Display helpful keyboard shortcuts for moving and managing post-it notes
           </p>
         </div>
-
-        <div className="mt-6 flex justify-end space-x-3">
-          <button
-            onClick={() => {
-              updateViewOptions({ showInstructions: true });
-              onClose();
-            }}
-            className={clsx(
-              "px-4 py-2 text-gray-300 rounded-md text-sm",
-              "hover:bg-gray-800 transition-all duration-200",
-              "focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-            )}
-          >
-            Show Instructions
-          </button>
-          <button
-            onClick={onClose}
-            className={clsx(
-              "px-4 py-2 bg-blue-600 text-white rounded-md text-sm",
-              "hover:bg-blue-700 transition-all duration-200",
-              "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
-            )}
-          >
-            Done
-          </button>
-        </div>
       </div>
     </div>
   );
