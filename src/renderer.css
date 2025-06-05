@@ -55,17 +55,16 @@
   .menu-section.right {
     @apply w-auto justify-end; /* Remove fixed width */
   }
-
   /* Glass Effect Buttons */
   .glass-button {
-    @apply px-4 py-1.5 rounded-md text-sm font-medium;
+    @apply px-4 py-1.5 rounded-md text-sm font-medium cursor-pointer;
     @apply bg-blue-600/90 text-white hover:bg-blue-700/90;
     @apply backdrop-blur-sm transition-colors;
     @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900;
   }
 
   .glass-button-secondary {
-    @apply px-3 py-1.5 rounded-md text-sm;
+    @apply px-3 py-1.5 rounded-md text-sm cursor-pointer;
     @apply bg-gray-800/90 text-gray-300 hover:bg-gray-700/90;
     @apply backdrop-blur-sm transition-colors;
     @apply focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-1 focus:ring-offset-gray-900;
