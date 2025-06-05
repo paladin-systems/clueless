@@ -26,7 +26,7 @@ const PostItInstructions: React.FC = () => {
       <div className="flex justify-between items-start mb-3">
         <h3 className="font-medium text-white">Keyboard Controls</h3>        <button
           onClick={hideInstructions}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-gray-400 hover:text-white transition-colors cursor-pointer"
           aria-label="Close instructions"
         >
           <FaXmark />
@@ -56,10 +56,9 @@ const PostItInstructions: React.FC = () => {
 
         <div className="text-xs text-gray-500 mt-3 space-y-1">
           <p>Tab through notes to select and use arrow keys to move them.</p>
-          <p>Press ? for more shortcuts or click the <FaKeyboard className="inline" /> icon in the top menu.</p>
-          <button
+          <p>Press ? for more shortcuts or click the <FaKeyboard className="inline" /> icon in the top menu.</p>          <button
             onClick={hideInstructions}
-            className="text-blue-400 hover:text-blue-300 transition-colors"
+            className="text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
           >
             Got it, don't show again
           </button>

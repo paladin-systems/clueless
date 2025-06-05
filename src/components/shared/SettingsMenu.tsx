@@ -86,7 +86,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             Settings
           </h2>          <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800"
+            className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800 cursor-pointer"
             aria-label="Close settings"
           >
             <FaXmark />
@@ -179,10 +179,9 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             </select>
             {systemAudioDevices.length === 0 && (
               <p className="text-xs text-red-400">
-                No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in Sound Control Panel.
-                <button
+                No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in Sound Control Panel.                <button
                   onClick={() => (window as any).electron.openSettings('sound')}
-                  className="text-blue-400 hover:underline ml-1"
+                  className="text-blue-400 hover:underline ml-1 cursor-pointer"
                 >
                   Open Sound Settings
                 </button>

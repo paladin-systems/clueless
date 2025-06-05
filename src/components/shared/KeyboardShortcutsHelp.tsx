@@ -66,7 +66,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
             Keyboard Shortcuts
           </h2>          <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800"
+            className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800 cursor-pointer"
             aria-label="Close keyboard shortcuts"
           >
             <FaXmark />

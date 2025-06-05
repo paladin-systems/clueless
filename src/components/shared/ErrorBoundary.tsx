@@ -64,16 +64,15 @@ class ErrorBoundary extends Component<Props, State> {
                 </pre>
               )}
             </div>
-            <div className="flex justify-end space-x-3">
-              <button
+            <div className="flex justify-end space-x-3">              <button
                 onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 transition-colors cursor-pointer"
               >
                 Reload Page
               </button>
               <button
                 onClick={this.handleRetry}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors cursor-pointer"
               >
                 Try Again
               </button>
