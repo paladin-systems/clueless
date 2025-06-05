@@ -14,7 +14,6 @@ import LoadingSpinner from './shared/LoadingSpinner';
 const AppLayout: React.FC = () => {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
 
   // Initialize electron event listeners and keyboard shortcuts
   useElectronEvents();
@@ -38,6 +37,8 @@ const AppLayout: React.FC = () => {
   const removeNote = useStore(state => state.removeNote);
   const setNotes = useStore(state => state.setNotes);
   const notes = useStore(state => state.notes);
+  const selectedNoteId = useStore(state => state.selectedNoteId);
+  const selectNote = useStore(state => state.selectNote);
 
 
   console.log('AppLayout: geminiResponses count:', geminiResponses.length);
@@ -224,16 +225,14 @@ const AppLayout: React.FC = () => {
         showSettings
       ) {
         return;
-      }
-
-      // Delete selected note
+      }      // Delete selected note
       if (
         selectedNoteId &&
         (event.key === 'Delete' || event.key === 'Backspace')
       ) {
         event.preventDefault();
         removeNote(selectedNoteId);
-        setSelectedNoteId(null);
+        selectNote(undefined);
       }
 
       // Tab navigation between notes
@@ -247,12 +246,10 @@ const AppLayout: React.FC = () => {
 
         let nextIndex = event.shiftKey
           ? currentIndex - 1
-          : currentIndex + 1;
-
-        if (nextIndex >= notes.length) nextIndex = 0;
+          : currentIndex + 1;        if (nextIndex >= notes.length) nextIndex = 0;
         if (nextIndex < 0) nextIndex = notes.length - 1;
 
-        setSelectedNoteId(notes[nextIndex].id);
+        selectNote(notes[nextIndex].id);
       }
     };
 
@@ -271,10 +268,13 @@ const AppLayout: React.FC = () => {
   const handleMultiNoteMove = (movedNotes: { id: string; position: { x: number; y: number } }[]) => {
     updateNotesPositions(movedNotes);
   };
-
   const handleNoteResize = useCallback((id: string, size: { width: number; height: number }) => {
     updateNoteSize(id, size);
   }, [updateNoteSize]);
+
+  const handleNoteSelect = useCallback((id: string | null) => {
+    selectNote(id || undefined);
+  }, [selectNote]);
 
 
 
@@ -305,13 +305,12 @@ const AppLayout: React.FC = () => {
       {/* Post-it Canvas */}
       <PostItCanvas
         id="post-it-canvas"
-        tabIndex={-1}
-        notes={notes}
+        tabIndex={-1}        notes={notes}
         onNoteMove={handleNoteMove}
         onNoteMoveMultiple={handleMultiNoteMove}
         onNoteResize={handleNoteResize}
         selectedNoteId={selectedNoteId}
-        onNoteSelect={setSelectedNoteId}
+        onNoteSelect={handleNoteSelect}
         onNoteDelete={removeNote}
       />
 

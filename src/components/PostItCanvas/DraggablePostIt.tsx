@@ -26,7 +26,6 @@ const DraggablePostIt: React.FC<Props> = ({
   isSelected
 }) => {
   const [isResizing, setIsResizing] = useState(false);
-
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: note.id,
     data: {
@@ -34,6 +33,31 @@ const DraggablePostIt: React.FC<Props> = ({
       initialPosition: note.position,
     },
   });
+
+  // Custom drag listeners that include selection
+  const customListeners = {
+    ...listeners,
+    onMouseDown: (e: React.MouseEvent) => {
+      // Select the note when starting to drag
+      if (!isSelected) {
+        onSelect?.();
+      }
+      // Call the original onMouseDown if it exists
+      if (listeners?.onMouseDown) {
+        listeners.onMouseDown(e as any);
+      }
+    },
+    onTouchStart: (e: React.TouchEvent) => {
+      // Select the note when starting to drag on touch devices
+      if (!isSelected) {
+        onSelect?.();
+      }
+      // Call the original onTouchStart if it exists
+      if (listeners?.onTouchStart) {
+        listeners.onTouchStart(e as any);
+      }
+    }
+  };
 
   const divStyle: React.CSSProperties = {
     position: 'absolute',
@@ -120,34 +144,47 @@ const DraggablePostIt: React.FC<Props> = ({
           break;
       }
       onResize(newSize);
-    }
-
-    // Handle keyboard shortcuts
+    }    // Handle keyboard shortcuts
     if (key === 'Delete' || key === 'Backspace') {
       event.preventDefault();
       onDelete?.();
     }
   }, [note.position, note.size, onMove, onResize]);
 
+  // Handle click to select note
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    // Don't select if we're dragging or resizing
+    if (isDragging || isResizing) {
+      return;
+    }
+    
+    // Don't select if the click was on the drag handle
+    if ((e.target as HTMLElement).closest('.drag-handle')) {
+      return;
+    }
+    
+    e.stopPropagation();
+    onSelect?.();
+  }, [isDragging, isResizing, onSelect]);
+
   return (
     <div
       ref={setNodeRef}
-      style={divStyle}
-      className={clsx(
+      style={divStyle}      className={clsx(
         'post-it',
         `category-${note.category}`,
-        isSelected && 'ring-2 ring-blue-500',
+        isSelected && ['ring-2', 'ring-blue-500', 'selected'],
         isDragging && 'dragging', // Add dragging class
         isResizing && 'resizing', // Add resizing class
         className
       )}
-      onClick={onSelect}
+      onClick={handleClick}
       tabIndex={0}
       role="article"
       aria-label={`${note.category} note`}
       onKeyDown={handleKeyDown}
     >      {/* Note Header with Drag Handle */}
-      <div className="drag-handle" {...listeners} {...attributes}>
+      <div className="drag-handle" {...customListeners} {...attributes}>
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-medium text-gray-700 capitalize">
