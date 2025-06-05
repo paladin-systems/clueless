@@ -25,7 +25,7 @@ const DraggablePostIt: React.FC<Props> = ({
   onDelete,
   isSelected
 }) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: note.id,
     data: {
       noteId: note.id,
@@ -33,10 +33,17 @@ const DraggablePostIt: React.FC<Props> = ({
     },
   });
 
-  const style = {
+  const divStyle: React.CSSProperties = {
+    position: 'absolute',
     left: note.position.x,
     top: note.position.y,
+    width: note.size.width,
+    height: note.size.height,
+    zIndex: note.zIndex,
     transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : 'none',
+    willChange: 'transform', // Helps browser optimize transform rendering
+    // Disable transitions during drag to prevent conflicts
+    transition: isDragging ? 'none' : undefined,
   };
 
   // Handle resize
@@ -121,16 +128,12 @@ const DraggablePostIt: React.FC<Props> = ({
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        width: note.size.width,
-        height: note.size.height,
-        zIndex: note.zIndex,
-        position: 'absolute', /* Ensure absolute positioning for left/top to work */
-      }}      className={clsx(
+      style={divStyle}
+      className={clsx(
         'post-it',
         `category-${note.category}`,
         isSelected && 'ring-2 ring-blue-500',
+        isDragging && 'dragging', // Add dragging class
         className
       )}
       onClick={onSelect}

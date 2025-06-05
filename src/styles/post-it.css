@@ -5,6 +5,11 @@
   @apply transition-all duration-200;
 }
 
+/* Disable transitions during drag to prevent conflicts */
+.post-it.dragging {
+  transition: none !important;
+}
+
 /* Category-based styles */
 .post-it.category-response {
   @apply bg-blue-50/90 border-blue-200/60;
@@ -47,15 +52,14 @@
 
 
 /* Hover and interactive states */
-.post-it:hover {
+.post-it:hover:not(.dragging) {
   @apply shadow-xl;
-  /* Removed transform: scale(1.02) to prevent cutting on hover */
-  transform: rotate(0deg) !important;
+  transform: scale(1.02) !important;
 }
 
-.post-it:active {
+.post-it:active:not(.dragging) {
   @apply shadow-md;
-  transform: scale(0.98) rotate(0deg) !important;
+  transform: scale(0.98) !important;
 }
 
 /* Drag handle */
