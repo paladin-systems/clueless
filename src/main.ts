@@ -1,17 +1,15 @@
-import { app, BrowserWindow, ipcMain, desktopCapturer, shell } from 'electron';
-import path from 'path';
-import { GoogleGenAI, Session, Blob as GenAIBlob, Modality } from '@google/genai';
 import dotenv from 'dotenv';
-import { RtAudio, RtAudioFormat, RtAudioErrorType, RtAudioStreamFlags } from 'audify'; // Import audify, RtAudioErrorType, and RtAudioStreamFlags
-import { mainLogger, audioLogger, geminiLogger } from './utils/logger';
 
-// Load environment variables from .env file
+// Load environment variables from .env file as early as possible
 dotenv.config({
   path: path.join(process.cwd(), '.env')
 });
 
-// Remove naudiodon require
-// const naudiodon = require('@ecubus-pro/naudiodon');
+import { app, BrowserWindow, ipcMain, desktopCapturer, shell } from 'electron';
+import path from 'path';
+import { GoogleGenAI, Session, Blob as GenAIBlob, Modality } from '@google/genai';
+import { RtAudio, RtAudioFormat, RtAudioErrorType, RtAudioStreamFlags } from 'audify'; // Import audify, RtAudioErrorType, and RtAudioStreamFlags
+import { mainLogger, audioLogger, geminiLogger } from './utils/logger';
 
 // Constants
 const isDev = !app.isPackaged;
@@ -42,8 +40,6 @@ function bufferToGenAIBlob(buffer: Buffer, mimeType: string): GenAIBlob {
 let mainWindow: BrowserWindow | null = null;
 let micAudioIO: RtAudio | null = null; // Use RtAudio type
 let systemAudioIO: RtAudio | null = null; // Use RtAudio type
-// Remove resampleWorker
-// let resampleWorker: Worker | null = null; 
 
 // Helper function to create a WAV header
 function createWavHeader(sampleRate: number, numChannels: number, bitsPerSample: number, dataLength: number): Buffer {
