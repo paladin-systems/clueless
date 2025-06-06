@@ -3,6 +3,7 @@ import { restrictToParentElement } from "@dnd-kit/modifiers";
 import clsx from "clsx";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
+import { useStore } from "../../store";
 import type { NotePosition, PostItNote } from "../../types/ui";
 import { uiLogger } from "../../utils/logger";
 import DraggablePostIt from "./DraggablePostIt";
@@ -35,6 +36,9 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
 }) => {
   const MENU_HEIGHT = 56; // Height of top menu bar
   const MIN_MARGIN = 10; // Minimum margin between notes
+
+  // Get removeAllNotes from store
+  const removeAllNotes = useStore((state) => state.removeAllNotes);
 
   // Update canvas bounds
   const [canvasBounds, setCanvasBounds] = useState({ width: 0, height: 0 });
@@ -215,13 +219,33 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
       >
         {" "}
         {/* Auto-arrange Button */}
-        <div className="absolute top-4 right-4 z-[9999]" style={{ zIndex: 9007199254740990 }}>
+        <div
+          className="absolute top-4 right-4 z-[9999] flex space-x-2"
+          style={{ zIndex: 9007199254740990 }}
+        >
           <button
             type="button"
             onClick={() => organizeNotes(notes, canvasBounds)}
             className="glass-button-secondary px-2 py-1 text-xs"
           >
             Auto-arrange
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (
+                notes.length > 0 &&
+                window.confirm(
+                  `Are you sure you want to remove all ${notes.length} notes? This action cannot be undone.`,
+                )
+              ) {
+                removeAllNotes();
+              }
+            }}
+            className="glass-button-secondary px-2 py-1 text-red-400 text-xs hover:text-red-300"
+            disabled={notes.length === 0}
+          >
+            Remove All
           </button>
         </div>
         {/* Post-it Notes */}

@@ -53,22 +53,27 @@ const AppLayout: React.FC = () => {
   // Load notes from storage on startup
   useEffect(() => {
     const storedNotes = loadFromStorage();
-    rendererLogger.info("Loading notes from storage", { noteCount: storedNotes?.length || 0 });
+    rendererLogger.debug("Loading notes from storage on startup", {
+      storedCount: storedNotes?.length || 0,
+    });
 
     if (storedNotes && storedNotes.length > 0) {
       // Update store with loaded notes only if store is empty
       const currentNotes = useStore.getState().notes;
+      rendererLogger.debug("Current notes in store", { currentCount: currentNotes.length });
       if (currentNotes.length === 0) {
+        rendererLogger.info("Setting notes from storage", { noteCount: storedNotes.length });
         setNotes(storedNotes);
       }
+    } else {
+      rendererLogger.debug("No stored notes found or empty array");
     }
   }, [loadFromStorage, setNotes]);
 
   // Save notes when they change
   useEffect(() => {
-    if (notes.length > 0) {
-      saveToStorage(notes);
-    }
+    rendererLogger.debug("Saving notes to storage", { noteCount: notes.length });
+    saveToStorage(notes);
   }, [notes, saveToStorage]);
 
   // Track session info

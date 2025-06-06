@@ -83,6 +83,7 @@ interface AppState {
   bringNoteToFront: (id: string) => void;
   setNotes: (notes: PostItNote[]) => void;
   removeNote: (id: string) => void;
+  removeAllNotes: () => void;
   selectNote: (id: string | undefined) => void;
 }
 
@@ -228,6 +229,12 @@ export const useStore = create<AppState>((set, get) => ({
   removeNote: (id) =>
     set((state) => ({
       notes: state.notes.filter((note) => note.id !== id),
+    })),
+
+  removeAllNotes: () =>
+    set(() => ({
+      notes: [],
+      selectedNoteId: undefined,
     })),
 
   selectNote: (id) =>
