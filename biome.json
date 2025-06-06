@@ -65,7 +65,7 @@
         "noDangerouslySetInnerHtml": "warn"
       },
       "nursery": {
-        "useSortedClasses": "off"
+        "useSortedClasses": "error"
       }
     }
   },
