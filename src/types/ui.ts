@@ -4,7 +4,7 @@ export interface PostItNote {
   position: { x: number; y: number };
   size: { width: number; height: number };
   timestamp: number;
-  category: 'response' | 'question' | 'reference' | 'note';
+  category: "response" | "question" | "reference" | "note";
   color: string;
   lastModified: number;
   isAiModified: boolean;
@@ -17,18 +17,18 @@ export interface NotePosition {
 }
 
 export interface TopMenuSection {
-  left: 'logo-area' | 'navigation-breadcrumbs';
-  center: 'action-controls' | 'search-filter';
-  right: 'user-controls' | 'view-options';
+  left: "logo-area" | "navigation-breadcrumbs";
+  center: "action-controls" | "search-filter";
+  right: "user-controls" | "view-options";
 }
 
 export interface AudioIndicator {
   level: number;
-  type: 'mic' | 'system';
+  type: "mic" | "system";
 }
 
 export interface ViewOptions {
-  layout: 'grid' | 'cascade';
+  layout: "grid" | "cascade";
   opacity: number;
   alwaysOnTop: boolean;
   showCategories: boolean;

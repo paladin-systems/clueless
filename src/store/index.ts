@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { PostItNote, AudioIndicator, ViewOptions, NotePosition } from '../types/ui';
-import { GeminiResponse } from '../types/gemini';
+import { create } from "zustand";
+import type { GeminiResponse } from "../types/gemini";
+import type { NotePosition, PostItNote, ViewOptions } from "../types/ui";
 
 interface AppState {
   // Audio-related state
@@ -8,8 +8,20 @@ interface AppState {
   systemLevel: number;
   micLevelTimeout: NodeJS.Timeout | null;
   systemLevelTimeout: NodeJS.Timeout | null;
-  micAudioDevices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[];
-  systemAudioDevices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[];
+  micAudioDevices: {
+    id: number;
+    name: string;
+    isDefault: boolean;
+    inputChannels: number;
+    outputChannels: number;
+  }[];
+  systemAudioDevices: {
+    id: number;
+    name: string;
+    isDefault: boolean;
+    inputChannels: number;
+    outputChannels: number;
+  }[];
   selectedMicDeviceId?: number;
   selectedSystemDeviceId?: number;
   isRecording: boolean;
@@ -42,13 +54,30 @@ interface AppState {
   capture: () => Promise<void>;
   setSelectedMicDevice: (deviceId: number) => void;
   setSelectedSystemDevice: (deviceId: number) => void;
-  setMicAudioDevices: (devices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[]) => void;
-  setSystemAudioDevices: (devices: { id: number; name: string; isDefault: boolean; inputChannels: number; outputChannels: number }[]) => void;
+  setMicAudioDevices: (
+    devices: {
+      id: number;
+      name: string;
+      isDefault: boolean;
+      inputChannels: number;
+      outputChannels: number;
+    }[],
+  ) => void;
+  setSystemAudioDevices: (
+    devices: {
+      id: number;
+      name: string;
+      isDefault: boolean;
+      inputChannels: number;
+      outputChannels: number;
+    }[],
+  ) => void;
   addGeminiResponse: (response: GeminiResponse) => void;
   clearResponses: () => void;
   updateViewOptions: (options: Partial<ViewOptions>) => void;
   addNote: (note: PostItNote) => void;
-  updateNote: (id: string, updates: Partial<PostItNote>) => void;  updateNotePosition: (id: string, position: { x: number; y: number }) => void;
+  updateNote: (id: string, updates: Partial<PostItNote>) => void;
+  updateNotePosition: (id: string, position: { x: number; y: number }) => void;
   updateNoteSize: (id: string, size: { width: number; height: number }) => void;
   updateNotesPositions: (notes: NotePosition[]) => void;
   bringNoteToFront: (id: string) => void;
@@ -76,11 +105,11 @@ export const useStore = create<AppState>((set, get) => ({
   // currentGeminiTextBuffer: '', // This will be removed
   notes: [],
   viewOptions: {
-    layout: 'cascade',
+    layout: "cascade",
     opacity: 0.9,
     alwaysOnTop: false,
     showCategories: true,
-    showInstructions: localStorage.getItem('showPostItInstructions') !== 'false'
+    showInstructions: localStorage.getItem("showPostItInstructions") !== "false",
   },
   screenCapture: undefined,
   selectedNoteId: undefined,
@@ -98,7 +127,7 @@ export const useStore = create<AppState>((set, get) => ({
     try {
       const success = await (window as any).electron.startAudioCapture(
         selectedMicDeviceId,
-        selectedSystemDeviceId
+        selectedSystemDeviceId,
       );
       if (success) {
         set({ isRecording: true, audioError: undefined });
@@ -130,9 +159,10 @@ export const useStore = create<AppState>((set, get) => ({
   setSelectedMicDevice: (deviceId) => set({ selectedMicDeviceId: deviceId }),
   setSelectedSystemDevice: (deviceId) => set({ selectedSystemDeviceId: deviceId }),
 
-  addGeminiResponse: (response: GeminiResponse) => set((state) => ({
-    geminiResponses: [...state.geminiResponses, response]
-  })),
+  addGeminiResponse: (response: GeminiResponse) =>
+    set((state) => ({
+      geminiResponses: [...state.geminiResponses, response],
+    })),
 
   clearResponses: () => set({ geminiResponses: [] }),
 
@@ -140,67 +170,76 @@ export const useStore = create<AppState>((set, get) => ({
     set((state) => {
       const newViewOptions = { ...state.viewOptions, ...options };
       // Perform a shallow comparison to avoid unnecessary re-renders
-      if (Object.keys(newViewOptions).every(key => newViewOptions[key as keyof ViewOptions] === state.viewOptions[key as keyof ViewOptions])) {
+      if (
+        Object.keys(newViewOptions).every(
+          (key) =>
+            newViewOptions[key as keyof ViewOptions] ===
+            state.viewOptions[key as keyof ViewOptions],
+        )
+      ) {
         return state; // No actual change, return current state to prevent re-render
       }
 
-      if ('showInstructions' in options) {
-        localStorage.setItem('showPostItInstructions', String(options.showInstructions));
+      if ("showInstructions" in options) {
+        localStorage.setItem("showPostItInstructions", String(options.showInstructions));
       }
       return { viewOptions: newViewOptions };
     });
   },
-  addNote: (note) => set((state) => ({
-    notes: [...state.notes, { ...note, zIndex: note.zIndex || Date.now() }]
-  })),
+  addNote: (note) =>
+    set((state) => ({
+      notes: [...state.notes, { ...note, zIndex: note.zIndex || Date.now() }],
+    })),
 
-  updateNote: (id, updates) => set((state) => ({
-    notes: state.notes.map((note) =>
-      note.id === id ? { ...note, ...updates } : note
-    )
-  })),
+  updateNote: (id, updates) =>
+    set((state) => ({
+      notes: state.notes.map((note) => (note.id === id ? { ...note, ...updates } : note)),
+    })),
 
-  updateNotesPositions: (updatedNotes) => set((state) => {
-    const newNotes = state.notes.map(existingNote => {
-      const updated = updatedNotes.find(un => un.id === existingNote.id);
-      return updated ? { ...existingNote, position: updated.position } : existingNote;
-    });
-    return { notes: newNotes };
-  }),
-  updateNotePosition: (id, position) => set((state) => ({
-    notes: state.notes.map((note) =>
-      note.id === id ? { ...note, position, zIndex: Date.now() } : note
-    )
-  })),
+  updateNotesPositions: (updatedNotes) =>
+    set((state) => {
+      const newNotes = state.notes.map((existingNote) => {
+        const updated = updatedNotes.find((un) => un.id === existingNote.id);
+        return updated ? { ...existingNote, position: updated.position } : existingNote;
+      });
+      return { notes: newNotes };
+    }),
+  updateNotePosition: (id, position) =>
+    set((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id ? { ...note, position, zIndex: Date.now() } : note,
+      ),
+    })),
 
-  updateNoteSize: (id, size) => set((state) => ({
-    notes: state.notes.map((note) =>
-      note.id === id ? { ...note, size, zIndex: Date.now() } : note
-    )
-  })),
+  updateNoteSize: (id, size) =>
+    set((state) => ({
+      notes: state.notes.map((note) =>
+        note.id === id ? { ...note, size, zIndex: Date.now() } : note,
+      ),
+    })),
 
-  bringNoteToFront: (id: string) => set((state) => ({
-    notes: state.notes.map((note) =>
-      note.id === id ? { ...note, zIndex: Date.now() } : note
-    )
-  })),
-
+  bringNoteToFront: (id: string) =>
+    set((state) => ({
+      notes: state.notes.map((note) => (note.id === id ? { ...note, zIndex: Date.now() } : note)),
+    })),
 
   setNotes: (notes) => set({ notes }),
 
-  removeNote: (id) => set((state) => ({
-    notes: state.notes.filter((note) => note.id !== id)
-  })),
+  removeNote: (id) =>
+    set((state) => ({
+      notes: state.notes.filter((note) => note.id !== id),
+    })),
 
-  selectNote: (id) => set((state) => {
-    // If selecting a note, bring it to front
-    if (id) {
-      const updatedNotes = state.notes.map((note) =>
-        note.id === id ? { ...note, zIndex: Date.now() } : note
-      );
-      return { selectedNoteId: id, notes: updatedNotes };
-    }
-    // If deselecting (id is undefined), just update selection
-    return { selectedNoteId: id };
-  })
+  selectNote: (id) =>
+    set((state) => {
+      // If selecting a note, bring it to front
+      if (id) {
+        const updatedNotes = state.notes.map((note) =>
+          note.id === id ? { ...note, zIndex: Date.now() } : note,
+        );
+        return { selectedNoteId: id, notes: updatedNotes };
+      }
+      // If deselecting (id is undefined), just update selection
+      return { selectedNoteId: id };
+    }),
 }));

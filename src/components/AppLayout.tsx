@@ -1,16 +1,17 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import TopMenuBar from './TopMenuBar/TopMenuBar';
-import PostItCanvas from './PostItCanvas/PostItCanvas';
-import { PostItNote, SessionInfo } from '../types/ui';
-import { useStore } from '../store';
-import { useElectronEvents } from '../hooks/useElectronEvents';
-import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
-import { useDebounceStorage } from '../hooks/useDebounceStorage';
-import KeyboardShortcutsHelp from './shared/KeyboardShortcutsHelp';
-import SettingsMenu from './shared/SettingsMenu';
-import ModalErrorBoundary from './shared/ModalErrorBoundary';
-import LoadingSpinner from './shared/LoadingSpinner';
-import { rendererLogger } from '../utils/logger';
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useDebounceStorage } from "../hooks/useDebounceStorage";
+import { useElectronEvents } from "../hooks/useElectronEvents";
+import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
+import { useStore } from "../store";
+import type { PostItNote, SessionInfo } from "../types/ui";
+import { rendererLogger } from "../utils/logger";
+import PostItCanvas from "./PostItCanvas/PostItCanvas";
+import TopMenuBar from "./TopMenuBar/TopMenuBar";
+import KeyboardShortcutsHelp from "./shared/KeyboardShortcutsHelp";
+import LoadingSpinner from "./shared/LoadingSpinner";
+import ModalErrorBoundary from "./shared/ModalErrorBoundary";
+import SettingsMenu from "./shared/SettingsMenu";
 
 const AppLayout: React.FC = () => {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
@@ -20,42 +21,41 @@ const AppLayout: React.FC = () => {
   useElectronEvents();
   useKeyboardShortcuts(setShowKeyboardHelp, setShowSettings);
 
-  const micLevel = useStore(state => state.micLevel);
-  const systemLevel = useStore(state => state.systemLevel);
-  const isRecording = useStore(state => state.isRecording);
-  const startRecording = useStore(state => state.startRecording);
-  const stopRecording = useStore(state => state.stopRecording);
-  const capture = useStore(state => state.capture);
-  const selectedMicDeviceId = useStore(state => state.selectedMicDeviceId);
-  const selectedSystemDeviceId = useStore(state => state.selectedSystemDeviceId);
-  const micAudioDevices = useStore(state => state.micAudioDevices);
-  const systemAudioDevices = useStore(state => state.systemAudioDevices);
-  const geminiResponses = useStore(state => state.geminiResponses);
-  const isBuildingResponse = useStore(state => state.isBuildingResponse);
-  const audioStatus = useStore(state => state.audioStatus); // Get audioStatus
-  const updateNotesPositions = useStore(state => state.updateNotesPositions);
-  const addNote = useStore(state => state.addNote);
-  const removeNote = useStore(state => state.removeNote);
-  const setNotes = useStore(state => state.setNotes);
-  const notes = useStore(state => state.notes);
-  const selectedNoteId = useStore(state => state.selectedNoteId);
-  const selectNote = useStore(state => state.selectNote);
+  const micLevel = useStore((state) => state.micLevel);
+  const systemLevel = useStore((state) => state.systemLevel);
+  const isRecording = useStore((state) => state.isRecording);
+  const startRecording = useStore((state) => state.startRecording);
+  const stopRecording = useStore((state) => state.stopRecording);
+  const capture = useStore((state) => state.capture);
+  const selectedMicDeviceId = useStore((state) => state.selectedMicDeviceId);
+  const selectedSystemDeviceId = useStore((state) => state.selectedSystemDeviceId);
+  const micAudioDevices = useStore((state) => state.micAudioDevices);
+  const systemAudioDevices = useStore((state) => state.systemAudioDevices);
+  const geminiResponses = useStore((state) => state.geminiResponses);
+  const isBuildingResponse = useStore((state) => state.isBuildingResponse);
+  const audioStatus = useStore((state) => state.audioStatus); // Get audioStatus
+  const updateNotesPositions = useStore((state) => state.updateNotesPositions);
+  const addNote = useStore((state) => state.addNote);
+  const removeNote = useStore((state) => state.removeNote);
+  const setNotes = useStore((state) => state.setNotes);
+  const notes = useStore((state) => state.notes);
+  const selectedNoteId = useStore((state) => state.selectedNoteId);
+  const selectNote = useStore((state) => state.selectNote);
 
-
-  rendererLogger.debug('AppLayout: geminiResponses count', { count: geminiResponses.length });
-  rendererLogger.debug('AppLayout: isBuildingResponse', { isBuildingResponse });
+  rendererLogger.debug("AppLayout: geminiResponses count", { count: geminiResponses.length });
+  rendererLogger.debug("AppLayout: isBuildingResponse", { isBuildingResponse });
 
   // Initialize notes from storage with debounced saves
   const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({
-    key: 'post-it-notes',
-    delay: 1000
+    key: "post-it-notes",
+    delay: 1000,
   });
   // Load notes from storage on startup
   useEffect(() => {
     const storedNotes = loadFromStorage();
-    rendererLogger.info('Loading notes from storage', { noteCount: storedNotes?.length || 0 });
-    
-    if (storedNotes && storedNotes.length > 0) {      
+    rendererLogger.info("Loading notes from storage", { noteCount: storedNotes?.length || 0 });
+
+    if (storedNotes && storedNotes.length > 0) {
       // Update store with loaded notes only if store is empty
       const currentNotes = useStore.getState().notes;
       if (currentNotes.length === 0) {
@@ -63,14 +63,14 @@ const AppLayout: React.FC = () => {
       }
     }
   }, [loadFromStorage, setNotes]);
-  
+
   // Save notes when they change
   useEffect(() => {
     if (notes.length > 0) {
       saveToStorage(notes);
     }
   }, [notes, saveToStorage]);
-  
+
   // Track session info
   const [sessionInfo, setSessionInfo] = useState<SessionInfo>({
     startTime: 0,
@@ -78,8 +78,8 @@ const AppLayout: React.FC = () => {
     isRecording: false,
     deviceInfo: {
       mic: null,
-      system: null
-    }
+      system: null,
+    },
   });
 
   // Update session duration and device info
@@ -87,38 +87,53 @@ const AppLayout: React.FC = () => {
     let timer: NodeJS.Timer | null = null;
 
     if (isRecording) {
-      setSessionInfo(prev => ({
+      setSessionInfo((prev) => ({
         ...prev,
         startTime: prev.startTime || Date.now(),
         isRecording: true,
         deviceInfo: {
-          mic: selectedMicDeviceId ? {
-            id: selectedMicDeviceId,
-            name: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.name || 'Unknown',
-            isDefault: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.isDefault || false,
-            inputChannels: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.inputChannels || 0,
-            outputChannels: micAudioDevices.find(d => d.id === selectedMicDeviceId)?.outputChannels || 0
-          } : null,
-          system: selectedSystemDeviceId ? {
-            id: selectedSystemDeviceId,
-            name: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.name || 'Unknown',
-            isDefault: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.isDefault || false,
-            inputChannels: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.inputChannels || 0,
-            outputChannels: systemAudioDevices.find(d => d.id === selectedSystemDeviceId)?.outputChannels || 0
-          } : null
-        }
+          mic: selectedMicDeviceId
+            ? {
+                id: selectedMicDeviceId,
+                name: micAudioDevices.find((d) => d.id === selectedMicDeviceId)?.name || "Unknown",
+                isDefault:
+                  micAudioDevices.find((d) => d.id === selectedMicDeviceId)?.isDefault || false,
+                inputChannels:
+                  micAudioDevices.find((d) => d.id === selectedMicDeviceId)?.inputChannels || 0,
+                outputChannels:
+                  micAudioDevices.find((d) => d.id === selectedMicDeviceId)?.outputChannels || 0,
+              }
+            : null,
+          system: selectedSystemDeviceId
+            ? {
+                id: selectedSystemDeviceId,
+                name:
+                  systemAudioDevices.find((d) => d.id === selectedSystemDeviceId)?.name ||
+                  "Unknown",
+                isDefault:
+                  systemAudioDevices.find((d) => d.id === selectedSystemDeviceId)?.isDefault ||
+                  false,
+                inputChannels:
+                  systemAudioDevices.find((d) => d.id === selectedSystemDeviceId)?.inputChannels ||
+                  0,
+                outputChannels:
+                  systemAudioDevices.find((d) => d.id === selectedSystemDeviceId)?.outputChannels ||
+                  0,
+              }
+            : null,
+        },
       }));
 
       timer = setInterval(() => {
-        setSessionInfo(prev => ({
+        setSessionInfo((prev) => ({
           ...prev,
-          duration: prev.startTime ? Date.now() - prev.startTime : 0
+          duration: prev.startTime ? Date.now() - prev.startTime : 0,
         }));
       }, 1000);
     } else {
-      setSessionInfo(prev => ({
+      setSessionInfo((prev) => ({
         ...prev,
-        isRecording: false
+        isRecording: false,
       }));
     }
 
@@ -127,22 +142,28 @@ const AppLayout: React.FC = () => {
         clearInterval(timer as NodeJS.Timeout);
       }
     };
-  }, [isRecording, selectedMicDeviceId, selectedSystemDeviceId, micAudioDevices, systemAudioDevices]);
+  }, [
+    isRecording,
+    selectedMicDeviceId,
+    selectedSystemDeviceId,
+    micAudioDevices,
+    systemAudioDevices,
+  ]);
   // Handle new Gemini responses
   useEffect(() => {
     if (geminiResponses.length === 0) return;
 
     const response = geminiResponses[geminiResponses.length - 1];
-    rendererLogger.debug('Processing new Gemini response', { response });
-    
+    rendererLogger.debug("Processing new Gemini response", { response });
+
     // Skip if missing required fields
     if (!response.type || !response.content) {
-      rendererLogger.warn('Invalid Gemini response format', { response });
+      rendererLogger.warn("Invalid Gemini response format", { response });
       return;
     }
-    
+
     const baseOffset = 20;
-    
+
     // Calculate position based on note type and priority
     const getPosition = () => {
       // Get current notes to avoid stale closure
@@ -150,24 +171,24 @@ const AppLayout: React.FC = () => {
       const lastNote = currentNotes[currentNotes.length - 1];
       const baseX = lastNote ? lastNote.position.x + baseOffset : baseOffset;
       let baseY: number;
-      
+
       switch (response.type) {
-        case 'question':
+        case "question":
           baseY = 80; // Questions at top
           break;
-        case 'reference':
+        case "reference":
           baseY = window.innerHeight - 300; // References at bottom
           break;
-        case 'note':
+        case "note":
           baseY = window.innerHeight / 2; // Notes in middle
           break;
         default:
           baseY = lastNote ? lastNote.position.y + baseOffset : 80;
       }
-      
+
       return {
         x: Math.min(baseX, window.innerWidth - 320),
-        y: Math.min(baseY, window.innerHeight - 220)
+        y: Math.min(baseY, window.innerHeight - 220),
       };
     };
 
@@ -175,11 +196,11 @@ const AppLayout: React.FC = () => {
     const getSize = () => {
       const baseSize = { width: 300, height: 200 };
       const contentLength = response.content.length;
-      
-      if (response.type === 'reference') {
+
+      if (response.type === "reference") {
         return { width: 400, height: Math.min(300, Math.max(200, contentLength / 3)) };
       }
-      if (response.type === 'note') {
+      if (response.type === "note") {
         return { width: 250, height: Math.min(150, Math.max(100, contentLength / 4)) };
       }
       return baseSize;
@@ -188,14 +209,14 @@ const AppLayout: React.FC = () => {
     // Get color based on priority
     const getColor = () => {
       switch (response.priority) {
-        case 'high':
-          return '#ef4444'; // red
-        case 'medium':
-          return '#4c8bf5'; // blue
-        case 'low':
-          return '#10b981'; // green
+        case "high":
+          return "#ef4444"; // red
+        case "medium":
+          return "#4c8bf5"; // blue
+        case "low":
+          return "#10b981"; // green
         default:
-          return '#4c8bf5';
+          return "#4c8bf5";
       }
     };
 
@@ -209,10 +230,10 @@ const AppLayout: React.FC = () => {
       color: getColor(),
       lastModified: Date.now(),
       isAiModified: true,
-      zIndex: Date.now()
+      zIndex: Date.now(),
     };
 
-    rendererLogger.info('Creating new note', { newNote });
+    rendererLogger.info("Creating new note", { newNote });
     addNote(newNote);
   }, [geminiResponses, addNote]);
 
@@ -227,67 +248,69 @@ const AppLayout: React.FC = () => {
         showSettings
       ) {
         return;
-      }      // Delete selected note
-      if (
-        selectedNoteId &&
-        (event.key === 'Delete' || event.key === 'Backspace')
-      ) {
+      } // Delete selected note
+      if (selectedNoteId && (event.key === "Delete" || event.key === "Backspace")) {
         event.preventDefault();
         removeNote(selectedNoteId);
         selectNote(undefined);
       }
 
       // Tab navigation between notes
-      if (event.key === 'Tab') {
+      if (event.key === "Tab") {
         event.preventDefault();
         if (notes.length === 0) return;
 
-        const currentIndex = selectedNoteId
-          ? notes.findIndex(n => n.id === selectedNoteId)
-          : -1;
+        const currentIndex = selectedNoteId ? notes.findIndex((n) => n.id === selectedNoteId) : -1;
 
-        let nextIndex = event.shiftKey
-          ? currentIndex - 1
-          : currentIndex + 1;        if (nextIndex >= notes.length) nextIndex = 0;
+        let nextIndex = event.shiftKey ? currentIndex - 1 : currentIndex + 1;
+        if (nextIndex >= notes.length) nextIndex = 0;
         if (nextIndex < 0) nextIndex = notes.length - 1;
 
         selectNote(notes[nextIndex].id);
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [notes, selectedNoteId, showKeyboardHelp, showSettings, removeNote]);
 
   // Note handlers
-  const updateNotePosition = useStore(state => state.updateNotePosition);
-  const updateNoteSize = useStore(state => state.updateNoteSize);
+  const updateNotePosition = useStore((state) => state.updateNotePosition);
+  const updateNoteSize = useStore((state) => state.updateNoteSize);
 
-  const handleNoteMove = useCallback((id: string, position: { x: number; y: number }) => {
-    updateNotePosition(id, position);
-  }, [updateNotePosition]);
+  const handleNoteMove = useCallback(
+    (id: string, position: { x: number; y: number }) => {
+      updateNotePosition(id, position);
+    },
+    [updateNotePosition],
+  );
 
-  const handleMultiNoteMove = (movedNotes: { id: string; position: { x: number; y: number } }[]) => {
+  const handleMultiNoteMove = (
+    movedNotes: { id: string; position: { x: number; y: number } }[],
+  ) => {
     updateNotesPositions(movedNotes);
   };
-  const handleNoteResize = useCallback((id: string, size: { width: number; height: number }) => {
-    updateNoteSize(id, size);
-  }, [updateNoteSize]);
-  const handleNoteSelect = useCallback((id: string | null) => {
-    selectNote(id || undefined);
-  }, [selectNote]);
+  const handleNoteResize = useCallback(
+    (id: string, size: { width: number; height: number }) => {
+      updateNoteSize(id, size);
+    },
+    [updateNoteSize],
+  );
+  const handleNoteSelect = useCallback(
+    (id: string | null) => {
+      selectNote(id || undefined);
+    },
+    [selectNote],
+  );
   // Debug: Log notes count when notes array changes
   useEffect(() => {
-    rendererLogger.info('Notes updated', { totalNotes: notes.length });
+    rendererLogger.info("Notes updated", { totalNotes: notes.length });
   }, [notes.length]);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-transparent">
       {/* Skip to content link */}
-      <a
-        href="#post-it-canvas"
-        className="skip-to-content"
-      >
+      <a href="#post-it-canvas" className="skip-to-content">
         Skip to post-it notes
       </a>
 
@@ -295,8 +318,8 @@ const AppLayout: React.FC = () => {
       <TopMenuBar
         sessionInfo={sessionInfo}
         audioLevels={{
-          mic: { level: micLevel, type: 'mic' },
-          system: { level: systemLevel, type: 'system' }
+          mic: { level: micLevel, type: "mic" },
+          system: { level: systemLevel, type: "system" },
         }}
         onStartRecording={startRecording}
         onStopRecording={stopRecording}
@@ -308,7 +331,8 @@ const AppLayout: React.FC = () => {
       {/* Post-it Canvas */}
       <PostItCanvas
         id="post-it-canvas"
-        tabIndex={-1}        notes={notes}
+        tabIndex={-1}
+        notes={notes}
         onNoteMove={handleNoteMove}
         onNoteMoveMultiple={handleMultiNoteMove}
         onNoteResize={handleNoteResize}
@@ -321,7 +345,7 @@ const AppLayout: React.FC = () => {
       {isBuildingResponse && (
         <div className="fixed bottom-4 left-4 flex items-center space-x-2 bg-gray-900/95 backdrop-blur-sm rounded-lg p-3 border border-gray-700/50">
           <LoadingSpinner size="sm" />
-          <span className="text-sm text-gray-300">{audioStatus || 'Processing response...'}</span>
+          <span className="text-sm text-gray-300">{audioStatus || "Processing response..."}</span>
         </div>
       )}
 
@@ -334,10 +358,7 @@ const AppLayout: React.FC = () => {
       </ModalErrorBoundary>
 
       <ModalErrorBoundary onClose={() => setShowSettings(false)}>
-        <SettingsMenu
-          isOpen={showSettings}
-          onClose={() => setShowSettings(false)}
-        />
+        <SettingsMenu isOpen={showSettings} onClose={() => setShowSettings(false)} />
       </ModalErrorBoundary>
     </div>
   );

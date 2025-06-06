@@ -3,27 +3,19 @@
   "version": "1.0.0",
   "description": "Clueless real-time AI-powered open-source assistant",
   "main": "dist/electron/main.js",
-  "prettier": {
-    "printWidth": 100,
-    "tabWidth": 2,
-    "useTabs": false,
-    "semi": true,
-    "singleQuote": false,
-    "quoteProps": "as-needed",
-    "jsxSingleQuote": false,
-    "trailingComma": "all",
-    "bracketSpacing": true,
-    "bracketSameLine": false,
-    "arrowParens": "always",
-    "endOfLine": "lf"
-  },
   "scripts": {
     "clean": "rd /s /q dist",
     "dev": "bunx electron-vite dev",
     "build": "bunx electron-vite build",
     "preview": "bunx electron-vite preview",
     "start": "bunx electron .",
-    "package:portable": "bunx electron-vite build && bunx electron-builder --config electron-builder.json"
+    "package:portable": "bunx electron-vite build && bunx electron-builder --config electron-builder.json",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
   },
   "author": "",
   "license": "MIT",
@@ -49,6 +41,7 @@
     "zustand": "^5.0.5"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "@types/electron": "^1.6.12",
     "@types/node": "^22.15.29",
     "@types/react": "^19.1.6",
@@ -70,9 +63,7 @@
   },
   "build": {
     "appId": "com.example.clueless",
-    "files": [
-      "dist/**/*"
-    ],
+    "files": ["dist/**/*"],
     "win": {
       "target": "nsis"
     }

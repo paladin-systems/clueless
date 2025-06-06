@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface UseModalFocusProps {
   isOpen: boolean;
@@ -14,11 +14,11 @@ export const useModalFocus = ({ isOpen, onClose }: UseModalFocusProps) => {
     // Get all focusable elements in the modal
     const getFocusableElements = () => {
       if (!modalRef.current) return [];
-      
+
       return Array.from(
         modalRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        )
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ),
       );
     };
 
@@ -30,12 +30,12 @@ export const useModalFocus = ({ isOpen, onClose }: UseModalFocusProps) => {
 
     // Handle keyboard events
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose();
         return;
       }
 
-      if (event.key === 'Tab') {
+      if (event.key === "Tab") {
         const focusableElements = getFocusableElements();
         if (focusableElements.length === 0) return;
 
@@ -53,8 +53,8 @@ export const useModalFocus = ({ isOpen, onClose }: UseModalFocusProps) => {
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
   return modalRef;

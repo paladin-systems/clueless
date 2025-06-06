@@ -1,39 +1,40 @@
-import { PostItNote } from '../types/ui';
-import { exportLogger } from './logger';
+import type { PostItNote } from "../types/ui";
+import { exportLogger } from "./logger";
 
-export type ExportFormat = 'json' | 'markdown' | 'text' | 'csv';
+export type ExportFormat = "json" | "markdown" | "text" | "csv";
 
 /**
  * Downloads a file to the user's computer
  */
 const downloadFile = (content: string, filename: string, mimeType: string) => {
-  exportLogger.debug({ filename, mimeType, contentLength: content.length }, 'downloadFile called');
-  
+  exportLogger.debug({ filename, mimeType, contentLength: content.length }, "downloadFile called");
+
   try {
     const blob = new Blob([content], { type: mimeType });
-    exportLogger.debug({ blobSize: blob.size, blobType: blob.type }, 'Blob created');
-    
+    exportLogger.debug({ blobSize: blob.size, blobType: blob.type }, "Blob created");
+
     const url = URL.createObjectURL(blob);
-    exportLogger.debug({ url }, 'Object URL created');
-    
-    const link = document.createElement('a');
+    exportLogger.debug({ url }, "Object URL created");
+
+    const link = document.createElement("a");
     link.href = url;
     link.download = filename;
-    link.style.display = 'none'; // Hide the link
-    
+    link.style.display = "none"; // Hide the link
+
     document.body.appendChild(link);
-    exportLogger.debug('Link appended to body, about to click');
-    
+    exportLogger.debug("Link appended to body, about to click");
+
     link.click();
-    exportLogger.debug('Link clicked');
-    
+    exportLogger.debug("Link clicked");
+
     document.body.removeChild(link);
-    exportLogger.debug('Link removed from body');
-    
+    exportLogger.debug("Link removed from body");
+
     // Clean up the URL object
     URL.revokeObjectURL(url);
-    exportLogger.debug('Object URL revoked');  } catch (error) {
-    exportLogger.error({ error }, 'Error in downloadFile');
+    exportLogger.debug("Object URL revoked");
+  } catch (error) {
+    exportLogger.error({ error }, "Error in downloadFile");
     throw error;
   }
 };
@@ -52,7 +53,7 @@ export const exportAsJSON = (notes: PostItNote[]): void => {
   const exportData = {
     exportDate: new Date().toISOString(),
     totalNotes: notes.length,
-    notes: notes.map(note => ({
+    notes: notes.map((note) => ({
       id: note.id,
       content: note.content,
       category: note.category,
@@ -64,13 +65,13 @@ export const exportAsJSON = (notes: PostItNote[]): void => {
       color: note.color,
       zIndex: note.zIndex,
       createdAt: formatDate(note.timestamp),
-      lastModifiedAt: formatDate(note.lastModified)
-    }))
+      lastModifiedAt: formatDate(note.lastModified),
+    })),
   };
 
   const content = JSON.stringify(exportData, null, 2);
   const filename = `clueless-notes-${new Date().toISOString().slice(0, 10)}.json`;
-  downloadFile(content, filename, 'application/json');
+  downloadFile(content, filename, "application/json");
 };
 
 /**
@@ -83,29 +84,32 @@ export const exportAsMarkdown = (notes: PostItNote[]): void => {
   content += `---\n\n`;
 
   // Group notes by category
-  const notesByCategory = notes.reduce((acc, note) => {
-    const category = note.category || 'uncategorized';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    acc[category].push(note);
-    return acc;
-  }, {} as Record<string, PostItNote[]>);
+  const notesByCategory = notes.reduce(
+    (acc, note) => {
+      const category = note.category || "uncategorized";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+      acc[category].push(note);
+      return acc;
+    },
+    {} as Record<string, PostItNote[]>,
+  );
 
   // Sort categories
   const sortedCategories = Object.keys(notesByCategory).sort();
 
   for (const category of sortedCategories) {
     content += `## ${category.charAt(0).toUpperCase() + category.slice(1)} Notes\n\n`;
-    
+
     const categoryNotes = notesByCategory[category].sort((a, b) => b.timestamp - a.timestamp);
-    
+
     for (const note of categoryNotes) {
       content += `### ${formatDate(note.timestamp)}\n\n`;
       content += `${note.content}\n\n`;
       content += `- **Created:** ${formatDate(note.timestamp)}\n`;
       content += `- **Last Modified:** ${formatDate(note.lastModified)}\n`;
-      content += `- **AI Generated:** ${note.isAiModified ? 'Yes' : 'No'}\n`;
+      content += `- **AI Generated:** ${note.isAiModified ? "Yes" : "No"}\n`;
       content += `- **Position:** (${note.position.x}, ${note.position.y})\n`;
       content += `- **Size:** ${note.size.width} × ${note.size.height}\n\n`;
       content += `---\n\n`;
@@ -113,7 +117,7 @@ export const exportAsMarkdown = (notes: PostItNote[]): void => {
   }
 
   const filename = `clueless-notes-${new Date().toISOString().slice(0, 10)}.md`;
-  downloadFile(content, filename, 'text/markdown');
+  downloadFile(content, filename, "text/markdown");
 };
 
 /**
@@ -121,7 +125,7 @@ export const exportAsMarkdown = (notes: PostItNote[]): void => {
  */
 export const exportAsText = (notes: PostItNote[]): void => {
   let content = `CLUELESS NOTES EXPORT\n`;
-  content += `${'='.repeat(50)}\n\n`;
+  content += `${"=".repeat(50)}\n\n`;
   content += `Export Date: ${new Date().toLocaleString()}\n`;
   content += `Total Notes: ${notes.length}\n\n`;
 
@@ -130,22 +134,22 @@ export const exportAsText = (notes: PostItNote[]): void => {
 
   for (let i = 0; i < sortedNotes.length; i++) {
     const note = sortedNotes[i];
-    content += `${'='.repeat(50)}\n`;
+    content += `${"=".repeat(50)}\n`;
     content += `NOTE ${i + 1}\n`;
-    content += `${'='.repeat(50)}\n\n`;
-    content += `Category: ${note.category || 'uncategorized'}\n`;
+    content += `${"=".repeat(50)}\n\n`;
+    content += `Category: ${note.category || "uncategorized"}\n`;
     content += `Created: ${formatDate(note.timestamp)}\n`;
     content += `Last Modified: ${formatDate(note.lastModified)}\n`;
-    content += `AI Generated: ${note.isAiModified ? 'Yes' : 'No'}\n`;
+    content += `AI Generated: ${note.isAiModified ? "Yes" : "No"}\n`;
     content += `Position: (${note.position.x}, ${note.position.y})\n`;
     content += `Size: ${note.size.width} × ${note.size.height}\n\n`;
     content += `Content:\n`;
-    content += `${'-'.repeat(20)}\n`;
+    content += `${"-".repeat(20)}\n`;
     content += `${note.content}\n\n`;
   }
 
   const filename = `clueless-notes-${new Date().toISOString().slice(0, 10)}.txt`;
-  downloadFile(content, filename, 'text/plain');
+  downloadFile(content, filename, "text/plain");
 };
 
 /**
@@ -153,81 +157,85 @@ export const exportAsText = (notes: PostItNote[]): void => {
  */
 export const exportAsCSV = (notes: PostItNote[]): void => {
   const headers = [
-    'ID',
-    'Content',
-    'Category',
-    'Created Date',
-    'Last Modified',
-    'AI Generated',
-    'Position X',
-    'Position Y',
-    'Width',
-    'Height',
-    'Color',
-    'Z-Index'
+    "ID",
+    "Content",
+    "Category",
+    "Created Date",
+    "Last Modified",
+    "AI Generated",
+    "Position X",
+    "Position Y",
+    "Width",
+    "Height",
+    "Color",
+    "Z-Index",
   ];
 
-  let content = headers.join(',') + '\n';
+  let content = headers.join(",") + "\n";
 
   for (const note of notes) {
     const row = [
       `"${note.id}"`,
       `"${note.content.replace(/"/g, '""')}"`, // Escape quotes in content
-      `"${note.category || 'uncategorized'}"`,
+      `"${note.category || "uncategorized"}"`,
       `"${formatDate(note.timestamp)}"`,
       `"${formatDate(note.lastModified)}"`,
-      `"${note.isAiModified ? 'Yes' : 'No'}"`,
+      `"${note.isAiModified ? "Yes" : "No"}"`,
       note.position.x.toString(),
       note.position.y.toString(),
-      note.size.width.toString(),      note.size.height.toString(),
+      note.size.width.toString(),
+      note.size.height.toString(),
       `"${note.color}"`,
-      (note.zIndex || 0).toString()
+      (note.zIndex || 0).toString(),
     ];
-    content += row.join(',') + '\n';
+    content += row.join(",") + "\n";
   }
 
   const filename = `clueless-notes-${new Date().toISOString().slice(0, 10)}.csv`;
-  downloadFile(content, filename, 'text/csv');
+  downloadFile(content, filename, "text/csv");
 };
 
 /**
  * Main export function that handles different formats
  */
 export const exportNotes = (notes: PostItNote[], format: ExportFormat): void => {
-  exportLogger.info({ notesCount: notes.length, format }, 'exportNotes called');
-  
+  exportLogger.info({ notesCount: notes.length, format }, "exportNotes called");
+
   if (notes.length === 0) {
-    exportLogger.warn('No notes to export');
-    alert('No notes to export!');
+    exportLogger.warn("No notes to export");
+    alert("No notes to export!");
     return;
   }
 
   try {
-    exportLogger.debug({ format }, 'About to export notes');
-    
+    exportLogger.debug({ format }, "About to export notes");
+
     switch (format) {
-      case 'json':
-        exportLogger.debug('Exporting as JSON');
+      case "json":
+        exportLogger.debug("Exporting as JSON");
         exportAsJSON(notes);
         break;
-      case 'markdown':
-        exportLogger.debug('Exporting as Markdown');
+      case "markdown":
+        exportLogger.debug("Exporting as Markdown");
         exportAsMarkdown(notes);
         break;
-      case 'text':
-        exportLogger.debug('Exporting as Text');
+      case "text":
+        exportLogger.debug("Exporting as Text");
         exportAsText(notes);
         break;
-      case 'csv':
-        exportLogger.debug('Exporting as CSV');
+      case "csv":
+        exportLogger.debug("Exporting as CSV");
         exportAsCSV(notes);
         break;
       default:
         throw new Error(`Unsupported export format: ${format}`);
     }
-      exportLogger.info({ noteCount: notes.length, format: format.toUpperCase() }, 'Successfully exported notes');
+    exportLogger.info(
+      { noteCount: notes.length, format: format.toUpperCase() },
+      "Successfully exported notes",
+    );
   } catch (error) {
-    exportLogger.error({ error }, 'Error exporting notes');
-    alert('Failed to export notes. Please try again.');
+    exportLogger.error({ error }, "Error exporting notes");
+    alert("Failed to export notes. Please try again.");
   }
 };

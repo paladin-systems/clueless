@@ -1,11 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import clsx from 'clsx';
-import { useStore } from '../../store';
-import { useModalFocus } from '../../hooks/useModalFocus';
-import { ViewOptions, AudioDevice } from '../../types/ui';
-import { exportNotes, ExportFormat } from '../../utils/exportUtils';
-import { FaXmark, FaEye, FaDesktop, FaMicrophone, FaVolumeHigh, FaDownload, FaChevronDown } from 'react-icons/fa6';
-import { uiLogger } from '../../utils/logger';
+import clsx from "clsx";
+import type React from "react";
+import { useEffect, useState } from "react";
+import {
+  FaChevronDown,
+  FaDesktop,
+  FaDownload,
+  FaEye,
+  FaMicrophone,
+  FaVolumeHigh,
+  FaXmark,
+} from "react-icons/fa6";
+import { useModalFocus } from "../../hooks/useModalFocus";
+import { useStore } from "../../store";
+import type { AudioDevice, ViewOptions } from "../../types/ui";
+import { type ExportFormat, exportNotes } from "../../utils/exportUtils";
+import { uiLogger } from "../../utils/logger";
 
 interface Props {
   isOpen: boolean;
@@ -14,34 +23,35 @@ interface Props {
 
 const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const [showExportOptions, setShowExportOptions] = useState(false);
-  
-  const viewOptions = useStore(state => state.viewOptions);
-  const updateViewOptions = useStore(state => state.updateViewOptions);
-  const micAudioDevices = useStore(state => state.micAudioDevices);
-  const systemAudioDevices = useStore(state => state.systemAudioDevices);
-  const selectedMicDeviceId = useStore(state => state.selectedMicDeviceId);
-  const selectedSystemDeviceId = useStore(state => state.selectedSystemDeviceId);
-  const setSelectedMicDevice = useStore(state => state.setSelectedMicDevice);
-  const setSelectedSystemDevice = useStore(state => state.setSelectedSystemDevice);
-  const setMicAudioDevices = useStore(state => state.setMicAudioDevices);
-  const setSystemAudioDevices = useStore(state => state.setSystemAudioDevices);
-  const notes = useStore(state => state.notes);
+
+  const viewOptions = useStore((state) => state.viewOptions);
+  const updateViewOptions = useStore((state) => state.updateViewOptions);
+  const micAudioDevices = useStore((state) => state.micAudioDevices);
+  const systemAudioDevices = useStore((state) => state.systemAudioDevices);
+  const selectedMicDeviceId = useStore((state) => state.selectedMicDeviceId);
+  const selectedSystemDeviceId = useStore((state) => state.selectedSystemDeviceId);
+  const setSelectedMicDevice = useStore((state) => state.setSelectedMicDevice);
+  const setSelectedSystemDevice = useStore((state) => state.setSelectedSystemDevice);
+  const setMicAudioDevices = useStore((state) => state.setMicAudioDevices);
+  const setSystemAudioDevices = useStore((state) => state.setSystemAudioDevices);
+  const notes = useStore((state) => state.notes);
 
   const handleOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateViewOptions({
-      opacity: Number(event.target.value)
+      opacity: Number(event.target.value),
     });
   };
 
-  const handleLayoutChange = (layout: ViewOptions['layout']) => {
+  const handleLayoutChange = (layout: ViewOptions["layout"]) => {
     updateViewOptions({ layout });
   };
   const handleAlwaysOnTopChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     updateViewOptions({
-      alwaysOnTop: event.target.checked
+      alwaysOnTop: event.target.checked,
     });
-  };  const handleExport = (format: ExportFormat) => {
-    uiLogger.info('Exporting notes', { format, totalNotes: notes.length });
+  };
+  const handleExport = (format: ExportFormat) => {
+    uiLogger.info("Exporting notes", { format, totalNotes: notes.length });
     exportNotes(notes, format);
     setShowExportOptions(false);
   };
@@ -51,15 +61,15 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Element;
       // Don't close if clicking on the export button or dropdown
-      if (target?.closest('.export-dropdown-container')) {
+      if (target?.closest(".export-dropdown-container")) {
         return;
       }
       setShowExportOptions(false);
     };
 
     if (showExportOptions) {
-      document.addEventListener('click', handleClickOutside);
-      return () => document.removeEventListener('click', handleClickOutside);
+      document.addEventListener("click", handleClickOutside);
+      return () => document.removeEventListener("click", handleClickOutside);
     }
   }, [showExportOptions]);
 
@@ -68,24 +78,44 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   useEffect(() => {
     const electron = (window as any).electron;
     if (electron) {
-      electron.listAudioDevices().then((devices: { devices: AudioDevice[], defaultInput: number | null, defaultOutput: number | null }) => {
-        const micDevices = devices.devices.filter(d => d.inputChannels > 0);
-        const systemDevices = devices.devices.filter(d => d.outputChannels > 0);
+      electron
+        .listAudioDevices()
+        .then(
+          (devices: {
+            devices: AudioDevice[];
+            defaultInput: number | null;
+            defaultOutput: number | null;
+          }) => {
+            const micDevices = devices.devices.filter((d) => d.inputChannels > 0);
+            const systemDevices = devices.devices.filter((d) => d.outputChannels > 0);
 
-        setMicAudioDevices(micDevices.map(d => ({ ...d, isDefault: d.id === devices.defaultInput })));
-        setSystemAudioDevices(systemDevices.map(d => ({ ...d, isDefault: d.id === devices.defaultOutput })));
+            setMicAudioDevices(
+              micDevices.map((d) => ({ ...d, isDefault: d.id === devices.defaultInput })),
+            );
+            setSystemAudioDevices(
+              systemDevices.map((d) => ({ ...d, isDefault: d.id === devices.defaultOutput })),
+            );
 
-        if (!selectedMicDeviceId && devices.defaultInput !== null) {
-          setSelectedMicDevice(devices.defaultInput);
-        }
-        if (!selectedSystemDeviceId && devices.defaultOutput !== null) {
-          setSelectedSystemDevice(devices.defaultOutput);
-        }
-      }).catch((error: Error) => {
-        uiLogger.error('Failed to list audio devices', { error });
-      });
+            if (!selectedMicDeviceId && devices.defaultInput !== null) {
+              setSelectedMicDevice(devices.defaultInput);
+            }
+            if (!selectedSystemDeviceId && devices.defaultOutput !== null) {
+              setSelectedSystemDevice(devices.defaultOutput);
+            }
+          },
+        )
+        .catch((error: Error) => {
+          uiLogger.error("Failed to list audio devices", { error });
+        });
     }
-  }, [selectedMicDeviceId, selectedSystemDeviceId, setMicAudioDevices, setSystemAudioDevices, setSelectedMicDevice, setSelectedSystemDevice]);
+  }, [
+    selectedMicDeviceId,
+    selectedSystemDeviceId,
+    setMicAudioDevices,
+    setSystemAudioDevices,
+    setSelectedMicDevice,
+    setSelectedSystemDevice,
+  ]);
 
   if (!isOpen) return null;
 
@@ -98,18 +128,21 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="settings-title"
-    >      <div
+    >
+      {" "}
+      <div
         className={clsx(
           "bg-gray-900/95 border border-gray-700/50 rounded-lg shadow-xl w-96 max-w-lg max-h-[80vh] overflow-y-auto p-6",
           "transform transition-all duration-200",
           "animate-in fade-in zoom-in-95",
-          "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95"
+          "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95",
         )}
       >
         <div className="flex justify-between items-center mb-6">
           <h2 id="settings-title" className="text-lg font-semibold text-white">
             Settings
-          </h2>          <button
+          </h2>{" "}
+          <button
             onClick={onClose}
             className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800 cursor-pointer"
             aria-label="Close settings"
@@ -118,7 +151,9 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        <div className="space-y-4">          {/* Opacity Section */}
+        <div className="space-y-4">
+          {" "}
+          {/* Opacity Section */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
               <FaEye />
@@ -139,7 +174,8 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 {Math.round(viewOptions.opacity * 100)}%
               </span>
             </div>
-          </div>          {/* Window Behavior */}
+          </div>{" "}
+          {/* Window Behavior */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
               <FaDesktop />
@@ -155,14 +191,15 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               />
               <span>Always on Top</span>
             </label>
-          </div>          {/* Audio Input Device Selection */}
+          </div>{" "}
+          {/* Audio Input Device Selection */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
               <FaMicrophone />
               <span>Microphone Input</span>
             </h3>
             <select
-              value={selectedMicDeviceId || ''}
+              value={selectedMicDeviceId || ""}
               onChange={(e) => setSelectedMicDevice(Number(e.target.value))}
               className="w-full p-2 rounded-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Select microphone input device"
@@ -170,9 +207,9 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               {micAudioDevices.length === 0 && (
                 <option value="">No microphone devices found</option>
               )}
-              {micAudioDevices.map(device => (
+              {micAudioDevices.map((device) => (
                 <option key={device.id} value={device.id}>
-                  {device.name} {device.isDefault ? '(Default)' : ''}
+                  {device.name} {device.isDefault ? "(Default)" : ""}
                 </option>
               ))}
             </select>
@@ -181,14 +218,15 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 No microphone devices detected. Please check your system settings.
               </p>
             )}
-          </div>          {/* System Audio Device Selection */}
+          </div>{" "}
+          {/* System Audio Device Selection */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
               <FaVolumeHigh />
               <span>System Audio Input (Stereo Mix)</span>
             </h3>
             <select
-              value={selectedSystemDeviceId || ''}
+              value={selectedSystemDeviceId || ""}
               onChange={(e) => setSelectedSystemDevice(Number(e.target.value))}
               className="w-full p-2 rounded-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Select system audio input device"
@@ -196,16 +234,18 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               {systemAudioDevices.length === 0 && (
                 <option value="">No system audio devices found</option>
               )}
-              {systemAudioDevices.map(device => (
+              {systemAudioDevices.map((device) => (
                 <option key={device.id} value={device.id}>
-                  {device.name} {device.isDefault ? '(Default)' : ''}
+                  {device.name} {device.isDefault ? "(Default)" : ""}
                 </option>
               ))}
             </select>
             {systemAudioDevices.length === 0 && (
               <p className="text-xs text-red-400">
-                No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in Sound Control Panel.                <button
-                  onClick={() => (window as any).electron.openSettings('sound')}
+                No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in
+                Sound Control Panel.{" "}
+                <button
+                  onClick={() => (window as any).electron.openSettings("sound")}
                   className="text-blue-400 hover:underline ml-1 cursor-pointer"
                 >
                   Open Sound Settings
@@ -230,21 +270,23 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           </label>
           <p className="text-xs text-gray-500">
             Display helpful keyboard shortcuts for moving and managing post-it notes
-          </p>        </div>
+          </p>{" "}
+        </div>
 
         {/* Export Notes Section */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
             <FaDownload />
             <span>Export Notes</span>
-          </h3>          <p className="text-xs text-gray-500 mb-2">
-            Export your {notes.length} note{notes.length !== 1 ? 's' : ''} in various formats
+          </h3>{" "}
+          <p className="text-xs text-gray-500 mb-2">
+            Export your {notes.length} note{notes.length !== 1 ? "s" : ""} in various formats
           </p>
-            <div className="relative export-dropdown-container">
+          <div className="relative export-dropdown-container">
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                uiLogger.debug('Export button clicked', { showExportOptions });
+                uiLogger.debug("Export button clicked", { showExportOptions });
                 setShowExportOptions(!showExportOptions);
               }}
               disabled={notes.length === 0}
@@ -252,24 +294,25 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 "w-full px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between",
                 notes.length === 0
                   ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-blue-600 hover:bg-blue-700 text-white",
               )}
             >
               <div className="flex items-center space-x-2">
                 <FaDownload />
                 <span>Export Notes</span>
               </div>
-              <FaChevronDown className={clsx(
-                "transition-transform",
-                showExportOptions && "rotate-180"
-              )} />
+              <FaChevronDown
+                className={clsx("transition-transform", showExportOptions && "rotate-180")}
+              />
             </button>
-            
-            {showExportOptions && notes.length > 0 && (              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10">
-                <div className="p-1 space-y-0.5">                  <button
+            {showExportOptions && notes.length > 0 && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10">
+                <div className="p-1 space-y-0.5">
+                  {" "}
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleExport('json');
+                      handleExport("json");
                     }}
                     className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
                   >
@@ -278,7 +321,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleExport('markdown');
+                      handleExport("markdown");
                     }}
                     className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
                   >
@@ -287,7 +330,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleExport('text');
+                      handleExport("text");
                     }}
                     className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
                   >
@@ -296,7 +339,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleExport('csv');
+                      handleExport("csv");
                     }}
                     className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
                   >
@@ -304,11 +347,10 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                   </button>
                 </div>
               </div>
-            )}          </div>
-            {notes.length === 0 && (
-            <p className="text-xs text-amber-400">
-              Create some notes first to enable export
-            </p>
+            )}{" "}
+          </div>
+          {notes.length === 0 && (
+            <p className="text-xs text-amber-400">Create some notes first to enable export</p>
           )}
         </div>
       </div>

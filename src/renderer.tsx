@@ -1,8 +1,8 @@
 import "./renderer.css";
-import React from 'react';
-import { createRoot } from 'react-dom/client';
-import AppLayout from './components/AppLayout';
-import ErrorBoundary from './components/shared/ErrorBoundary';
+import type React from "react";
+import { createRoot } from "react-dom/client";
+import AppLayout from "./components/AppLayout";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // Simple App wrapper component with error boundary
 const App: React.FC = () => (
@@ -12,9 +12,9 @@ const App: React.FC = () => (
 );
 
 // Get root element and render app
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 if (!rootElement) {
-  throw new Error('Root element not found');
+  throw new Error("Root element not found");
 }
 
 const root = createRoot(rootElement);

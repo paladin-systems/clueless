@@ -51,7 +51,6 @@
   @apply shadow-xl;
 }
 
-
 /* Hover and interactive states */
 .post-it:hover:not(.dragging) {
   @apply shadow-xl;

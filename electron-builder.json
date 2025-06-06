@@ -1,9 +1,6 @@
 {
   "appId": "com.clueless.app",
-  "files": [
-    "dist/**/*",
-    "package.json"
-  ],
+  "files": ["dist/**/*", "package.json"],
   "directories": {
     "buildResources": "resources",
     "output": "dist"

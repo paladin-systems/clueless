@@ -1,9 +1,9 @@
-import React from 'react';
-import clsx from 'clsx';
-import { formatDuration } from '../../utils/timeUtils';
-import { SessionInfo, AudioIndicator } from '../../types/ui';
-import LoadingSpinner from '../shared/LoadingSpinner';
-import { FaCamera, FaPlay, FaStop, FaKeyboard, FaGear } from 'react-icons/fa6';
+import clsx from "clsx";
+import type React from "react";
+import { FaCamera, FaGear, FaKeyboard, FaPlay, FaStop } from "react-icons/fa6";
+import type { AudioIndicator, SessionInfo } from "../../types/ui";
+import { formatDuration } from "../../utils/timeUtils";
+import LoadingSpinner from "../shared/LoadingSpinner";
 
 interface TopMenuBarProps {
   sessionInfo: SessionInfo;
@@ -27,7 +27,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
   onCapture,
   onSettingsClick,
   onKeyboardHelpClick,
-  className
+  className,
 }) => {
   // Audio level indicator styles
   const getAudioLevelStyle = (level: number): React.CSSProperties => {
@@ -37,10 +37,10 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
     return {
       width: `${size}px`,
       height: `${size}px`,
-      backgroundColor: isActive ? `rgba(76, 139, 245, ${intensity / 100})` : '#6b7280',
-      borderRadius: '50%',
-      transition: 'all 0.1s ease-out',
-      boxShadow: isActive ? `0 0 ${size * 0.8}px ${size * 0.3}px rgba(76, 139, 245, 0.4)` : 'none',
+      backgroundColor: isActive ? `rgba(76, 139, 245, ${intensity / 100})` : "#6b7280",
+      borderRadius: "50%",
+      transition: "all 0.1s ease-out",
+      boxShadow: isActive ? `0 0 ${size * 0.8}px ${size * 0.3}px rgba(76, 139, 245, 0.4)` : "none",
     };
   };
 
@@ -65,20 +65,22 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
               <div style={getAudioLevelStyle(audioLevels.mic.level)} />
               <span className="text-gray-300 text-sm">
                 {sessionInfo.deviceInfo.mic?.name || "No Mic"}
-                {sessionInfo.deviceInfo.mic?.isDefault && ' (Default)'}
+                {sessionInfo.deviceInfo.mic?.isDefault && " (Default)"}
               </span>
             </div>
             <div className="flex items-center space-x-2">
               <div style={getAudioLevelStyle(audioLevels.system.level)} />
               <span className="text-gray-300 text-sm">
                 {sessionInfo.deviceInfo.system?.name || "No System Audio"}
-                {sessionInfo.deviceInfo.system?.isDefault && ' (Default)'}
+                {sessionInfo.deviceInfo.system?.isDefault && " (Default)"}
               </span>
             </div>
           </div>
 
           {/* Main Actions */}
-          <div className="flex items-center space-x-2">            <button
+          <div className="flex items-center space-x-2">
+            {" "}
+            <button
               onClick={onCapture}
               className="glass-button-secondary"
               disabled={sessionInfo.isRecording}
@@ -86,10 +88,11 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
               <FaCamera className="inline-block mr-2" /> Capture
             </button>
             <div className="flex items-center space-x-2">
-              <button                onClick={sessionInfo.isRecording ? onStopRecording : onStartRecording}
+              <button
+                onClick={sessionInfo.isRecording ? onStopRecording : onStartRecording}
                 className={clsx(
                   "glass-button",
-                  sessionInfo.isRecording && "bg-red-600 hover:bg-red-700"
+                  sessionInfo.isRecording && "bg-red-600 hover:bg-red-700",
                 )}
               >
                 {sessionInfo.isRecording ? (
@@ -121,20 +124,25 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
                 onClick={onKeyboardHelpClick}
                 className={clsx(
                   "glass-button-secondary group",
-                  "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900"
-                )}                aria-label="Show Keyboard Shortcuts"
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900",
+                )}
+                aria-label="Show Keyboard Shortcuts"
               >
                 <FaKeyboard className="group-hover:scale-110 transition-transform" />
-                <div className={clsx(
-                  "absolute hidden group-hover:block right-0 top-full mt-2 p-2",
-                  "bg-gray-900/95 backdrop-blur-sm rounded-md",
-                  "text-xs text-gray-300 whitespace-nowrap",
-                  "border border-gray-700/50 shadow-lg",
-                  "transform origin-top-right transition-all duration-200",
-                  "z-50"
-                )}>
+                <div
+                  className={clsx(
+                    "absolute hidden group-hover:block right-0 top-full mt-2 p-2",
+                    "bg-gray-900/95 backdrop-blur-sm rounded-md",
+                    "text-xs text-gray-300 whitespace-nowrap",
+                    "border border-gray-700/50 shadow-lg",
+                    "transform origin-top-right transition-all duration-200",
+                    "z-50",
+                  )}
+                >
                   <div className="flex items-center space-x-2">
-                    <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-xs border border-gray-700">?</kbd>
+                    <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-xs border border-gray-700">
+                      ?
+                    </kbd>
                     <span>to view shortcuts</span>
                   </div>
                 </div>
@@ -147,18 +155,21 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
                 onClick={onSettingsClick}
                 className={clsx(
                   "glass-button-secondary group",
-                  "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900"
-                )}                aria-label="Open Settings"
+                  "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 focus:ring-offset-gray-900",
+                )}
+                aria-label="Open Settings"
               >
                 <FaGear className="group-hover:rotate-90 transition-transform duration-300" />
-                <div className={clsx(
-                  "absolute hidden group-hover:block right-0 top-full mt-2 p-2",
-                  "bg-gray-900/95 backdrop-blur-sm rounded-md",
-                  "text-xs text-gray-300 whitespace-nowrap",
-                  "border border-gray-700/50 shadow-lg",
-                  "transform origin-top-right transition-all duration-200",
-                  "z-50"
-                )}>
+                <div
+                  className={clsx(
+                    "absolute hidden group-hover:block right-0 top-full mt-2 p-2",
+                    "bg-gray-900/95 backdrop-blur-sm rounded-md",
+                    "text-xs text-gray-300 whitespace-nowrap",
+                    "border border-gray-700/50 shadow-lg",
+                    "transform origin-top-right transition-all duration-200",
+                    "z-50",
+                  )}
+                >
                   Application Settings
                 </div>
               </button>
