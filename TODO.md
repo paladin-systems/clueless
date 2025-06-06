@@ -17,6 +17,7 @@
 - [ ] Menu tooltip is shown behind the notes
 - [ ] Background blur effect is not working properly
 - [ ] Is showing window dialog behind the top menu bar, we should hide the dialog
+- [ ] Make the AI able to edit previous notes, adding a note id
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 

@@ -394,27 +394,26 @@ ipcMain.handle(
 IMPORTANT: ALWAYS respond with ONLY a valid JSON object, no additional text or formatting:
 
 {
-  "type": "response",
   "content": "Your actual helpful response goes here",
-  "category": "response",
+  "category": "answer",
   "priority": "medium"
 }
 
 VALID VALUES:
-- type: "response" | "question" | "reference" | "note"
-- category: "response" | "follow-up" | "context" | "suggestion"  
+- category: "answer" | "advice" | "follow-up"
 - priority: "high" | "medium" | "low"
 
 CONTENT GUIDELINES:
-- "response": Immediate answers/suggestions
-- "question": Follow-up questions to ask
-- "reference": Background information
-- "note": Quick tips/reminders
+- "answer": Direct responses for technical, behavioral, or factual questions
+- "advice": Extra information that could be relevant and improve your friend's conversation; suggestions for changing topics or approaches
+- "follow-up": Follow-up questions your friend should ask to gather more information
 - Keep content concise and easily scannable
 - Put your actual helpful text in the "content" field
 - Format content with markdown for better readability
 - Wait for your friend to finish reading before sending more responses
 - Help them cheat and perform better by being the smartest person whispering answers in their ear
+- NEVER start with meta-phrases or greetings
+- NEVER use meta-phrases like "let me help you" or "I can see that"
 
 Use previous context when relevant but prioritize responding to the most recent input.`;
 
@@ -485,7 +484,9 @@ Use previous context when relevant but prioritize responding to the most recent 
                   }
 
                   // Strategy 2: Look for JSON object anywhere in the response
-                  const jsonObjectMatch = currentResponseText.match(/\{[\s\S]*?"type"[\s\S]*?\}/);
+                  const jsonObjectMatch = currentResponseText.match(
+                    /\{[\s\S]*?"category"[\s\S]*?\}/,
+                  );
                   if (!jsonBlockMatch && jsonObjectMatch) {
                     contentToParse = jsonObjectMatch[0].trim();
                     geminiLogger.debug({ contentToParse }, "Found JSON object in response");
@@ -524,11 +525,8 @@ Use previous context when relevant but prioritize responding to the most recent 
                     if (
                       typeof parsedJson === "object" &&
                       parsedJson !== null &&
-                      ["response", "question", "reference", "note"].includes(parsedJson.type) &&
                       typeof parsedJson.content === "string" &&
-                      ["response", "follow-up", "context", "suggestion"].includes(
-                        parsedJson.category,
-                      ) &&
+                      ["answer", "advice", "follow-up"].includes(parsedJson.category) &&
                       ["high", "medium", "low"].includes(parsedJson.priority)
                     ) {
                       geminiLogger.info({ parsedJson }, "Valid structured response, sending");
@@ -570,9 +568,8 @@ Use previous context when relevant but prioritize responding to the most recent 
 
                     geminiLogger.info({ cleanContent }, "Sending as plain text response");
                     mainWindow?.webContents.send("gemini-response", {
-                      type: "response",
                       content: cleanContent,
-                      category: "response",
+                      category: "answer",
                       priority: "medium",
                       timestamp: Date.now(),
                     });

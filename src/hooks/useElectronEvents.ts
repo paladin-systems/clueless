@@ -49,15 +49,14 @@ export const useElectronEvents = () => {
     // Simplified Gemini response handler (receives complete, parsed response from main.ts)
     const handleGeminiResponse = (_event: Electron.IpcRendererEvent, response: GeminiResponse) => {
       // Validate the response structure slightly before adding
-      if (response?.type && response.content) {
+      if (response?.category && response.content) {
         useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });
       } else {
         rendererLogger.warn({ response }, "Received invalid or incomplete Gemini response object");
         // Optionally, add a fallback error note to the UI
         useStore.getState().addGeminiResponse({
-          type: "response",
           content: "Received an improperly formatted response from AI.",
-          category: "response", // Changed from 'error' to 'response'
+          category: "answer",
           priority: "medium",
           timestamp: Date.now(),
         });

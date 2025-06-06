@@ -4,7 +4,7 @@ export interface PostItNote {
   position: { x: number; y: number };
   size: { width: number; height: number };
   timestamp: number;
-  category: "response" | "question" | "reference" | "note";
+  category: "answer" | "advice" | "follow-up";
   color: string;
   lastModified: number;
   isAiModified: boolean;

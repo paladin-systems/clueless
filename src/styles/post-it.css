@@ -12,36 +12,28 @@
 }
 
 /* Category-based styles */
-.post-it.category-response {
+.post-it.category-answer {
   @apply bg-blue-50/90 border-blue-200/60;
 }
 
-.post-it.category-response .drag-handle {
+.post-it.category-answer .drag-handle {
   @apply bg-blue-100/60 border-blue-200/50;
 }
 
-.post-it.category-question {
+.post-it.category-advice {
   @apply bg-amber-50/90 border-amber-200/60;
 }
 
-.post-it.category-question .drag-handle {
+.post-it.category-advice .drag-handle {
   @apply bg-amber-100/60 border-amber-200/50;
 }
 
-.post-it.category-reference {
+.post-it.category-follow-up {
   @apply bg-purple-50/90 border-purple-200/60;
 }
 
-.post-it.category-reference .drag-handle {
+.post-it.category-follow-up .drag-handle {
   @apply bg-purple-100/60 border-purple-200/50;
-}
-
-.post-it.category-note {
-  @apply bg-emerald-50/90 border-emerald-200/60;
-}
-
-.post-it.category-note .drag-handle {
-  @apply bg-emerald-100/60 border-emerald-200/50;
 }
 
 /* Selected state */

@@ -157,14 +157,14 @@ const AppLayout: React.FC = () => {
     rendererLogger.debug("Processing new Gemini response", { response });
 
     // Skip if missing required fields
-    if (!response.type || !response.content) {
+    if (!response.category || !response.content) {
       rendererLogger.warn("Invalid Gemini response format", { response });
       return;
     }
 
     const baseOffset = 20;
 
-    // Calculate position based on note type and priority
+    // Calculate position based on note category and priority
     const getPosition = () => {
       // Get current notes to avoid stale closure
       const currentNotes = useStore.getState().notes;
@@ -172,15 +172,15 @@ const AppLayout: React.FC = () => {
       const baseX = lastNote ? lastNote.position.x + baseOffset : baseOffset;
       let baseY: number;
 
-      switch (response.type) {
-        case "question":
-          baseY = 80; // Questions at top
+      switch (response.category) {
+        case "follow-up":
+          baseY = 80; // Follow-up questions at top
           break;
-        case "reference":
-          baseY = window.innerHeight - 300; // References at bottom
+        case "advice":
+          baseY = window.innerHeight - 300; // Advice at bottom
           break;
-        case "note":
-          baseY = window.innerHeight / 2; // Notes in middle
+        case "answer":
+          baseY = window.innerHeight / 2; // Answers in middle
           break;
         default:
           baseY = lastNote ? lastNote.position.y + baseOffset : 80;
@@ -192,15 +192,15 @@ const AppLayout: React.FC = () => {
       };
     };
 
-    // Calculate size based on content length and type
+    // Calculate size based on content length and category
     const getSize = () => {
       const baseSize = { width: 300, height: 200 };
       const contentLength = response.content.length;
 
-      if (response.type === "reference") {
+      if (response.category === "advice") {
         return { width: 400, height: Math.min(300, Math.max(200, contentLength / 3)) };
       }
-      if (response.type === "note") {
+      if (response.category === "follow-up") {
         return { width: 250, height: Math.min(150, Math.max(100, contentLength / 4)) };
       }
       return baseSize;
@@ -226,7 +226,7 @@ const AppLayout: React.FC = () => {
       position: getPosition(),
       size: getSize(),
       timestamp: Date.now(),
-      category: response.type,
+      category: response.category,
       color: getColor(),
       lastModified: Date.now(),
       isAiModified: true,
