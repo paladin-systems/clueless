@@ -1,5 +1,5 @@
 import type React from "react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { useDebounceStorage } from "../hooks/useDebounceStorage";
 import { useElectronEvents } from "../hooks/useElectronEvents";
@@ -89,7 +89,7 @@ const AppLayout: React.FC = () => {
     } else {
       rendererLogger.debug("No stored notes found or empty array");
     }
-  }, [loadFromStorage, actions.setNotes, noteState.notes]); // Include the full noteState.notes object
+  }, [loadFromStorage, actions.setNotes]); // Removed noteState.notes to prevent infinite loop
 
   // Save notes when they change
   useEffect(() => {
@@ -174,10 +174,21 @@ const AppLayout: React.FC = () => {
     audioState.systemAudioDevices,
   ]);
   // Handle new Gemini responses
+  const processedResponsesRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     if (geminiState.geminiResponses.length === 0) return;
 
     const response = geminiState.geminiResponses[geminiState.geminiResponses.length - 1];
+
+    // Create a unique identifier for this response
+    const responseId = `${response.timestamp || Date.now()}_${response.content?.slice(0, 50) || ""}`;
+
+    // Skip if we've already processed this response
+    if (processedResponsesRef.current.has(responseId)) {
+      return;
+    }
+
     rendererLogger.debug("Processing new Gemini response", { response });
 
     // Skip if missing required fields
@@ -186,11 +197,14 @@ const AppLayout: React.FC = () => {
       return;
     }
 
+    // Mark this response as processed
+    processedResponsesRef.current.add(responseId);
+
     const baseOffset = 20;
 
     // Calculate position based on note category
     const getPosition = () => {
-      // Get current notes to avoid stale closure
+      // Get current notes from store directly
       const currentNotes = noteState.notes;
       const lastNote = currentNotes[currentNotes.length - 1];
       const baseX = lastNote ? lastNote.position.x + baseOffset : baseOffset;
@@ -245,7 +259,7 @@ const AppLayout: React.FC = () => {
     };
 
     const newNote: PostItNote = {
-      id: `note_${Date.now()}`,
+      id: `note_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       content: response.content,
       position: getPosition(),
       size: getSize(),
