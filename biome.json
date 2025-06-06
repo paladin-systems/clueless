@@ -126,6 +126,19 @@
           }
         }
       }
+    },
+    {
+      "include": [
+        "src/components/shared/KeyboardShortcutsHelp.tsx",
+        "src/components/shared/SettingsMenu.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useSemanticElements": "off"
+          }
+        }
+      }
     }
   ]
 }

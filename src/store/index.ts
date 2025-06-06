@@ -125,7 +125,7 @@ export const useStore = create<AppState>((set, get) => ({
     if (!selectedMicDeviceId || !selectedSystemDeviceId) return;
 
     try {
-      const success = await (window as any).electron.startAudioCapture(
+      const success = await window.electron.startAudioCapture(
         selectedMicDeviceId,
         selectedSystemDeviceId,
       );
@@ -139,7 +139,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   stopRecording: async () => {
     try {
-      const success = await (window as any).electron.stopAudioCapture();
+      const success = await window.electron.stopAudioCapture();
       if (success) {
         set({ isRecording: false });
       }
@@ -150,7 +150,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   capture: async () => {
     try {
-      await (window as any).electron.captureScreen(get().isRecording);
+      await window.electron.captureScreen(get().isRecording);
     } catch (error) {
       set({ audioError: String(error) });
     }

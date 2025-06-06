@@ -1,12 +1,11 @@
 import { useEffect, useRef } from "react";
 import { useStore } from "../store";
+import type { RecordingPayload } from "../types/electron";
 import type { GeminiResponse } from "../types/gemini";
 import { rendererLogger } from "../utils/logger";
 
-interface RecordingPayload {
-  buffer: ArrayBuffer;
-  timestamp: number;
-}
+// Import the global window.electron definition from types/electron.ts
+import "../types/electron";
 
 export const useElectronEvents = () => {
   const store = useStore();
@@ -102,7 +101,10 @@ export const useElectronEvents = () => {
         isBuildingResponse: false,
       });
     }; // Recording complete handler
-    const handleRecordingComplete = (_event: Electron.IpcRendererEvent, recordingPayload: RecordingPayload) => {
+    const handleRecordingComplete = (
+      _event: Electron.IpcRendererEvent,
+      recordingPayload: RecordingPayload,
+    ) => {
       // Validate payload
       const isValidBuffer =
         recordingPayload?.buffer && typeof recordingPayload.buffer.byteLength === "number";
@@ -165,5 +167,5 @@ export const useElectronEvents = () => {
       electron.removeListener("audio-error", handleAudioError);
       electron.removeListener("recording-complete", handleRecordingComplete);
     };
-  }, []); // Empty dependency array since we're using the store directly
+  }, [store]); // Added store to dependency array
 };

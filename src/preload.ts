@@ -18,7 +18,7 @@ contextBridge.exposeInMainWorld("electron", {
   minimizeWindow: (): void => ipcRenderer.send("minimize-window"),
   maximizeWindow: (): void => ipcRenderer.send("maximize-window"),
   closeWindow: (): void => ipcRenderer.send("close-window"),
-  on: (channel: string, listener: (event: IpcRendererEvent, ...args: any[]) => void): void => {
+  on: (channel: string, listener: (event: IpcRendererEvent, ...args: unknown[]) => void): void => {
     // Whitelist channels
     const validChannels = [
       "audio-data",
@@ -37,7 +37,7 @@ contextBridge.exposeInMainWorld("electron", {
     }
   },
   // Add remove listener if needed, especially for frequent component mounts/unmounts
-  removeListener: (channel: string, listener: (...args: any[]) => void): void => {
+  removeListener: (channel: string, listener: (...args: unknown[]) => void): void => {
     const validChannels = [
       "audio-data",
       "audio-error",

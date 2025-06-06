@@ -429,12 +429,26 @@ Use previous context when relevant but prioritize responding to the most recent 
           systemInstruction: systemInstructionText,
         },
         callbacks: {
-          onmessage: (message: any) => {
+          onmessage: (message: unknown) => {
             geminiLogger.debug({ message }, "Received message from Gemini");
 
             try {
               // Handle text parts from modelTurn
-              if (message.serverContent?.modelTurn?.parts?.[0]?.text) {
+              if (
+                typeof message === "object" &&
+                message !== null &&
+                "serverContent" in message &&
+                typeof message.serverContent === "object" &&
+                message.serverContent !== null &&
+                "modelTurn" in message.serverContent &&
+                typeof message.serverContent.modelTurn === "object" &&
+                message.serverContent.modelTurn !== null &&
+                "parts" in message.serverContent.modelTurn &&
+                Array.isArray(message.serverContent.modelTurn.parts) &&
+                message.serverContent.modelTurn.parts.length > 0 &&
+                "text" in message.serverContent.modelTurn.parts[0] &&
+                typeof message.serverContent.modelTurn.parts[0].text === "string"
+              ) {
                 if (currentResponseText === "") {
                   // First part of a new response stream
                   mainWindow?.webContents.send("gemini-processing-start");
@@ -443,7 +457,15 @@ Use previous context when relevant but prioritize responding to the most recent 
               }
 
               // Handle generation complete
-              if (message.serverContent?.generationComplete === true) {
+              if (
+                typeof message === "object" &&
+                message !== null &&
+                "serverContent" in message &&
+                typeof message.serverContent === "object" &&
+                message.serverContent !== null &&
+                "generationComplete" in message.serverContent &&
+                message.serverContent.generationComplete === true
+              ) {
                 if (currentResponseText) {
                   geminiLogger.debug(
                     { response: currentResponseText },
@@ -561,7 +583,15 @@ Use previous context when relevant but prioritize responding to the most recent 
               }
 
               // Handle turn complete
-              if (message.serverContent?.turnComplete === true) {
+              if (
+                typeof message === "object" &&
+                message !== null &&
+                "serverContent" in message &&
+                typeof message.serverContent === "object" &&
+                message.serverContent !== null &&
+                "turnComplete" in message.serverContent &&
+                message.serverContent.turnComplete === true
+              ) {
                 mainWindow?.webContents.send("gemini-turn-complete");
                 // Ensure buffer is cleared if turn completes, possibly before generation if an error occurs
                 if (currentResponseText !== "") {
@@ -575,7 +605,15 @@ Use previous context when relevant but prioritize responding to the most recent 
               }
 
               // Handle errors from Gemini
-              if (message.error) {
+              if (
+                typeof message === "object" &&
+                message !== null &&
+                "error" in message &&
+                typeof message.error === "object" &&
+                message.error !== null &&
+                "message" in message.error &&
+                typeof message.error.message === "string"
+              ) {
                 geminiLogger.error({ error: message.error }, "Gemini message contained an error");
                 mainWindow?.webContents.send(
                   "audio-error",

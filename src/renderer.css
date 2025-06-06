@@ -1,7 +1,7 @@
 @import "tailwindcss";
-@plugin "@tailwindcss/typography";
 @import "./styles/focus.css";
 @import "./styles/post-it.css";
+@plugin "@tailwindcss/typography";
 
 /* Base styles for the app */
 @layer base {

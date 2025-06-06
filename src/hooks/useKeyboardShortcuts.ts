@@ -1,15 +1,16 @@
 import { type Dispatch, type SetStateAction, useCallback, useEffect } from "react";
 import { useStore } from "../store";
 
-type StoreSelector = {
-  startRecording: () => Promise<void>;
-  stopRecording: () => Promise<void>;
-  capture: () => Promise<void>;
-  isRecording: boolean;
-  clearResponses: () => void;
-  viewOptions: any;
-  updateViewOptions: (options: any) => void;
-};
+// This type is unused and can be removed
+// type StoreSelector = {
+//   startRecording: () => Promise<void>;
+//   stopRecording: () => Promise<void>;
+//   capture: () => Promise<void>;
+//   isRecording: boolean;
+//   clearResponses: () => void;
+//   viewOptions: ViewOptions;
+//   updateViewOptions: (options: Partial<ViewOptions>) => void;
+// };
 
 export const useKeyboardShortcuts = (
   setShowKeyboardHelp: Dispatch<SetStateAction<boolean>>,
@@ -23,8 +24,8 @@ export const useKeyboardShortcuts = (
   const clearResponses = useStore((state) => state.clearResponses);
   const viewOptions = useStore((state) => state.viewOptions);
   const updateViewOptions = useStore((state) => state.updateViewOptions);
-  const notes = useStore((state) => state.notes);
-  const setNotes = useStore((state) => state.setNotes);
+  const _notes = useStore((state) => state.notes);
+  const _setNotes = useStore((state) => state.setNotes);
 
   const handleKeyPress = useCallback(
     (event: KeyboardEvent) => {
@@ -134,8 +135,6 @@ export const useKeyboardShortcuts = (
       updateViewOptions,
       setShowKeyboardHelp,
       setShowSettings,
-      notes,
-      setNotes,
     ],
   );
 

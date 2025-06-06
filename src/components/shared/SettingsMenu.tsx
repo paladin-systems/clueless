@@ -15,6 +15,8 @@ import { useStore } from "../../store";
 import type { AudioDevice, ViewOptions } from "../../types/ui";
 import { type ExportFormat, exportNotes } from "../../utils/exportUtils";
 import { uiLogger } from "../../utils/logger";
+// Import the global window.electron definition
+import "../../types/electron";
 
 interface Props {
   isOpen: boolean;
@@ -76,7 +78,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const modalRef = useModalFocus({ isOpen, onClose });
 
   useEffect(() => {
-    const electron = (window as any).electron;
+    const electron = window.electron;
     if (electron) {
       electron
         .listAudioDevices()
@@ -122,9 +124,10 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   return (
     <div
       ref={modalRef}
-      style={{ zIndex: 9007199254740993 }}
+      style={{ zIndex: Number.MAX_SAFE_INTEGER }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="settings-title"
@@ -143,6 +146,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             Settings
           </h2>{" "}
           <button
+            type="button"
             onClick={onClose}
             className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
             aria-label="Close settings"
@@ -245,7 +249,8 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in
                 Sound Control Panel.{" "}
                 <button
-                  onClick={() => (window as any).electron.openSettings("sound")}
+                  type="button"
+                  onClick={() => window.electron.openSettings("sound")}
                   className="ml-1 cursor-pointer text-blue-400 hover:underline"
                 >
                   Open Sound Settings
@@ -284,6 +289,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           </p>
           <div className="export-dropdown-container relative">
             <button
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
                 uiLogger.debug("Export button clicked", { showExportOptions });
@@ -310,6 +316,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 <div className="space-y-0.5 p-1">
                   {" "}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExport("json");
@@ -319,6 +326,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                     <strong>JSON</strong> - Structured data with metadata
                   </button>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExport("markdown");
@@ -328,6 +336,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                     <strong>Markdown</strong> - Formatted documentation
                   </button>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExport("text");
@@ -337,6 +346,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                     <strong>Plain Text</strong> - Simple text format
                   </button>
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExport("csv");

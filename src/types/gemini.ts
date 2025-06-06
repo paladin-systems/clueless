@@ -9,3 +9,16 @@ export interface GeminiResponse {
   priority: ResponsePriority;
   timestamp: number;
 }
+
+export interface GeminiStreamMessage {
+  serverContent?: {
+    modelTurn?: {
+      parts?: Array<{ text: string }>;
+    };
+    generationComplete?: boolean;
+    turnComplete?: boolean;
+  };
+  error?: {
+    message: string;
+  };
+}
