@@ -169,7 +169,7 @@ const AppLayout: React.FC = () => {
 
     const baseOffset = 20;
 
-    // Calculate position based on note category and priority
+    // Calculate position based on note category
     const getPosition = () => {
       // Get current notes to avoid stale closure
       const currentNotes = useStore.getState().notes;
@@ -211,15 +211,15 @@ const AppLayout: React.FC = () => {
       return baseSize;
     };
 
-    // Get color based on priority
+    // Get color based on category
     const getColor = () => {
-      switch (response.priority) {
-        case "high":
-          return "#ef4444"; // red
-        case "medium":
-          return "#4c8bf5"; // blue
-        case "low":
-          return "#10b981"; // green
+      switch (response.category) {
+        case "answer":
+          return "#4c8bf5"; // blue for answers
+        case "advice":
+          return "#f59e0b"; // amber for advice
+        case "follow-up":
+          return "#10b981"; // green for follow-ups
         default:
           return "#4c8bf5";
       }

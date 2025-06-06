@@ -57,7 +57,6 @@ export const useElectronEvents = () => {
         useStore.getState().addGeminiResponse({
           content: "Received an improperly formatted response from AI.",
           category: "answer",
-          priority: "medium",
           timestamp: Date.now(),
         });
       }
