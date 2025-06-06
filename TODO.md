@@ -6,7 +6,6 @@
 - [ ] Fix auto-arrange, use dnd sorting library
 - [ ] Fix the selected note to z-index front
 - [ ] Fix click-through on the transparent background
-- [ ] Add code linter and formatter
 - [ ] Change to use Hero UI components for the main UI
 - [ ] Fix the LLM prompt, we are generating to many notes, we should only generate relevant notes
   Not ones like: 
