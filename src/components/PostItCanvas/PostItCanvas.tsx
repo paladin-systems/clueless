@@ -50,7 +50,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
     updateBounds();
     window.addEventListener("resize", updateBounds);
     return () => window.removeEventListener("resize", updateBounds);
-  }, [MENU_HEIGHT]);
+  }, []);
   // Organize notes in a grid layout
   const organizeNotes = useCallback(
     (notesToOrganize: PostItNote[], bounds: { width: number; height: number }) => {
@@ -65,7 +65,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
 
       // Calculate available space (accounting for margins and padding)
       const availableWidth = bounds.width - MIN_MARGIN * 2;
-      const availableHeight = bounds.height - MIN_MARGIN * 2;
+      const _availableHeight = bounds.height - MIN_MARGIN * 2;
 
       const cols = Math.floor(availableWidth / (maxNoteWidth + MIN_MARGIN));
       const actualCols = Math.max(1, cols); // Ensure at least 1 column
@@ -75,7 +75,8 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         const row = Math.floor(index / actualCols);
 
         // Calculate evenly distributed positions with equal spacing
-        let x, y;
+        let x: number;
+        let y: number;
 
         if (actualCols === 1) {
           // Single column - center horizontally
@@ -141,7 +142,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         });
       }
     },
-    [notes, onNoteMove, onNoteMoveMultiple, MIN_MARGIN],
+    [notes, onNoteMove, onNoteMoveMultiple],
   );
   // Calculate z-index for note - higher values for newer notes
   const getZIndex = (note: PostItNote): number => {
@@ -185,8 +186,8 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         id={id}
         tabIndex={tabIndex}
         className={clsx(
-          "absolute top-14 left-0 right-0 bottom-0 bg-transparent p-4" /* Increased padding to p-4 */,
-          "focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500",
+          "absolute top-14 right-0 bottom-0 left-0 bg-transparent p-4" /* Increased padding to p-4 */,
+          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-inset",
           className,
         )}
         onClick={handleCanvasClick}
@@ -197,8 +198,9 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         {/* Auto-arrange Button */}
         <div className="absolute top-4 right-4 z-[9999]" style={{ zIndex: 9007199254740990 }}>
           <button
+            type="button"
             onClick={() => organizeNotes(notes, canvasBounds)}
-            className="glass-button-secondary text-xs px-2 py-1"
+            className="glass-button-secondary px-2 py-1 text-xs"
           >
             Auto-arrange
           </button>

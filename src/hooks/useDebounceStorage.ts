@@ -57,7 +57,7 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
 export function migrateStorage(
   key: string,
   version: number,
-  migrations: Record<number, (data: any) => any>,
+  migrations: Record<number, (data: unknown) => unknown>,
 ) {
   try {
     const stored = localStorage.getItem(key);

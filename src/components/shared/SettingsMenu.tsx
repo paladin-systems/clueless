@@ -42,7 +42,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
     });
   };
 
-  const handleLayoutChange = (layout: ViewOptions["layout"]) => {
+  const _handleLayoutChange = (layout: ViewOptions["layout"]) => {
     updateViewOptions({ layout });
   };
   const handleAlwaysOnTopChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -123,7 +123,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
     <div
       ref={modalRef}
       style={{ zIndex: 9007199254740993 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
@@ -132,19 +132,19 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
       {" "}
       <div
         className={clsx(
-          "bg-gray-900/95 border border-gray-700/50 rounded-lg shadow-xl w-96 max-w-lg max-h-[80vh] overflow-y-auto p-6",
+          "max-h-[80vh] w-96 max-w-lg overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-900/95 p-6 shadow-xl",
           "transform transition-all duration-200",
-          "animate-in fade-in zoom-in-95",
-          "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95",
+          "fade-in zoom-in-95 animate-in",
+          "data-[state=closed]:fade-out data-[state=closed]:zoom-out-95 data-[state=closed]:animate-out",
         )}
       >
-        <div className="flex justify-between items-center mb-6">
-          <h2 id="settings-title" className="text-lg font-semibold text-white">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 id="settings-title" className="font-semibold text-lg text-white">
             Settings
           </h2>{" "}
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800 cursor-pointer"
+            className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
             aria-label="Close settings"
           >
             <FaXmark />
@@ -155,7 +155,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           {" "}
           {/* Opacity Section */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
               <FaEye />
               <span>Window Opacity</span>
             </h3>
@@ -170,18 +170,18 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                 className="flex-grow"
                 aria-label="Window opacity"
               />
-              <span className="text-sm text-gray-300 w-12">
+              <span className="w-12 text-gray-300 text-sm">
                 {Math.round(viewOptions.opacity * 100)}%
               </span>
             </div>
           </div>{" "}
           {/* Window Behavior */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
               <FaDesktop />
               <span>Window Behavior</span>
             </h3>
-            <label className="flex items-center space-x-2 text-sm text-gray-300">
+            <label className="flex items-center space-x-2 text-gray-300 text-sm">
               <input
                 type="checkbox"
                 checked={viewOptions.alwaysOnTop}
@@ -194,14 +194,14 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           </div>{" "}
           {/* Audio Input Device Selection */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
               <FaMicrophone />
               <span>Microphone Input</span>
             </h3>
             <select
               value={selectedMicDeviceId || ""}
               onChange={(e) => setSelectedMicDevice(Number(e.target.value))}
-              className="w-full p-2 rounded-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Select microphone input device"
             >
               {micAudioDevices.length === 0 && (
@@ -214,21 +214,21 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               ))}
             </select>
             {micAudioDevices.length === 0 && (
-              <p className="text-xs text-red-400">
+              <p className="text-red-400 text-xs">
                 No microphone devices detected. Please check your system settings.
               </p>
             )}
           </div>{" "}
           {/* System Audio Device Selection */}
           <div className="space-y-2">
-            <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
               <FaVolumeHigh />
               <span>System Audio Input (Stereo Mix)</span>
             </h3>
             <select
               value={selectedSystemDeviceId || ""}
               onChange={(e) => setSelectedSystemDevice(Number(e.target.value))}
-              className="w-full p-2 rounded-md bg-gray-800 text-gray-300 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               aria-label="Select system audio input device"
             >
               {systemAudioDevices.length === 0 && (
@@ -241,12 +241,12 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               ))}
             </select>
             {systemAudioDevices.length === 0 && (
-              <p className="text-xs text-red-400">
+              <p className="text-red-400 text-xs">
                 No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in
                 Sound Control Panel.{" "}
                 <button
                   onClick={() => (window as any).electron.openSettings("sound")}
-                  className="text-blue-400 hover:underline ml-1 cursor-pointer"
+                  className="ml-1 cursor-pointer text-blue-400 hover:underline"
                 >
                   Open Sound Settings
                 </button>
@@ -257,8 +257,8 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
 
         {/* Instructions */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-300">Help & Instructions</h3>
-          <label className="flex items-center space-x-2 text-sm text-gray-300">
+          <h3 className="font-medium text-gray-300 text-sm">Help & Instructions</h3>
+          <label className="flex items-center space-x-2 text-gray-300 text-sm">
             <input
               type="checkbox"
               checked={viewOptions.showInstructions}
@@ -268,21 +268,21 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             />
             <span>Show Keyboard Instructions</span>
           </label>
-          <p className="text-xs text-gray-500">
+          <p className="text-gray-500 text-xs">
             Display helpful keyboard shortcuts for moving and managing post-it notes
           </p>{" "}
         </div>
 
         {/* Export Notes Section */}
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-gray-300 flex items-center space-x-2">
+          <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
             <FaDownload />
             <span>Export Notes</span>
           </h3>{" "}
-          <p className="text-xs text-gray-500 mb-2">
+          <p className="mb-2 text-gray-500 text-xs">
             Export your {notes.length} note{notes.length !== 1 ? "s" : ""} in various formats
           </p>
-          <div className="relative export-dropdown-container">
+          <div className="export-dropdown-container relative">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -291,10 +291,10 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               }}
               disabled={notes.length === 0}
               className={clsx(
-                "w-full px-3 py-2 text-sm rounded-lg transition-colors flex items-center justify-between",
+                "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
                 notes.length === 0
-                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700 text-white",
+                  ? "cursor-not-allowed bg-gray-700 text-gray-500"
+                  : "bg-blue-600 text-white hover:bg-blue-700",
               )}
             >
               <div className="flex items-center space-x-2">
@@ -306,15 +306,15 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               />
             </button>
             {showExportOptions && notes.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-10">
-                <div className="p-1 space-y-0.5">
+              <div className="absolute top-full right-0 left-0 z-10 mt-1 rounded-lg border border-gray-700 bg-gray-800 shadow-xl">
+                <div className="space-y-0.5 p-1">
                   {" "}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleExport("json");
                     }}
-                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
                   >
                     <strong>JSON</strong> - Structured data with metadata
                   </button>
@@ -323,7 +323,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                       e.stopPropagation();
                       handleExport("markdown");
                     }}
-                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
                   >
                     <strong>Markdown</strong> - Formatted documentation
                   </button>
@@ -332,7 +332,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                       e.stopPropagation();
                       handleExport("text");
                     }}
-                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
                   >
                     <strong>Plain Text</strong> - Simple text format
                   </button>
@@ -341,7 +341,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
                       e.stopPropagation();
                       handleExport("csv");
                     }}
-                    className="w-full text-left px-2 py-1.5 text-sm text-gray-300 hover:bg-gray-700 rounded transition-colors"
+                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
                   >
                     <strong>CSV</strong> - Spreadsheet compatible
                   </button>
@@ -350,7 +350,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             )}{" "}
           </div>
           {notes.length === 0 && (
-            <p className="text-xs text-amber-400">Create some notes first to enable export</p>
+            <p className="text-amber-400 text-xs">Create some notes first to enable export</p>
           )}
         </div>
       </div>

@@ -49,39 +49,41 @@ class ModalErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           onClick={this.handleClose}
         >
           <div
             className={clsx(
-              "bg-gray-900/95 border border-gray-700/50 rounded-lg shadow-xl",
-              "w-96 max-w-lg p-6 transform transition-all duration-200",
-              "animate-in fade-in zoom-in-95",
+              "rounded-lg border border-gray-700/50 bg-gray-900/95 shadow-xl",
+              "w-96 max-w-lg transform p-6 transition-all duration-200",
+              "fade-in zoom-in-95 animate-in",
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-white">Something went wrong</h3>{" "}
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-semibold text-lg text-white">Something went wrong</h3>{" "}
               <button
+                type="button"
                 onClick={this.handleClose}
-                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+                className="cursor-pointer text-gray-400 transition-colors hover:text-white"
               >
                 ✕
               </button>
             </div>
 
-            <div className="bg-gray-800 rounded p-4 mb-4">
-              <pre className="text-sm text-red-400 whitespace-pre-wrap break-words">
+            <div className="mb-4 rounded bg-gray-800 p-4">
+              <pre className="whitespace-pre-wrap break-words text-red-400 text-sm">
                 {this.state.error?.toString()}
               </pre>
             </div>
 
             <div className="flex justify-end">
               <button
+                type="button"
                 onClick={this.handleClose}
                 className={clsx(
-                  "px-4 py-2 bg-blue-600 text-white rounded-md text-sm",
-                  "hover:bg-blue-700 transition-all duration-200",
+                  "rounded-md bg-blue-600 px-4 py-2 text-sm text-white",
+                  "transition-all duration-200 hover:bg-blue-700",
                   "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900",
                 )}
               >

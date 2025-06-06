@@ -85,7 +85,7 @@ const shortcuts: Shortcut[] = [
     keys: ["Ctrl/⌘", "Shift", "I"],
     description: "Toggle Instructions",
     category: "notes",
-    icon: <FaNoteSticky className="text-yellow-500 text-xs" />,
+    icon: <FaNoteSticky className="text-xs text-yellow-500" />,
   },
   {
     keys: ["Tab"],
@@ -129,7 +129,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
     <div
       ref={modalRef}
       style={{ zIndex: 9007199254740993 }}
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
@@ -138,19 +138,20 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
       {" "}
       <div
         className={clsx(
-          "bg-gray-900/95 border border-gray-700/50 rounded-lg shadow-xl w-[800px] max-w-6xl p-6 pb-8",
+          "w-[800px] max-w-6xl rounded-lg border border-gray-700/50 bg-gray-900/95 p-6 pb-8 shadow-xl",
           "transform transition-all duration-200",
-          "animate-in fade-in zoom-in-95",
-          "data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=closed]:zoom-out-95",
+          "fade-in zoom-in-95 animate-in",
+          "data-[state=closed]:fade-out data-[state=closed]:zoom-out-95 data-[state=closed]:animate-out",
         )}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h2 id="keyboard-shortcuts-title" className="text-lg font-semibold text-white">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 id="keyboard-shortcuts-title" className="font-semibold text-lg text-white">
             Keyboard Shortcuts
           </h2>{" "}
           <button
+            type="button"
             onClick={onClose}
-            className="text-gray-400 hover:text-white transition-colors p-1 rounded-full hover:bg-gray-800 cursor-pointer"
+            className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
             aria-label="Close keyboard shortcuts"
           >
             <FaXmark />
@@ -161,12 +162,12 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
           <div className="space-y-6">
             {/* Recording Controls */}
             <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-2">Recording</h3>
+              <h3 className="mb-2 font-medium text-gray-300 text-sm">Recording</h3>
               <div className="space-y-2">
                 {shortcuts
                   .filter((s) => s.category === "recording")
                   .map((shortcut, index) => (
-                    <div key={index} className="flex justify-between items-center text-sm">
+                    <div key={index} className="flex items-center justify-between text-sm">
                       <div className="flex items-center space-x-2">
                         {shortcut.icon && shortcut.icon}
                         <span className="text-gray-300">{shortcut.description}</span>
@@ -176,7 +177,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
                           <React.Fragment key={keyIndex}>
                             <kbd
                               className={clsx(
-                                "px-2 py-1 bg-gray-800 rounded text-gray-300 text-xs min-w-[24px] text-center",
+                                "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
                                 "border border-gray-700 shadow-inner",
                                 "transition-transform active:scale-95",
                               )}
@@ -196,12 +197,12 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
 
             {/* Layout Controls */}
             <div>
-              <h3 className="text-sm font-medium text-gray-300 mb-2">Layout</h3>
+              <h3 className="mb-2 font-medium text-gray-300 text-sm">Layout</h3>
               <div className="space-y-2">
                 {shortcuts
                   .filter((s) => s.category === "layout")
                   .map((shortcut, index) => (
-                    <div key={index} className="flex justify-between items-center text-sm">
+                    <div key={index} className="flex items-center justify-between text-sm">
                       <div className="flex items-center space-x-2">
                         {shortcut.icon && shortcut.icon}
                         <span className="text-gray-300">{shortcut.description}</span>
@@ -211,7 +212,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
                           <React.Fragment key={keyIndex}>
                             <kbd
                               className={clsx(
-                                "px-2 py-1 bg-gray-800 rounded text-gray-300 text-xs min-w-[24px] text-center",
+                                "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
                                 "border border-gray-700 shadow-inner",
                                 "transition-transform active:scale-95",
                               )}
@@ -232,16 +233,16 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
 
           {/* Divider */}
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 w-px bg-gray-700"></div>
+            <div className="absolute inset-y-0 left-0 w-px bg-gray-700" />
             <div className="pl-8">
               {/* Note Management */}
               <div>
-                <h3 className="text-sm font-medium text-gray-300 mb-2">Notes</h3>
+                <h3 className="mb-2 font-medium text-gray-300 text-sm">Notes</h3>
                 <div className="space-y-2">
                   {shortcuts
                     .filter((s) => s.category === "notes")
                     .map((shortcut, index) => (
-                      <div key={index} className="flex justify-between items-center text-sm">
+                      <div key={index} className="flex items-center justify-between text-sm">
                         <div className="flex items-center space-x-2">
                           {shortcut.icon && shortcut.icon}
                           <span className="text-gray-300">{shortcut.description}</span>
@@ -251,7 +252,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
                             <React.Fragment key={keyIndex}>
                               <kbd
                                 className={clsx(
-                                  "px-2 py-1 bg-gray-800 rounded text-gray-300 text-xs min-w-[24px] text-center",
+                                  "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
                                   "border border-gray-700 shadow-inner",
                                   "transition-transform active:scale-95",
                                 )}

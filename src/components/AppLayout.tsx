@@ -272,7 +272,7 @@ const AppLayout: React.FC = () => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [notes, selectedNoteId, showKeyboardHelp, showSettings, removeNote]);
+  }, [notes, selectedNoteId, showKeyboardHelp, showSettings, removeNote, selectNote]);
 
   // Note handlers
   const updateNotePosition = useStore((state) => state.updateNotePosition);
@@ -343,9 +343,9 @@ const AppLayout: React.FC = () => {
 
       {/* Loading Indicator */}
       {isBuildingResponse && (
-        <div className="fixed bottom-4 left-4 flex items-center space-x-2 bg-gray-900/95 backdrop-blur-sm rounded-lg p-3 border border-gray-700/50">
+        <div className="fixed bottom-4 left-4 flex items-center space-x-2 rounded-lg border border-gray-700/50 bg-gray-900/95 p-3 backdrop-blur-sm">
           <LoadingSpinner size="sm" />
-          <span className="text-sm text-gray-300">{audioStatus || "Processing response..."}</span>
+          <span className="text-gray-300 text-sm">{audioStatus || "Processing response..."}</span>
         </div>
       )}
 

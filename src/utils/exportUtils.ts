@@ -78,10 +78,10 @@ export const exportAsJSON = (notes: PostItNote[]): void => {
  * Exports notes as Markdown format
  */
 export const exportAsMarkdown = (notes: PostItNote[]): void => {
-  let content = `# Clueless Notes Export\n\n`;
+  let content = "# Clueless Notes Export\n\n";
   content += `**Export Date:** ${new Date().toLocaleString()}\n`;
   content += `**Total Notes:** ${notes.length}\n\n`;
-  content += `---\n\n`;
+  content += "---\n\n";
 
   // Group notes by category
   const notesByCategory = notes.reduce(
@@ -112,7 +112,7 @@ export const exportAsMarkdown = (notes: PostItNote[]): void => {
       content += `- **AI Generated:** ${note.isAiModified ? "Yes" : "No"}\n`;
       content += `- **Position:** (${note.position.x}, ${note.position.y})\n`;
       content += `- **Size:** ${note.size.width} × ${note.size.height}\n\n`;
-      content += `---\n\n`;
+      content += "---\n\n";
     }
   }
 
@@ -124,7 +124,7 @@ export const exportAsMarkdown = (notes: PostItNote[]): void => {
  * Exports notes as plain text format
  */
 export const exportAsText = (notes: PostItNote[]): void => {
-  let content = `CLUELESS NOTES EXPORT\n`;
+  let content = "CLUELESS NOTES EXPORT\n";
   content += `${"=".repeat(50)}\n\n`;
   content += `Export Date: ${new Date().toLocaleString()}\n`;
   content += `Total Notes: ${notes.length}\n\n`;
@@ -143,7 +143,7 @@ export const exportAsText = (notes: PostItNote[]): void => {
     content += `AI Generated: ${note.isAiModified ? "Yes" : "No"}\n`;
     content += `Position: (${note.position.x}, ${note.position.y})\n`;
     content += `Size: ${note.size.width} × ${note.size.height}\n\n`;
-    content += `Content:\n`;
+    content += "Content:\n";
     content += `${"-".repeat(20)}\n`;
     content += `${note.content}\n\n`;
   }
@@ -171,7 +171,7 @@ export const exportAsCSV = (notes: PostItNote[]): void => {
     "Z-Index",
   ];
 
-  let content = headers.join(",") + "\n";
+  let content = `${headers.join(",")}\n`;
 
   for (const note of notes) {
     const row = [
@@ -188,7 +188,7 @@ export const exportAsCSV = (notes: PostItNote[]): void => {
       `"${note.color}"`,
       (note.zIndex || 0).toString(),
     ];
-    content += row.join(",") + "\n";
+    content += `${row.join(",")}\n`;
   }
 
   const filename = `clueless-notes-${new Date().toISOString().slice(0, 10)}.csv`;

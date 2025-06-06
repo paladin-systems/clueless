@@ -15,7 +15,7 @@ export default defineConfig({
         entry: [path.resolve(__dirname, "src/main.ts")],
         formats: ["cjs"],
         // Adjust fileName to handle multiple entry points
-        fileName: (format, entryName) => {
+        fileName: (_format, entryName) => {
           if (entryName === "main") {
             return "main.js";
           }

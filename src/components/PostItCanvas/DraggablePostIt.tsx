@@ -21,7 +21,6 @@ const DraggablePostIt: React.FC<Props> = ({
   note,
   onMove,
   onResize,
-  canvasBounds,
   className,
   onSelect,
   onDelete,
@@ -159,7 +158,7 @@ const DraggablePostIt: React.FC<Props> = ({
         onDelete?.();
       }
     },
-    [note.position, note.size, onMove, onResize],
+    [note.position, note.size, onMove, onResize, onDelete],
   ); // Handle click to select note and bring to front
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -195,7 +194,6 @@ const DraggablePostIt: React.FC<Props> = ({
         className,
       )}
       onClick={handleClick}
-      tabIndex={0}
       role="article"
       aria-label={`${note.category} note`}
       onKeyDown={handleKeyDown}
@@ -206,15 +204,16 @@ const DraggablePostIt: React.FC<Props> = ({
         <div className="flex items-center justify-between p-2">
           <div className="flex items-center space-x-2">
             <FaGripVertical className="text-gray-500 text-xs" />
-            <span className="text-xs font-medium text-gray-700 capitalize">{note.category}</span>
-            <span className="text-xs text-gray-500">{formatTimestamp(note.timestamp)}</span>
+            <span className="font-medium text-gray-700 text-xs capitalize">{note.category}</span>
+            <span className="text-gray-500 text-xs">{formatTimestamp(note.timestamp)}</span>
           </div>
           <button
+            type="button"
             onClick={(e) => {
               e.stopPropagation();
               onDelete?.();
             }}
-            className="close-button p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors duration-150 ml-2"
+            className="close-button ml-2 rounded-full p-1 text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
             title="Delete note"
             aria-label="Delete note"
           >
@@ -223,18 +222,18 @@ const DraggablePostIt: React.FC<Props> = ({
         </div>
       </div>
       {/* Note Content */}
-      <div className="p-4 h-[calc(100%-2.5rem)] flex flex-col">
-        <div className="flex-grow overflow-auto text-gray-800 prose prose-sm max-w-none">
+      <div className="flex h-[calc(100%-2.5rem)] flex-col p-4">
+        <div className="prose prose-sm max-w-none flex-grow overflow-auto text-gray-800">
           {note.content}
         </div>
       </div>{" "}
       {/* Resize Handle (manual implementation) */}{" "}
       <div
-        className="absolute bottom-1 right-1 w-4 h-4 cursor-se-resize flex items-center justify-center"
+        className="absolute right-1 bottom-1 flex h-4 w-4 cursor-se-resize items-center justify-center"
         onMouseDown={handleMouseDown}
         title="Drag to resize"
       >
-        <FaUpRightAndDownLeftFromCenter className="text-gray-400/70 text-xs hover:text-gray-600 transition-colors scale-x-[-1]" />
+        <FaUpRightAndDownLeftFromCenter className="scale-x-[-1] text-gray-400/70 text-xs transition-colors hover:text-gray-600" />
       </div>
     </div>
   );

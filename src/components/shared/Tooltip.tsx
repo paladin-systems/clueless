@@ -62,9 +62,9 @@ const Tooltip: React.FC<Props> = ({
           role="tooltip"
           className={clsx(
             "absolute z-50 px-2 py-1 text-xs",
-            "bg-gray-900/95 text-gray-100 rounded shadow-lg",
-            "backdrop-blur-sm border border-gray-700/50",
-            "animate-in fade-in zoom-in-95 duration-200",
+            "rounded bg-gray-900/95 text-gray-100 shadow-lg",
+            "border border-gray-700/50 backdrop-blur-sm",
+            "fade-in zoom-in-95 animate-in duration-200",
             placements[placement],
             className,
           )}
@@ -72,15 +72,15 @@ const Tooltip: React.FC<Props> = ({
           {content}
           <div
             className={clsx(
-              "absolute w-2 h-2 bg-gray-900/95 border border-gray-700/50",
+              "absolute h-2 w-2 border border-gray-700/50 bg-gray-900/95",
               "rotate-45 transform",
               {
-                "bottom-[-4px] left-1/2 -translate-x-1/2 border-t-0 border-l-0":
+                "-translate-x-1/2 bottom-[-4px] left-1/2 border-t-0 border-l-0":
                   placement === "top",
-                "top-[-4px] left-1/2 -translate-x-1/2 border-b-0 border-r-0":
+                "-translate-x-1/2 top-[-4px] left-1/2 border-r-0 border-b-0":
                   placement === "bottom",
-                "right-[-4px] top-1/2 -translate-y-1/2 border-l-0 border-t-0": placement === "left",
-                "left-[-4px] top-1/2 -translate-y-1/2 border-r-0 border-b-0": placement === "right",
+                "-translate-y-1/2 top-1/2 right-[-4px] border-t-0 border-l-0": placement === "left",
+                "-translate-y-1/2 top-1/2 left-[-4px] border-r-0 border-b-0": placement === "right",
               },
             )}
           />

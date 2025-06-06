@@ -5,7 +5,7 @@ dotenv.config({
   path: path.join(process.cwd(), ".env"),
 });
 
-import path from "path";
+import path from "node:path";
 import { type Blob as GenAIBlob, GoogleGenAI, Modality, type Session } from "@google/genai";
 import { RtAudio, type RtAudioErrorType, RtAudioFormat, type RtAudioStreamFlags } from "audify"; // Import audify, RtAudioErrorType, and RtAudioStreamFlags
 import { BrowserWindow, app, desktopCapturer, ipcMain, shell } from "electron";
@@ -360,7 +360,7 @@ ipcMain.handle("list-audio-devices", () => {
 // IPC: Start audio capture - Refactored for RtAudio
 ipcMain.handle(
   "start-audio-capture",
-  async (event, micDeviceId: number, systemDeviceId: number) => {
+  async (_event, micDeviceId: number, systemDeviceId: number) => {
     audioLogger.info({ micDeviceId, systemDeviceId }, "Starting audio capture using RtAudio");
 
     if (!genAI) {
@@ -457,7 +457,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                   const jsonBlockMatch = currentResponseText.match(
                     /```json\s*\n([\s\S]*?)\n\s*```/,
                   );
-                  if (jsonBlockMatch && jsonBlockMatch[1]) {
+                  if (jsonBlockMatch?.[1]) {
                     contentToParse = jsonBlockMatch[1].trim();
                     geminiLogger.debug({ contentToParse }, "Extracted JSON from code block");
                   }
@@ -534,14 +534,14 @@ Use previous context when relevant but prioritize responding to the most recent 
                         const contentMatch = cleanContent.match(
                           /"content"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/,
                         );
-                        if (contentMatch && contentMatch[1]) {
+                        if (contentMatch?.[1]) {
                           cleanContent = contentMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
                           geminiLogger.debug(
                             { cleanContent },
                             "Extracted content from JSON-like text",
                           );
                         }
-                      } catch (e) {
+                      } catch (_e) {
                         geminiLogger.debug("Failed to extract content from JSON-like text");
                       }
                     }
@@ -828,7 +828,7 @@ ipcMain.handle("stop-audio-capture", async () => {
 });
 
 // IPC: Capture screenshot on request (Keep this logic)
-ipcMain.handle("capture-screen", async (event, sendToGemini = false) => {
+ipcMain.handle("capture-screen", async (_event, sendToGemini = false) => {
   mainLogger.info("Capturing screenshot");
   const sources = await desktopCapturer.getSources({
     types: ["screen"],
@@ -852,13 +852,12 @@ ipcMain.handle("capture-screen", async (event, sendToGemini = false) => {
     }
 
     return pngBuffer;
-  } else {
-    throw new Error("No screen sources found");
   }
+  throw new Error("No screen sources found");
 });
 
 // IPC: Open the Windows Sound settings to help user enable "Stereo Mix" if needed (Keep this logic)
-ipcMain.on("open-settings", (event, url: string) => {
+ipcMain.on("open-settings", (_event, url: string) => {
   shell.openExternal(url);
 });
 

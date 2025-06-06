@@ -42,7 +42,7 @@ export const useElectronEvents = () => {
     // Simplified Gemini response handler (receives complete, parsed response from main.ts)
     const handleGeminiResponse = (_event: any, response: GeminiResponse) => {
       // Validate the response structure slightly before adding
-      if (response && response.type && response.content) {
+      if (response?.type && response.content) {
         useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });
       } else {
         rendererLogger.warn({ response }, "Received invalid or incomplete Gemini response object");
@@ -103,7 +103,7 @@ export const useElectronEvents = () => {
         !recordingPayload ||
         !isValidBuffer ||
         typeof recordingPayload.timestamp !== "number" ||
-        isNaN(recordingPayload.timestamp)
+        Number.isNaN(recordingPayload.timestamp)
       ) {
         useStore.setState({ audioError: "Received invalid recording data." });
         return;
