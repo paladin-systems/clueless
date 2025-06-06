@@ -15,7 +15,11 @@
     "format": "biome format .",
     "format:fix": "biome format --write .",
     "check": "biome check .",
-    "check:fix": "biome check --write ."
+    "check:fix": "biome check --write .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": "biome check --write"
   },
   "author": "",
   "license": "MIT",
@@ -54,6 +58,8 @@
     "electron-squirrel-startup": "^1.0.1",
     "electron-vite": "^3.1.0",
     "eslint": "^9.28.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
     "prettier": "^3.5.3",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.8.3",
@@ -63,7 +69,9 @@
   },
   "build": {
     "appId": "com.example.clueless",
-    "files": ["dist/**/*"],
+    "files": [
+      "dist/**/*"
+    ],
     "win": {
       "target": "nsis"
     }
