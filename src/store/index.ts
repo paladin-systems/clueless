@@ -140,12 +140,19 @@ export const useStore = create<AppState>((set, get) => ({
 
   stopRecording: async () => {
     try {
+      // Immediately update UI state for responsiveness
+      set({ isRecording: false, audioStatus: "Stopping recording..." });
+
       const success = await window.electron.stopAudioCapture();
       if (success) {
-        set({ isRecording: false });
+        set({ isRecording: false, audioStatus: "Recording stopped" });
+      } else {
+        // Revert if backend call failed
+        set({ isRecording: true, audioError: "Failed to stop recording" });
       }
     } catch (error) {
-      set({ audioError: String(error) });
+      // Revert if error occurred
+      set({ isRecording: true, audioError: String(error) });
     }
   },
 

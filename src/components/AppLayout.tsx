@@ -66,13 +66,6 @@ const AppLayout: React.FC = () => {
     })),
   );
 
-  rendererLogger.debug("AppLayout: geminiResponses count", {
-    count: geminiState.geminiResponses.length,
-  });
-  rendererLogger.debug("AppLayout: isBuildingResponse", {
-    isBuildingResponse: geminiState.isBuildingResponse,
-  });
-
   // Initialize notes from storage with debounced saves
   const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({
     key: "post-it-notes",
@@ -132,7 +125,6 @@ const AppLayout: React.FC = () => {
       setSessionInfo((prev) => ({
         ...prev,
         startTime: prev.startTime || Date.now(),
-        isRecording: true,
         deviceInfo: {
           mic: micDevice
             ? {
@@ -165,7 +157,7 @@ const AppLayout: React.FC = () => {
     } else {
       setSessionInfo((prev) => ({
         ...prev,
-        isRecording: false,
+        // Don't set isRecording here - let the TopMenuBar get it from audioState
       }));
     }
 
@@ -354,7 +346,10 @@ const AppLayout: React.FC = () => {
 
       {/* Top Menu Bar */}
       <TopMenuBar
-        sessionInfo={sessionInfo}
+        sessionInfo={{
+          ...sessionInfo,
+          isRecording: audioState.isRecording, // Use store state instead of local state
+        }}
         audioLevels={{
           mic: { level: audioState.micLevel, type: "mic" },
           system: { level: audioState.systemLevel, type: "system" },

@@ -8,7 +8,6 @@ import { rendererLogger } from "../utils/logger";
 import "../types/electron";
 
 export const useElectronEvents = () => {
-  const store = useStore();
   const micLevelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const systemLevelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -98,7 +97,9 @@ export const useElectronEvents = () => {
         audioError: error,
         isBuildingResponse: false,
       });
-    }; // Recording complete handler
+    };
+
+    // Recording complete handler
     const handleRecordingComplete = (
       _event: Electron.IpcRendererEvent,
       recordingPayload: RecordingPayload,
@@ -152,9 +153,8 @@ export const useElectronEvents = () => {
 
     // Cleanup function
     return () => {
-      const { micLevelTimeout, systemLevelTimeout } = store;
-      if (micLevelTimeout) clearTimeout(micLevelTimeout);
-      if (systemLevelTimeout) clearTimeout(systemLevelTimeout);
+      if (micLevelTimeoutRef.current) clearTimeout(micLevelTimeoutRef.current);
+      if (systemLevelTimeoutRef.current) clearTimeout(systemLevelTimeoutRef.current);
 
       electron.removeListener("audio-activity", handleAudioActivity);
       electron.removeListener("gemini-processing-start", handleGeminiProcessingStart); // New cleanup
@@ -165,5 +165,5 @@ export const useElectronEvents = () => {
       electron.removeListener("audio-error", handleAudioError);
       electron.removeListener("recording-complete", handleRecordingComplete);
     };
-  }, [store]); // Added store to dependency array
+  }, []); // Remove store dependency to prevent re-runs
 };
