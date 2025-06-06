@@ -1,7 +1,7 @@
 import { useDraggable } from "@dnd-kit/core";
 import clsx from "clsx";
 import type React from "react";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { FaGripVertical, FaUpRightAndDownLeftFromCenter, FaXmark } from "react-icons/fa6";
 import type { PostItNote } from "../../types/ui";
 import { formatTimestamp } from "../../utils/timeUtils";
@@ -27,6 +27,7 @@ const DraggablePostIt: React.FC<Props> = ({
   isSelected,
 }) => {
   const [isResizing, setIsResizing] = useState(false);
+  // Set up draggable functionality
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: note.id,
     data: {
@@ -35,42 +36,58 @@ const DraggablePostIt: React.FC<Props> = ({
     },
   });
   // Custom drag listeners that include selection and bringing to front
-  const customListeners = {
-    ...listeners,
-    onMouseDown: (e: React.MouseEvent) => {
-      // Select the note and bring to front when starting to drag
-      if (!isSelected) {
-        onSelect?.();
-      }
-      // Call the original onMouseDown if it exists
-      if (listeners?.onMouseDown) {
-        listeners.onMouseDown(e as React.MouseEvent<HTMLElement>);
-      }
-    },
-    onTouchStart: (e: React.TouchEvent) => {
-      // Select the note and bring to front when starting to drag on touch devices
-      if (!isSelected) {
-        onSelect?.();
-      }
-      // Call the original onTouchStart if it exists
-      if (listeners?.onTouchStart) {
-        listeners.onTouchStart(e as React.TouchEvent<HTMLElement>);
-      }
-    },
-  };
+  const customListeners = useMemo(
+    () => ({
+      ...listeners,
+      onMouseDown: (e: React.MouseEvent) => {
+        // Select the note and bring to front when starting to drag
+        if (!isSelected) {
+          onSelect?.();
+        }
+        // Call the original onMouseDown if it exists
+        if (listeners?.onMouseDown) {
+          listeners.onMouseDown(e as React.MouseEvent<HTMLElement>);
+        }
+      },
+      onTouchStart: (e: React.TouchEvent) => {
+        // Select the note and bring to front when starting to drag on touch devices
+        if (!isSelected) {
+          onSelect?.();
+        }
+        // Call the original onTouchStart if it exists
+        if (listeners?.onTouchStart) {
+          listeners.onTouchStart(e as React.TouchEvent<HTMLElement>);
+        }
+      },
+    }),
+    [listeners, isSelected, onSelect],
+  );
 
-  const divStyle: React.CSSProperties = {
-    position: "absolute",
-    left: note.position.x,
-    top: note.position.y,
-    width: note.size.width,
-    height: note.size.height,
-    zIndex: note.zIndex,
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : "none",
-    willChange: "transform", // Helps browser optimize transform rendering
-    // Disable transitions during drag to prevent conflicts
-    transition: isDragging || isResizing ? "none" : undefined,
-  };
+  // Memoize the div style to prevent recreation on every render
+  const divStyle: React.CSSProperties = useMemo(
+    () => ({
+      position: "absolute",
+      left: note.position.x,
+      top: note.position.y,
+      width: note.size.width,
+      height: note.size.height,
+      zIndex: note.zIndex,
+      transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : "none",
+      willChange: "transform", // Helps browser optimize transform rendering
+      // Disable transitions during drag to prevent conflicts
+      transition: isDragging || isResizing ? "none" : undefined,
+    }),
+    [
+      note.position.x,
+      note.position.y,
+      note.size.width,
+      note.size.height,
+      note.zIndex,
+      transform,
+      isDragging,
+      isResizing,
+    ],
+  );
   // Handle resize
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
@@ -238,4 +255,20 @@ const DraggablePostIt: React.FC<Props> = ({
   );
 };
 
-export default DraggablePostIt;
+// Memoize the component to prevent unnecessary re-renders
+export default memo(DraggablePostIt, (prevProps, nextProps) => {
+  // Custom comparison to prevent re-renders when only irrelevant props change
+  return (
+    prevProps.note.id === nextProps.note.id &&
+    prevProps.note.content === nextProps.note.content &&
+    prevProps.note.position.x === nextProps.note.position.x &&
+    prevProps.note.position.y === nextProps.note.position.y &&
+    prevProps.note.size.width === nextProps.note.size.width &&
+    prevProps.note.size.height === nextProps.note.size.height &&
+    prevProps.note.color === nextProps.note.color &&
+    prevProps.note.zIndex === nextProps.note.zIndex &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.canvasBounds.width === nextProps.canvasBounds.width &&
+    prevProps.canvasBounds.height === nextProps.canvasBounds.height
+  );
+});

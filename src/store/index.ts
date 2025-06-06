@@ -206,18 +206,32 @@ export const useStore = create<AppState>((set, get) => ({
       return { notes: newNotes };
     }),
   updateNotePosition: (id, position) =>
-    set((state) => ({
-      notes: state.notes.map((note) =>
-        note.id === id ? { ...note, position, zIndex: Date.now() } : note,
-      ),
-    })),
+    set((state) => {
+      // Only update if position actually changed
+      const note = state.notes.find((n) => n.id === id);
+      if (!note || (note.position.x === position.x && note.position.y === position.y)) {
+        return state;
+      }
+      return {
+        notes: state.notes.map((note) =>
+          note.id === id ? { ...note, position, zIndex: Date.now() } : note,
+        ),
+      };
+    }),
 
   updateNoteSize: (id, size) =>
-    set((state) => ({
-      notes: state.notes.map((note) =>
-        note.id === id ? { ...note, size, zIndex: Date.now() } : note,
-      ),
-    })),
+    set((state) => {
+      // Only update if size actually changed
+      const note = state.notes.find((n) => n.id === id);
+      if (!note || (note.size.width === size.width && note.size.height === size.height)) {
+        return state;
+      }
+      return {
+        notes: state.notes.map((note) =>
+          note.id === id ? { ...note, size, zIndex: Date.now() } : note,
+        ),
+      };
+    }),
 
   bringNoteToFront: (id: string) =>
     set((state) => ({
@@ -239,6 +253,11 @@ export const useStore = create<AppState>((set, get) => ({
 
   selectNote: (id) =>
     set((state) => {
+      // If selecting the same note, don't update
+      if (state.selectedNoteId === id) {
+        return state;
+      }
+
       // If selecting a note, bring it to front
       if (id) {
         const updatedNotes = state.notes.map((note) =>

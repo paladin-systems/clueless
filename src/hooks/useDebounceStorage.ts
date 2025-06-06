@@ -29,7 +29,13 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
 
       timeoutRef.current = setTimeout(() => {
         try {
-          localStorage.setItem(key, JSON.stringify(data));
+          const serialized = JSON.stringify(data);
+          // Only update if the data has actually changed
+          const existing = localStorage.getItem(key);
+          if (existing !== serialized) {
+            localStorage.setItem(key, serialized);
+            storageLogger.debug({ key }, "Data saved to storage");
+          }
         } catch (error) {
           storageLogger.error({ key, error }, "Error saving to storage");
         }

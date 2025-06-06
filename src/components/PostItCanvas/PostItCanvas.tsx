@@ -37,23 +37,31 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
   const MENU_HEIGHT = 56; // Height of top menu bar
   const MIN_MARGIN = 10; // Minimum margin between notes
 
-  // Get removeAllNotes from store
+  // Get removeAllNotes from store - use simple selector since it's just one function
   const removeAllNotes = useStore((state) => state.removeAllNotes);
 
-  // Update canvas bounds
+  // Update canvas bounds - debounce resize events
   const [canvasBounds, setCanvasBounds] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
+    let resizeTimer: NodeJS.Timeout;
+
     const updateBounds = () => {
-      setCanvasBounds({
-        width: window.innerWidth,
-        height: window.innerHeight - MENU_HEIGHT,
-      });
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        setCanvasBounds({
+          width: window.innerWidth,
+          height: window.innerHeight - MENU_HEIGHT,
+        });
+      }, 100); // Debounce resize events
     };
 
     updateBounds();
     window.addEventListener("resize", updateBounds);
-    return () => window.removeEventListener("resize", updateBounds);
+    return () => {
+      window.removeEventListener("resize", updateBounds);
+      clearTimeout(resizeTimer);
+    };
   }, []);
   // Organize notes in a grid layout
   const organizeNotes = useCallback(
