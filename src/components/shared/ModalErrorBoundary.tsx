@@ -51,6 +51,8 @@ class ModalErrorBoundary extends Component<Props, State> {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
           onClick={this.handleClose}
+          onKeyDown={(e) => e.key === "Escape" && this.handleClose()}
+          role="presentation"
         >
           <div
             className={clsx(
@@ -59,6 +61,7 @@ class ModalErrorBoundary extends Component<Props, State> {
               "fade-in zoom-in-95 animate-in",
             )}
             onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
           >
             <div className="mb-4 flex items-center justify-between">
               <h3 className="font-semibold text-lg text-white">Something went wrong</h3>{" "}

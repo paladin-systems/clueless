@@ -14,18 +14,17 @@ const LoadingSpinner: React.FC<Props> = ({ size = "md", className }) => {
   };
 
   return (
-    <div
+    <span
       className={clsx(
         "animate-spin rounded-full border-blue-500",
         "border-t-transparent border-r-transparent",
         sizeClasses[size],
         className,
       )}
-      role="status"
       aria-label="Loading"
     >
       <span className="sr-only">Loading...</span>
-    </div>
+    </span>
   );
 };
 

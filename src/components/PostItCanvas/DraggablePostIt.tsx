@@ -44,7 +44,7 @@ const DraggablePostIt: React.FC<Props> = ({
       }
       // Call the original onMouseDown if it exists
       if (listeners?.onMouseDown) {
-        listeners.onMouseDown(e as any);
+        listeners.onMouseDown(e as React.MouseEvent<HTMLElement>);
       }
     },
     onTouchStart: (e: React.TouchEvent) => {
@@ -54,7 +54,7 @@ const DraggablePostIt: React.FC<Props> = ({
       }
       // Call the original onTouchStart if it exists
       if (listeners?.onTouchStart) {
-        listeners.onTouchStart(e as any);
+        listeners.onTouchStart(e as React.TouchEvent<HTMLElement>);
       }
     },
   };
@@ -182,7 +182,7 @@ const DraggablePostIt: React.FC<Props> = ({
   );
 
   return (
-    <div
+    <article
       ref={setNodeRef}
       style={divStyle}
       className={clsx(
@@ -194,7 +194,6 @@ const DraggablePostIt: React.FC<Props> = ({
         className,
       )}
       onClick={handleClick}
-      role="article"
       aria-label={`${note.category} note`}
       onKeyDown={handleKeyDown}
     >
@@ -235,7 +234,7 @@ const DraggablePostIt: React.FC<Props> = ({
       >
         <FaUpRightAndDownLeftFromCenter className="scale-x-[-1] text-gray-400/70 text-xs transition-colors hover:text-gray-600" />
       </div>
-    </div>
+    </article>
   );
 };
 

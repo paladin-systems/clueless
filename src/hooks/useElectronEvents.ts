@@ -3,6 +3,11 @@ import { useStore } from "../store";
 import type { GeminiResponse } from "../types/gemini";
 import { rendererLogger } from "../utils/logger";
 
+interface RecordingPayload {
+  buffer: ArrayBuffer;
+  timestamp: number;
+}
+
 export const useElectronEvents = () => {
   const store = useStore();
   const micLevelTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -10,7 +15,10 @@ export const useElectronEvents = () => {
 
   useEffect(() => {
     // Audio activity handler
-    const handleAudioActivity = (_event: any, levels: { mic: number; system: number }) => {
+    const handleAudioActivity = (
+      _event: Electron.IpcRendererEvent,
+      levels: { mic: number; system: number },
+    ) => {
       if (micLevelTimeoutRef.current) clearTimeout(micLevelTimeoutRef.current);
       if (systemLevelTimeoutRef.current) clearTimeout(systemLevelTimeoutRef.current);
 
@@ -40,7 +48,7 @@ export const useElectronEvents = () => {
     };
 
     // Simplified Gemini response handler (receives complete, parsed response from main.ts)
-    const handleGeminiResponse = (_event: any, response: GeminiResponse) => {
+    const handleGeminiResponse = (_event: Electron.IpcRendererEvent, response: GeminiResponse) => {
       // Validate the response structure slightly before adding
       if (response?.type && response.content) {
         useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });
@@ -80,7 +88,7 @@ export const useElectronEvents = () => {
     };
 
     // Audio status handler
-    const handleAudioStatus = (_event: any, status: string) => {
+    const handleAudioStatus = (_event: Electron.IpcRendererEvent, status: string) => {
       // Avoid overwriting "Gemini is generating..." if it's active
       if (useStore.getState().audioStatus !== "Gemini is generating...") {
         useStore.setState({ audioStatus: status });
@@ -88,16 +96,16 @@ export const useElectronEvents = () => {
     };
 
     // Audio error handler
-    const handleAudioError = (_event: any, error: string) => {
+    const handleAudioError = (_event: Electron.IpcRendererEvent, error: string) => {
       useStore.setState({
         audioError: error,
         isBuildingResponse: false,
       });
     }; // Recording complete handler
-    const handleRecordingComplete = (_event: any, recordingPayload: any) => {
+    const handleRecordingComplete = (_event: Electron.IpcRendererEvent, recordingPayload: RecordingPayload) => {
       // Validate payload
       const isValidBuffer =
-        recordingPayload?.buffer && typeof recordingPayload.buffer.length === "number";
+        recordingPayload?.buffer && typeof recordingPayload.buffer.byteLength === "number";
 
       if (
         !recordingPayload ||
@@ -132,7 +140,7 @@ export const useElectronEvents = () => {
     };
 
     // Register event listeners
-    const electron = (window as any).electron;
+    const electron = window.electron;
     electron.on("audio-activity", handleAudioActivity);
     electron.on("gemini-processing-start", handleGeminiProcessingStart); // New listener
     electron.on("gemini-processing-end", handleGeminiProcessingEnd); // New listener

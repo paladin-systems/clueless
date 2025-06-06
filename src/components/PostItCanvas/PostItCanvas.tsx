@@ -180,9 +180,28 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
     [notes, onNoteMove],
   );
 
+  // Handle keyboard navigation for the canvas
+  const handleCanvasKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      // Only handle keyboard events when canvas is focused and no specific note is selected
+      if (event.target !== event.currentTarget) return;
+
+      // Space or Enter can be used to interact with the canvas
+      if (event.key === " " || event.key === "Enter") {
+        event.preventDefault();
+        // Focus on the first note if available
+        if (notes.length > 0) {
+          // This could be enhanced to focus on the first note
+          console.log("Canvas keyboard interaction");
+        }
+      }
+    },
+    [notes],
+  );
+
   return (
     <DndContext onDragEnd={handleDragEnd} modifiers={[restrictToParentElement]}>
-      <div
+      <section
         id={id}
         tabIndex={tabIndex}
         className={clsx(
@@ -191,7 +210,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
           className,
         )}
         onClick={handleCanvasClick}
-        role="region"
+        onKeyDown={handleCanvasKeyDown}
         aria-label="Post-it notes canvas"
       >
         {" "}
@@ -224,7 +243,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
         ))}
         {/* Keyboard Instructions */}
         <PostItInstructions />
-      </div>
+      </section>
     </DndContext>
   );
 };

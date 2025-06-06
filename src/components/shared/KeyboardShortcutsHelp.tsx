@@ -128,9 +128,10 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
   return (
     <div
       ref={modalRef}
-      style={{ zIndex: 9007199254740993 }}
+      style={{ zIndex: Number.MAX_SAFE_INTEGER }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
       role="dialog"
       aria-modal="true"
       aria-labelledby="keyboard-shortcuts-title"
@@ -166,15 +167,18 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="space-y-2">
                 {shortcuts
                   .filter((s) => s.category === "recording")
-                  .map((shortcut, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
+                  .map((shortcut) => (
+                    <div
+                      key={`${shortcut.category}-${shortcut.keys.join("-")}`}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <div className="flex items-center space-x-2">
                         {shortcut.icon && shortcut.icon}
                         <span className="text-gray-300">{shortcut.description}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={keyIndex}>
+                          <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
                             <kbd
                               className={clsx(
                                 "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
@@ -201,15 +205,18 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
               <div className="space-y-2">
                 {shortcuts
                   .filter((s) => s.category === "layout")
-                  .map((shortcut, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
+                  .map((shortcut) => (
+                    <div
+                      key={`${shortcut.category}-${shortcut.keys.join("-")}`}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <div className="flex items-center space-x-2">
                         {shortcut.icon && shortcut.icon}
                         <span className="text-gray-300">{shortcut.description}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={keyIndex}>
+                          <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
                             <kbd
                               className={clsx(
                                 "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
@@ -241,15 +248,18 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
                 <div className="space-y-2">
                   {shortcuts
                     .filter((s) => s.category === "notes")
-                    .map((shortcut, index) => (
-                      <div key={index} className="flex items-center justify-between text-sm">
+                    .map((shortcut) => (
+                      <div
+                        key={`${shortcut.category}-${shortcut.keys.join("-")}`}
+                        className="flex items-center justify-between text-sm"
+                      >
                         <div className="flex items-center space-x-2">
                           {shortcut.icon && shortcut.icon}
                           <span className="text-gray-300">{shortcut.description}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           {shortcut.keys.map((key, keyIndex) => (
-                            <React.Fragment key={keyIndex}>
+                            <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
                               <kbd
                                 className={clsx(
                                   "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
