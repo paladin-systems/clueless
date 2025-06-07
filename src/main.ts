@@ -538,6 +538,7 @@ Use previous context when relevant but prioritize responding to the most recent 
                       typeof parsedJson === "object" &&
                       parsedJson !== null &&
                       typeof parsedJson.content === "string" &&
+                      parsedJson.content.trim().length > 0 &&
                       ["answer", "advice", "follow-up"].includes(parsedJson.category)
                     ) {
                       geminiLogger.info({ parsedJson }, "Valid structured response, sending");
@@ -577,12 +578,18 @@ Use previous context when relevant but prioritize responding to the most recent 
                       }
                     }
 
-                    geminiLogger.info({ cleanContent }, "Sending as plain text response");
-                    mainWindow?.webContents.send("gemini-response", {
-                      content: cleanContent,
-                      category: "answer",
-                      timestamp: Date.now(),
-                    });
+                    // Check if content is effectively empty before sending
+                    const trimmedContent = cleanContent.trim();
+                    if (trimmedContent && trimmedContent !== "{}" && trimmedContent.length > 0) {
+                      geminiLogger.info({ cleanContent }, "Sending as plain text response");
+                      mainWindow?.webContents.send("gemini-response", {
+                        content: cleanContent,
+                        category: "answer",
+                        timestamp: Date.now(),
+                      });
+                    } else {
+                      geminiLogger.debug({ cleanContent }, "Skipping empty or invalid response");
+                    }
                   }
                 }
                 currentResponseText = ""; // Reset buffer
