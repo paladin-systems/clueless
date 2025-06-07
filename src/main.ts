@@ -420,10 +420,17 @@ RESPONSE FORMAT: When you do respond, ALWAYS use ONLY a valid JSON object:
 }
 
 CRITICAL JSON FORMATTING:
-- Output ONLY the raw JSON object - NO code blocks or wrappers of any kind
+- Output ONLY the raw JSON object - NO code blocks, backticks, or wrappers of any kind
+- NEVER wrap your response in \`\`\`json or \`\`\` - output raw JSON directly
 - NO trailing commas, extra whitespace, or formatting outside the JSON
 - Markdown formatting should ONLY be used INSIDE the "content" field value
 - The JSON itself must be clean and parseable without any surrounding text
+- ESCAPE CHARACTERS: Use proper JSON escaping only where necessary:
+  * Use regular underscores: "user_id" NOT "user\\_id"
+  * Use regular apostrophes: "don't" NOT "don\\'t"
+  * Only escape quotes within strings: "He said \\"hello\\""
+  * Use \\\\n for actual line breaks, not \\n in identifiers
+- NEVER use backslash escapes for regular characters like underscores or letters
 
 VALID CATEGORIES:
 - "answer": Direct responses for technical, behavioral, or factual questions
@@ -575,7 +582,17 @@ Use previous context when relevant but prioritize responding to the most recent 
                   }
 
                   try {
-                    const parsedJson = JSON.parse(contentToParse);
+                    // First, try to fix common JSON escaping issues that Gemini might introduce
+                    let fixedContentToParse = contentToParse;
+
+                    // Fix escaped underscores (user\_id -> user_id)
+                    fixedContentToParse = fixedContentToParse.replace(/\\_/g, "_");
+
+                    // Fix other common escaping issues that might break JSON parsing
+                    // But preserve legitimate escapes like \" and \n
+                    fixedContentToParse = fixedContentToParse.replace(/\\(?!["\\/bfnrt])/g, "");
+
+                    const parsedJson = JSON.parse(fixedContentToParse);
                     geminiLogger.debug({ parsedJson }, "Parsed JSON");
 
                     // Validate the expected structure and content quality
@@ -598,7 +615,10 @@ Use previous context when relevant but prioritize responding to the most recent 
                       );
                     }
                   } catch (parseError) {
-                    geminiLogger.debug({ parseError }, "JSON parsing failed");
+                    geminiLogger.debug(
+                      { parseError, contentToParse },
+                      "JSON parsing failed even after fixes",
+                    );
                   }
 
                   // If we successfully parsed a valid JSON response, send it
@@ -608,18 +628,26 @@ Use previous context when relevant but prioritize responding to the most recent 
                     // Fallback: send as plain text response but clean it up first
                     let cleanContent = currentResponseText;
 
+                    // Remove code block markers if present
+                    cleanContent = cleanContent.replace(/```json\s*\n?|```\s*\n?/g, "").trim();
+
                     // If the content looks like raw JSON, try to extract just the content field
-                    if (cleanContent.includes('"content"') && cleanContent.includes('"type"')) {
+                    if (cleanContent.includes('"content"') && cleanContent.includes('"category"')) {
                       try {
                         // Try to extract content from what looks like a JSON structure
                         const contentMatch = cleanContent.match(
                           /"content"\s*:\s*"([^"]*(?:\\.[^"]*)*)"/,
                         );
                         if (contentMatch?.[1]) {
-                          cleanContent = contentMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
+                          // Clean up escaped characters in the extracted content
+                          cleanContent = contentMatch[1]
+                            .replace(/\\"/g, '"')
+                            .replace(/\\n/g, "\n")
+                            .replace(/\\_/g, "_")
+                            .replace(/\\(?!["\\/bfnrt])/g, ""); // Remove invalid escapes
                           geminiLogger.debug(
                             { cleanContent },
-                            "Extracted content from JSON-like text",
+                            "Extracted and cleaned content from JSON-like text",
                           );
                         }
                       } catch (_e) {
