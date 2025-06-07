@@ -391,9 +391,9 @@ ipcMain.handle(
       geminiLogger.info("Starting Gemini Live session");
       const systemInstructionText = `You are a colleague helping your friend in realtime during meetings or interviews. You receive mixed audio from their microphone and the system audio of others speaking.
 
-IMPORTANT: Only respond when you have HIGH-VALUE advice or information. Do NOT respond to casual conversation or simple acknowledgments.
+CRITICAL RULE: Only respond when you have HIGH-VALUE advice or information. If the situation doesn't warrant a response, REMAIN COMPLETELY SILENT - do not send any output, not even empty JSON or placeholders.
 
-ALWAYS respond with ONLY a valid JSON object, no additional text or formatting:
+RESPONSE FORMAT: When you do respond, ALWAYS use ONLY a valid JSON object with meaningful content:
 
 {
   "content": "Your actual helpful response goes here",
@@ -410,24 +410,28 @@ WHEN TO RESPOND:
 - Situations where strategic advice would help
 - Follow-up questions that would gather important information
 
-WHEN NOT TO RESPOND:
+WHEN TO STAY SILENT (DO NOT RESPOND AT ALL):
 - Simple greetings or casual conversation
 - Basic acknowledgments like "okay", "sounds good", "great"
 - Small talk or social pleasantries
 - When your friend is just being polite
 - Responses that don't add significant value
+- Background noise or unclear audio
+- Repetitive or redundant conversations
+- NEVER send empty JSON objects like {} or {"content": ""}
 
 CONTENT GUIDELINES:
 - "answer": Direct responses for technical, behavioral, or factual questions
 - "advice": Strategic suggestions for improving the conversation or approach
 - "follow-up": Important questions your friend should ask to gather crucial information
-- Keep content concise and actionable
+- Keep content concise and actionable (minimum 10 meaningful words)
 - Format just the content with markdown for better readability
 - Help them perform better by providing truly valuable insights
 - NEVER start with meta-phrases or greetings
 - NEVER use meta-phrases like "let me help you" or "I can see that"
+- NEVER send empty, minimal, or placeholder responses
 
-Use previous context when relevant but prioritize responding to the most recent input. Remember: Quality over quantity - only speak when you have something truly valuable to add.`;
+Use previous context when relevant but prioritize responding to the most recent input. Remember: Complete silence is better than unhelpful noise. Quality over quantity - only speak when you have something truly valuable to add.`;
 
       geminiSession = await genAI.live.connect({
         model: GEMINI_MODEL,
@@ -533,19 +537,23 @@ Use previous context when relevant but prioritize responding to the most recent 
                     const parsedJson = JSON.parse(contentToParse);
                     geminiLogger.debug({ parsedJson }, "Parsed JSON");
 
-                    // Validate the expected structure
+                    // Validate the expected structure and content quality
                     if (
                       typeof parsedJson === "object" &&
                       parsedJson !== null &&
                       typeof parsedJson.content === "string" &&
-                      parsedJson.content.trim().length > 0 &&
+                      parsedJson.content.trim().length >= 10 && // Minimum 10 characters for meaningful content
                       ["answer", "advice", "follow-up"].includes(parsedJson.category)
                     ) {
                       geminiLogger.info({ parsedJson }, "Valid structured response, sending");
                       parsedResponse = { ...parsedJson, timestamp: Date.now() };
                     } else {
                       geminiLogger.warn(
-                        "JSON structure validation failed, expected fields missing or invalid",
+                        {
+                          contentLength: parsedJson?.content?.trim().length,
+                          category: parsedJson?.category,
+                        },
+                        "JSON structure validation failed, expected fields missing, invalid, or content too short",
                       );
                     }
                   } catch (parseError) {
@@ -578,9 +586,9 @@ Use previous context when relevant but prioritize responding to the most recent 
                       }
                     }
 
-                    // Check if content is effectively empty before sending
+                    // Check if content is effectively empty or too short before sending
                     const trimmedContent = cleanContent.trim();
-                    if (trimmedContent && trimmedContent !== "{}" && trimmedContent.length > 0) {
+                    if (trimmedContent && trimmedContent !== "{}" && trimmedContent.length >= 10) {
                       geminiLogger.info({ cleanContent }, "Sending as plain text response");
                       mainWindow?.webContents.send("gemini-response", {
                         content: cleanContent,
@@ -588,7 +596,13 @@ Use previous context when relevant but prioritize responding to the most recent 
                         timestamp: Date.now(),
                       });
                     } else {
-                      geminiLogger.debug({ cleanContent }, "Skipping empty or invalid response");
+                      geminiLogger.debug(
+                        {
+                          cleanContent,
+                          contentLength: trimmedContent.length,
+                        },
+                        "Skipping empty, invalid, or too short response",
+                      );
                     }
                   }
                 }

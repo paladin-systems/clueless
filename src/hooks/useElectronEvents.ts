@@ -47,15 +47,18 @@ export const useElectronEvents = () => {
 
     // Simplified Gemini response handler (receives complete, parsed response from main.ts)
     const handleGeminiResponse = (_event: Electron.IpcRendererEvent, response: GeminiResponse) => {
-      // Validate the response structure and content before adding
-      if (response?.category && response.content && response.content.trim().length > 0) {
+      // Validate the response structure and content quality before adding
+      if (response?.category && response.content && response.content.trim().length >= 10) {
         useStore.getState().addGeminiResponse({ ...response, timestamp: Date.now() });
       } else {
         rendererLogger.warn(
-          { response },
-          "Received invalid, incomplete, or empty Gemini response object",
+          {
+            response,
+            contentLength: response?.content?.trim().length,
+          },
+          "Received invalid, incomplete, empty, or too short Gemini response object",
         );
-        // Don't add fallback error notes for empty responses to avoid cluttering the UI
+        // Don't add fallback error notes for empty/short responses to avoid cluttering the UI
         // Only log the issue for debugging purposes
       }
       // isBuildingResponse and audioStatus are now managed by processing-start/end and turn-complete
