@@ -63,7 +63,7 @@
 .post-it .close-button {
   @apply cursor-pointer;
   @apply flex items-center justify-center;
-  @apply opacity-0 transition-all duration-200;
+  @apply opacity-60 transition-all duration-200;
 }
 
 .post-it:hover .close-button,
