@@ -5,6 +5,7 @@
 - [ ] Improve the top menu bar UI
 - [ ] Fix auto-arrange, use dnd sorting library
 - [ ] Post-it notes are being added not in a random position one over the other, we should better format the position of the post-it notes when they are added
+- [ ] Post-it notes are being added to fast,  we should make sure Gemini waits a bit before adding a new post-it note, so that the user can read the previous one
 - [ ] Fix the selected note to z-index front
 - [ ] Fix click-through on the transparent background
 - [ ] Change to use Hero UI components for the main UI
@@ -12,6 +13,7 @@
 - [ ] Background blur effect is not working properly
 - [ ] Is showing window dialog behind the top menu bar, we should hide the dialog
 - [ ] Make the AI able to edit previous notes, adding a note id
+- [ ] Use Realm database for storing the post-it notes, so that we can have a better performance and persistence
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 
