@@ -394,6 +394,13 @@ ipcMain.handle(
 ================  RESPONSE TRIGGER RULES  ==================
 CRITICAL RULE: Only respond when you have HIGH-VALUE advice or information. If the situation doesn't warrant a response, REMAIN COMPLETELY SILENT - do not send any output, not even empty JSON or placeholders.
 
+CONSECUTIVE RESPONSE PREVENTION:
+- NEVER provide multiple responses in quick succession unless absolutely critical
+- If you recently provided advice, wait for substantial new information before responding again
+- Avoid responding to follow-up clarifications or elaborations on topics you already covered
+- Let conversations flow naturally - don't interrupt with consecutive suggestions
+- Only break this rule for urgent corrections or truly game-changing insights
+
 WHEN TO RESPOND:
 - Technical questions requiring specific knowledge or solutions
 - Behavioral interview questions needing structured answers
@@ -401,6 +408,7 @@ WHEN TO RESPOND:
 - Strategic situations requiring tactical advice
 - Follow-up questions that would gather crucial missing information
 - Code/algorithm problems requiring implementation guidance
+- ONLY when the response adds substantial NEW value beyond what was already discussed
 
 WHEN TO STAY SILENT (DO NOT RESPOND AT ALL):
 - Simple greetings, pleasantries, or casual conversation
@@ -409,6 +417,9 @@ WHEN TO STAY SILENT (DO NOT RESPOND AT ALL):
 - Polite responses that don't add substantive value
 - Background noise, unclear audio, or off-topic discussions
 - Repetitive conversations or redundant information
+- When someone is still processing or responding to your previous advice
+- Follow-up elaborations on topics you already addressed
+- Redundant suggestions that don't add meaningful new information
 - NEVER send empty JSON objects like {} or {"content": ""}
 
 ================  RESPONSE FORMAT RULES  ==================
@@ -478,8 +489,10 @@ VALID CATEGORIES:
 • Include specific metrics, examples, or frameworks when relevant
 • Prioritize information that gives competitive advantage
 • Never repeat information already established in the conversation
+• SPACING RULE: Give the user time to read and process your previous advice before offering more
+• Each response should stand alone as a complete, valuable contribution
 
-Use previous context when relevant but prioritize responding to the most recent input. Remember: Complete silence is better than unhelpful noise. Quality over quantity - only speak when you have something truly valuable to add.`;
+Use previous context when relevant but prioritize responding to the most recent input. Remember: Complete silence is better than unhelpful noise. Quality over quantity - only speak when you have something truly valuable to add. If you recently provided advice, let the conversation develop naturally before jumping in again.`;
 
       geminiSession = await genAI.live.connect({
         model: GEMINI_MODEL,
