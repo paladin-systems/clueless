@@ -246,11 +246,16 @@ export const useStore = create<AppState>((set, get) => ({
     })),
 
   setNotes: (notes) => set({ notes }),
-
   removeNote: (id) =>
-    set((state) => ({
-      notes: state.notes.filter((note) => note.id !== id),
-    })),
+    set((state) => {
+      const newNotes = state.notes.filter((note) => note.id !== id);
+
+      return {
+        notes: newNotes,
+        // Clear selection if the deleted note was selected
+        selectedNoteId: state.selectedNoteId === id ? undefined : state.selectedNoteId,
+      };
+    }),
 
   removeAllNotes: () =>
     set(() => ({

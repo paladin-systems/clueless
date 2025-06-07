@@ -23,6 +23,7 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
   // Save data to storage with debounce
   const saveToStorage = useCallback(
     (data: T) => {
+      // Clear any existing timeout to prevent multiple saves
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
@@ -38,11 +39,46 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
           }
         } catch (error) {
           storageLogger.error({ key, error }, "Error saving to storage");
+        } finally {
+          // Clear the timeout reference after completion
+          timeoutRef.current = null;
         }
       }, delay);
     },
     [key, delay],
   );
+
+  // Save data to storage immediately without debounce
+  const saveToStorageImmediate = useCallback(
+    (data: T) => {
+      // Cancel any pending debounced save since we're doing immediate save
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+
+      try {
+        const serialized = JSON.stringify(data);
+        // Only update if the data has actually changed
+        const existing = localStorage.getItem(key);
+        if (existing !== serialized) {
+          localStorage.setItem(key, serialized);
+          storageLogger.debug({ key }, "Data saved to storage immediately");
+        }
+      } catch (error) {
+        storageLogger.error({ key, error }, "Error saving to storage immediately");
+      }
+    },
+    [key],
+  );
+
+  // Flush any pending saves immediately
+  const flushPendingSave = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, [key]);
 
   // Clear timeout on unmount
   useEffect(() => {
@@ -56,6 +92,8 @@ export function useDebounceStorage<T>({ key, delay = 1000 }: Options) {
   return {
     loadFromStorage,
     saveToStorage,
+    saveToStorageImmediate,
+    flushPendingSave,
   };
 }
 

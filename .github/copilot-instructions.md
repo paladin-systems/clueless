@@ -94,6 +94,9 @@ const audioState = useStore(useShallow((state) => ({
 - Categorize responses: "answer", "advice", "follow-up"
 - Handle response building state for UI updates
 
+### Logging
+- Use the [`logger`](../src/utils/logger.ts) utility for consistent logging
+
 ## Common Patterns to Follow
 
 ### Component Props

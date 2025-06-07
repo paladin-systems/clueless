@@ -64,38 +64,36 @@ const AppLayout: React.FC = () => {
       updateNotePosition: state.updateNotePosition,
       updateNoteSize: state.updateNoteSize,
     })),
-  );
+  ); // Initialize notes from storage with debounced saves
+  const { loadFromStorage, saveToStorage, saveToStorageImmediate, flushPendingSave } =
+    useDebounceStorage<PostItNote[]>({
+      key: "post-it-notes",
+      delay: 1000,
+    });
 
-  // Initialize notes from storage with debounced saves
-  const { loadFromStorage, saveToStorage } = useDebounceStorage<PostItNote[]>({
-    key: "post-it-notes",
-    delay: 1000,
-  });
-  // Load notes from storage on startup
+  // Flag to prevent saving during initial load
+  const [isInitialLoad, setIsInitialLoad] = useState(true); // Load notes from storage on startup
   useEffect(() => {
     const storedNotes = loadFromStorage();
-    rendererLogger.debug("Loading notes from storage on startup", {
-      storedCount: storedNotes?.length || 0,
-    });
 
     if (storedNotes && storedNotes.length > 0) {
       // Update store with loaded notes only if store is empty
       const currentNotes = noteState.notes;
-      rendererLogger.debug("Current notes in store", { currentCount: currentNotes.length });
       if (currentNotes.length === 0) {
-        rendererLogger.info("Setting notes from storage", { noteCount: storedNotes.length });
         actions.setNotes(storedNotes);
       }
-    } else {
-      rendererLogger.debug("No stored notes found or empty array");
     }
-  }, [loadFromStorage, actions.setNotes]); // Removed noteState.notes to prevent infinite loop
 
-  // Save notes when they change
+    // Mark initial load as complete after a delay to ensure debounced saves don't interfere
+    setTimeout(() => {
+      setIsInitialLoad(false);
+    }, 1500); // Wait longer than the debounce delay
+  }, [loadFromStorage]); // Only depend on loadFromStorage  // Save notes when they change (but not during initial load)
   useEffect(() => {
-    rendererLogger.debug("Saving notes to storage", { noteCount: noteState.notes.length });
-    saveToStorage(noteState.notes);
-  }, [noteState.notes, saveToStorage]);
+    if (!isInitialLoad) {
+      saveToStorage(noteState.notes);
+    }
+  }, [noteState.notes, saveToStorage, isInitialLoad]);
 
   // Track session info
   const [sessionInfo, setSessionInfo] = useState<SessionInfo>({
@@ -270,10 +268,16 @@ const AppLayout: React.FC = () => {
       isAiModified: true,
       zIndex: Date.now(),
     };
-
     rendererLogger.info("Creating new note", { newNote });
     actions.addNote(newNote);
   }, [geminiState.geminiResponses, actions.addNote, noteState.notes]);
+  // Note delete handler
+  const handleNoteDelete = useCallback(
+    (id: string) => {
+      actions.removeNote(id);
+    },
+    [actions.removeNote],
+  );
 
   // Handle global keyboard shortcuts for notes
   useEffect(() => {
@@ -289,7 +293,7 @@ const AppLayout: React.FC = () => {
       } // Delete selected note
       if (noteState.selectedNoteId && (event.key === "Delete" || event.key === "Backspace")) {
         event.preventDefault();
-        actions.removeNote(noteState.selectedNoteId);
+        handleNoteDelete(noteState.selectedNoteId);
         actions.selectNote(undefined);
       }
 
@@ -317,10 +321,9 @@ const AppLayout: React.FC = () => {
     noteState.selectedNoteId,
     showKeyboardHelp,
     showSettings,
-    actions.removeNote,
+    handleNoteDelete,
     actions.selectNote,
   ]);
-
   // Note handlers
   const handleNoteMove = useCallback(
     (id: string, position: { x: number; y: number }) => {
@@ -350,6 +353,18 @@ const AppLayout: React.FC = () => {
   useEffect(() => {
     rendererLogger.info("Notes updated", { totalNotes: noteState.notes.length });
   }, [noteState.notes.length]);
+
+  // Force save on app close to prevent data loss
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Cancel any pending debounced saves and save immediately
+      flushPendingSave();
+      saveToStorageImmediate(noteState.notes);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [noteState.notes, saveToStorageImmediate, flushPendingSave]);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-transparent">
@@ -385,7 +400,7 @@ const AppLayout: React.FC = () => {
         onNoteResize={handleNoteResize}
         selectedNoteId={noteState.selectedNoteId}
         onNoteSelect={handleNoteSelect}
-        onNoteDelete={actions.removeNote}
+        onNoteDelete={handleNoteDelete}
       />
 
       {/* Loading Indicator */}

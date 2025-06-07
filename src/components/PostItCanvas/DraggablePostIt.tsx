@@ -5,6 +5,7 @@ import { memo, useCallback, useMemo, useState } from "react";
 import { FaGripVertical, FaUpRightAndDownLeftFromCenter, FaXmark } from "react-icons/fa6";
 import ReactMarkdown from "react-markdown";
 import type { PostItNote } from "../../types/ui";
+import { uiLogger } from "../../utils/logger";
 import { formatTimestamp } from "../../utils/timeUtils";
 
 interface Props {
@@ -224,20 +225,24 @@ const DraggablePostIt: React.FC<Props> = ({
             <span className="font-medium text-gray-700 text-xs capitalize">{note.category}</span>
             <span className="text-gray-500 text-xs">{formatTimestamp(note.timestamp)}</span>
           </div>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete?.();
-            }}
-            className="close-button ml-2 rounded-full p-1 text-gray-400 transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
-            title="Delete note"
-            aria-label="Delete note"
-          >
-            <FaXmark className="text-xs" />
-          </button>
+          <div className="h-6 w-6" />
         </div>
       </div>
+      {/* Delete button positioned absolutely outside of drag handle */}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          uiLogger.debug({ noteId: note.id }, "Delete button clicked");
+          onDelete?.();
+        }}
+        className="absolute top-2 right-2 z-10 rounded-full bg-white/80 p-1 text-gray-400 shadow-sm transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
+        title="Delete note"
+        aria-label="Delete note"
+      >
+        <FaXmark className="text-xs" />
+      </button>
       {/* Note Content */}
       <div className="flex h-[calc(100%-2.5rem)] flex-col p-4">
         <div className="prose prose-sm max-w-none flex-grow overflow-auto text-gray-800">

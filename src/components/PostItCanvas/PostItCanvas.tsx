@@ -267,7 +267,10 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
             onMove={(position) => onNoteMove(note.id, position)}
             onResize={(size) => onNoteResize(note.id, size)}
             onSelect={() => onNoteSelect?.(note.id)}
-            onDelete={() => onNoteDelete?.(note.id)}
+            onDelete={() => {
+              uiLogger.debug({ noteId: note.id }, "PostItCanvas delete handler called");
+              onNoteDelete?.(note.id);
+            }}
             isSelected={selectedNoteId === note.id}
             canvasBounds={canvasBounds}
             className="pointer-events-auto"
