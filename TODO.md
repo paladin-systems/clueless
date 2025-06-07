@@ -5,7 +5,7 @@
 - [ ] Improve the top menu bar UI
 - [ ] Fix auto-arrange, use dnd sorting library
 - [ ] Post-it notes are being added not in a random position one over the other, we should better format the position of the post-it notes when they are added
-- [ ] Post-it notes are being added to fast,  we should make sure Gemini waits a bit before adding a new post-it note, so that the user can read the previous one
+- [ ] Post-it notes are being added too fast,  we should make sure Gemini waits a bit before adding a new post-it note, so that the user can read the previous one
 - [ ] Fix the selected note to z-index front
 - [ ] Fix click-through on the transparent background
 - [ ] Change to use Hero UI components for the main UI
