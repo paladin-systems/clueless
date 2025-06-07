@@ -3,6 +3,7 @@ import clsx from "clsx";
 import type React from "react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { FaGripVertical, FaUpRightAndDownLeftFromCenter, FaXmark } from "react-icons/fa6";
+import ReactMarkdown from "react-markdown";
 import type { PostItNote } from "../../types/ui";
 import { formatTimestamp } from "../../utils/timeUtils";
 
@@ -240,7 +241,68 @@ const DraggablePostIt: React.FC<Props> = ({
       {/* Note Content */}
       <div className="flex h-[calc(100%-2.5rem)] flex-col p-4">
         <div className="prose prose-sm max-w-none flex-grow overflow-auto text-gray-800">
-          {note.content}
+          <ReactMarkdown
+            components={{
+              // Customize heading styles to fit post-it size
+              h1: ({ children }) => (
+                <h1 className="mb-2 font-bold text-gray-900 text-sm">{children}</h1>
+              ),
+              h2: ({ children }) => (
+                <h2 className="mb-1 font-semibold text-gray-800 text-sm">{children}</h2>
+              ),
+              h3: ({ children }) => (
+                <h3 className="mb-1 font-semibold text-gray-700 text-xs">{children}</h3>
+              ),
+              // Customize paragraph spacing
+              p: ({ children }) => (
+                <p className="mb-2 text-xs leading-relaxed last:mb-0">{children}</p>
+              ),
+              // Customize list styles
+              ul: ({ children }) => (
+                <ul className="mb-2 space-y-1 pl-3 text-xs last:mb-0">{children}</ul>
+              ),
+              ol: ({ children }) => (
+                <ol className="mb-2 space-y-1 pl-3 text-xs last:mb-0">{children}</ol>
+              ),
+              li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+              // Customize code styles
+              code: ({ children, className }) => {
+                const isBlock = className?.includes("language-");
+                return isBlock ? (
+                  <code className="block overflow-x-auto rounded border bg-gray-100 p-2 text-xs">
+                    {children}
+                  </code>
+                ) : (
+                  <code className="rounded border bg-gray-100 px-1 py-0.5 text-xs">{children}</code>
+                );
+              },
+              // Customize blockquote styles
+              blockquote: ({ children }) => (
+                <blockquote className="mb-2 ml-1 border-gray-300 border-l-2 pl-2 text-gray-600 text-xs italic">
+                  {children}
+                </blockquote>
+              ),
+              // Customize link styles
+              a: ({ children, href }) => (
+                <a
+                  href={href}
+                  className="text-blue-600 text-xs underline hover:text-blue-800"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {children}
+                </a>
+              ),
+              // Customize strong/bold text
+              strong: ({ children }) => (
+                <strong className="font-semibold text-gray-900">{children}</strong>
+              ),
+              // Customize emphasis/italic text
+              em: ({ children }) => <em className="text-gray-700 italic">{children}</em>,
+            }}
+          >
+            {note.content}
+          </ReactMarkdown>
         </div>
       </div>{" "}
       {/* Resize Handle (manual implementation) */}{" "}

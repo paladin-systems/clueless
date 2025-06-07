@@ -4,21 +4,14 @@
 
 - [ ] Improve the top menu bar UI
 - [ ] Fix auto-arrange, use dnd sorting library
+- [ ] Post-it notes are being added not in a random position one over the other, we should better format the position of the post-it notes when they are added
 - [ ] Fix the selected note to z-index front
 - [ ] Fix click-through on the transparent background
 - [ ] Change to use Hero UI components for the main UI
-- [ ] Fix the LLM prompt, we are generating to many notes, we should only generate relevant notes
-  Not ones like: 
-  - Okay, great. Let's move on to the next question.
-  - Get ready for a coding question. Listen carefully and clarify if needed.
-  - Okay, great. Let's move on to the next question.
-  - Good. Now be ready to use Coderpad.
-- [ ] Add a "clear all" button to the notes section
 - [ ] Menu tooltip is shown behind the notes
 - [ ] Background blur effect is not working properly
 - [ ] Is showing window dialog behind the top menu bar, we should hide the dialog
 - [ ] Make the AI able to edit previous notes, adding a note id
-- [ ] Format the post-it notes better, using react-markdown
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 
