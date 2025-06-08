@@ -9,9 +9,9 @@ import {
   PiPauseCircle,
   PiRecord,
   PiSpeakerSimpleHigh,
-  PiStar,
 } from "react-icons/pi";
 import type { AudioLevels, SessionInfo } from "../../types/ui";
+import AnimatedLogo from "../shared/AnimatedLogo";
 
 interface TopMenuBarProps {
   sessionInfo: SessionInfo;
@@ -60,9 +60,11 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
       >
         {/* Left section - App Logo */}
         <div className="mr-4 flex items-center gap-2">
-          <div className="rounded-full bg-foreground p-1 text-background">
-            <PiStar size={20} />
-          </div>
+          <AnimatedLogo
+            isRecording={sessionInfo.isRecording}
+            size={20}
+            className="text-foreground"
+          />
           <span className="hidden font-medium text-foreground text-sm md:block">Clueless</span>
         </div>
 
@@ -125,7 +127,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
         <div className="flex items-center gap-2 border-default-200/30 border-l px-3">
           <Button
             size="sm"
-            variant="flat"
+            variant="light"
             isIconOnly
             onPress={onCapture}
             className="h-8 w-8 text-xs"
@@ -135,7 +137,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
           </Button>
           <Button
             size="sm"
-            variant="flat"
+            variant="light"
             isIconOnly
             onPress={onKeyboardHelpClick}
             className="h-8 w-8 text-xs"
@@ -145,7 +147,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
           </Button>
           <Button
             size="sm"
-            variant="flat"
+            variant="light"
             isIconOnly
             onPress={onSettingsClick}
             className="h-8 w-8 text-xs"
