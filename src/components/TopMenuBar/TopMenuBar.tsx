@@ -6,6 +6,8 @@ import {
   PiGearSix,
   PiKeyboard,
   PiMicrophone,
+  PiPauseCircle,
+  PiRecord,
   PiSpeakerSimpleHigh,
   PiStar,
 } from "react-icons/pi";
@@ -77,8 +79,9 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
               variant="flat"
               onPress={onStopRecording}
               className="h-8 px-3 text-xs"
+              startContent={<PiPauseCircle size={14} />}
             >
-              ⏹ Stop
+              Stop
             </Button>
           </div>
         ) : (
@@ -88,8 +91,9 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
             variant="flat"
             onPress={onStartRecording}
             className="h-8 px-3 text-xs"
+            startContent={<PiRecord size={14} />}
           >
-            ⏺ Start Recording
+            Start Recording
           </Button>
         )}
 
