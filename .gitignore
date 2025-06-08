@@ -35,3 +35,7 @@ lerna-debug.log*
 
 # Coverage directory
 coverage
+
+# Temporary build files
+*.*.mjs
+*.vite.config.*.mjs

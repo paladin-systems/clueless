@@ -235,6 +235,7 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
             type="button"
             onClick={() => organizeNotes(notes, canvasBounds)}
             className="glass-button-secondary px-2 py-1 text-xs"
+            disabled={notes.length === 0}
           >
             Auto-arrange
           </button>

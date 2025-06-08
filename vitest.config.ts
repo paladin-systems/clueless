@@ -8,6 +8,7 @@ const __dirname = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   esbuild: {
     target: "node14",
+    format: "esm",
   },
   plugins: [react()],
   test: {
@@ -15,6 +16,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: true,
+    // Enable ESM support in Vitest
+    pool: "forks",
     // Include files that should be treated as test files
     include: ["src/**/*.{test,spec}.{js,ts,jsx,tsx}"],
     // Exclude certain directories

@@ -2,7 +2,6 @@
   "name": "clueless",
   "version": "1.0.0",
   "description": "Clueless real-time AI-powered open-source assistant",
-  "type": "module",
   "main": "dist/electron/main.js",
   "scripts": {
     "clean": "rd /s /q dist",
