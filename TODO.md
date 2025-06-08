@@ -13,7 +13,7 @@
 - [ ] Background blur effect is not working properly
 - [ ] Is showing window dialog behind the top menu bar, we should hide the dialog
 - [ ] Make the AI able to edit previous notes, adding a note id
-- [ ] Use Realm database for storing the post-it notes, so that we can have a better performance and persistence
+- [ ] Disable Auto-arrange button when there is no post-it notes
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 

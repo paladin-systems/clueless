@@ -1,7 +1,6 @@
 import type React from "react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
-import { useDebounceStorage } from "../hooks/useDebounceStorage";
 import { useElectronEvents } from "../hooks/useElectronEvents";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useStore } from "../store";
@@ -63,37 +62,33 @@ const AppLayout: React.FC = () => {
       selectNote: state.selectNote,
       updateNotePosition: state.updateNotePosition,
       updateNoteSize: state.updateNoteSize,
+      loadNotesFromStorage: state.loadNotesFromStorage,
+      syncNotesToStorage: state.syncNotesToStorage,
     })),
-  ); // Initialize notes from storage with debounced saves
-  const { loadFromStorage, saveToStorage, saveToStorageImmediate, flushPendingSave } =
-    useDebounceStorage<PostItNote[]>({
-      key: "post-it-notes",
-      delay: 1000,
-    });
+  );
 
-  // Flag to prevent saving during initial load
-  const [isInitialLoad, setIsInitialLoad] = useState(true); // Load notes from storage on startup
+  // Database storage is handled automatically by the IPC-based PouchDB store
+  const [_isStorageReady, setIsStorageReady] = useState(false);
+
+  // Wait for storage initialization
   useEffect(() => {
-    const storedNotes = loadFromStorage();
-
-    if (storedNotes && storedNotes.length > 0) {
-      // Update store with loaded notes only if store is empty
-      const currentNotes = noteState.notes;
-      if (currentNotes.length === 0) {
-        actions.setNotes(storedNotes);
+    const checkStorageReady = async () => {
+      try {
+        // The store automatically initializes PouchDB and loads data
+        // We just need to wait for it to be ready
+        if (actions.loadNotesFromStorage) {
+          await actions.loadNotesFromStorage();
+        }
+        setIsStorageReady(true);
+        rendererLogger.info("IPC database storage initialized and data loaded");
+      } catch (error) {
+        rendererLogger.error({ error }, "Failed to initialize storage");
+        setIsStorageReady(true); // Continue anyway
       }
-    }
+    };
 
-    // Mark initial load as complete after a delay to ensure debounced saves don't interfere
-    setTimeout(() => {
-      setIsInitialLoad(false);
-    }, 1500); // Wait longer than the debounce delay
-  }, [loadFromStorage]); // Only depend on loadFromStorage  // Save notes when they change (but not during initial load)
-  useEffect(() => {
-    if (!isInitialLoad) {
-      saveToStorage(noteState.notes);
-    }
-  }, [noteState.notes, saveToStorage, isInitialLoad]);
+    checkStorageReady();
+  }, [actions.loadNotesFromStorage]);
 
   // Track session info
   const [sessionInfo, setSessionInfo] = useState<SessionInfo>({
@@ -354,17 +349,22 @@ const AppLayout: React.FC = () => {
     rendererLogger.info("Notes updated", { totalNotes: noteState.notes.length });
   }, [noteState.notes.length]);
 
-  // Force save on app close to prevent data loss
+  // Sync notes to storage before the app closes
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Cancel any pending debounced saves and save immediately
-      flushPendingSave();
-      saveToStorageImmediate(noteState.notes);
+    const handleBeforeUnload = async () => {
+      // PouchDB saves immediately, but we can ensure sync is complete
+      try {
+        if (actions.syncNotesToStorage) {
+          await actions.syncNotesToStorage();
+        }
+      } catch (error) {
+        rendererLogger.error({ error }, "Failed to sync notes before unload");
+      }
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [noteState.notes, saveToStorageImmediate, flushPendingSave]);
+  }, [actions.syncNotesToStorage]);
 
   return (
     <div className="h-screen w-screen overflow-hidden bg-transparent">

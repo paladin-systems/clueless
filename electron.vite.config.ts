@@ -47,5 +47,8 @@ export default defineConfig({
     },
     // Add Tailwind CSS plugin to process utility directives
     plugins: [react(), tailwindcss()],
+    optimizeDeps: {
+      include: ["pouchdb", "pouchdb-find", "pouchdb-upsert"],
+    },
   },
 });

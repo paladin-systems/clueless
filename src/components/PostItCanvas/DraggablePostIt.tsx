@@ -1,11 +1,12 @@
 import { useDraggable } from "@dnd-kit/core";
 import clsx from "clsx";
 import type React from "react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { FaGripVertical, FaUpRightAndDownLeftFromCenter, FaXmark } from "react-icons/fa6";
 import ReactMarkdown from "react-markdown";
 import type { PostItNote } from "../../types/ui";
 import { uiLogger } from "../../utils/logger";
+import { throttle } from "../../utils/performance";
 import { formatTimestamp } from "../../utils/timeUtils";
 
 interface Props {
@@ -29,6 +30,21 @@ const DraggablePostIt: React.FC<Props> = ({
   isSelected,
 }) => {
   const [isResizing, setIsResizing] = useState(false);
+
+  // Cleanup user-select when component unmounts or resizing state changes
+  useEffect(() => {
+    if (!isResizing) {
+      // Ensure user-select is restored when not resizing
+      document.body.style.userSelect = "";
+      document.body.style.webkitUserSelect = "";
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.userSelect = "";
+      document.body.style.webkitUserSelect = "";
+    };
+  }, [isResizing]);
   // Set up draggable functionality
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: note.id,
@@ -74,8 +90,9 @@ const DraggablePostIt: React.FC<Props> = ({
       width: note.size.width,
       height: note.size.height,
       zIndex: note.zIndex,
-      transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : "none",
-      willChange: "transform", // Helps browser optimize transform rendering
+      // Apply drag transform during dragging, no transform when not dragging
+      transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+      willChange: isDragging || isResizing ? "transform" : undefined,
       // Disable transitions during drag to prevent conflicts
       transition: isDragging || isResizing ? "none" : undefined,
     }),
@@ -90,10 +107,18 @@ const DraggablePostIt: React.FC<Props> = ({
       isResizing,
     ],
   );
+
+  // Create throttled resize function to reduce database calls
+  const throttledOnResize = useMemo(
+    () => throttle(onResize, 50), // Throttle to max 20 calls per second
+    [onResize],
+  );
+
   // Handle resize
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation(); // Prevent drag from starting when resizing
+      e.preventDefault(); // Prevent text selection
       setIsResizing(true);
 
       // Bring note to front when starting to resize
@@ -101,19 +126,35 @@ const DraggablePostIt: React.FC<Props> = ({
         onSelect?.();
       }
 
+      // Disable text selection during resize
+      document.body.style.userSelect = "none";
+      document.body.style.webkitUserSelect = "none";
+
       const startX = e.clientX;
       const startY = e.clientY;
       const startWidth = note.size.width;
       const startHeight = note.size.height;
 
       const onMouseMove = (moveEvent: MouseEvent) => {
+        moveEvent.preventDefault(); // Prevent text selection
         const newWidth = Math.max(200, Math.min(600, startWidth + (moveEvent.clientX - startX)));
         const newHeight = Math.max(150, Math.min(400, startHeight + (moveEvent.clientY - startY)));
-        onResize({ width: newWidth, height: newHeight });
+        throttledOnResize({ width: newWidth, height: newHeight });
       };
 
-      const onMouseUp = () => {
+      const onMouseUp = (upEvent: MouseEvent) => {
+        upEvent.preventDefault(); // Prevent text selection
         setIsResizing(false);
+
+        // Re-enable text selection
+        document.body.style.userSelect = "";
+        document.body.style.webkitUserSelect = "";
+
+        // Final resize call to ensure the latest size is saved
+        const finalWidth = Math.max(200, Math.min(600, startWidth + (upEvent.clientX - startX)));
+        const finalHeight = Math.max(150, Math.min(400, startHeight + (upEvent.clientY - startY)));
+        onResize({ width: finalWidth, height: finalHeight });
+
         window.removeEventListener("mousemove", onMouseMove);
         window.removeEventListener("mouseup", onMouseUp);
       };
@@ -121,7 +162,7 @@ const DraggablePostIt: React.FC<Props> = ({
       window.addEventListener("mousemove", onMouseMove);
       window.addEventListener("mouseup", onMouseUp);
     },
-    [note.size, onResize, isSelected, onSelect],
+    [note.size, onResize, throttledOnResize, isSelected, onSelect],
   );
 
   // Keyboard navigation for the post-it note
@@ -310,13 +351,15 @@ const DraggablePostIt: React.FC<Props> = ({
           </ReactMarkdown>
         </div>
       </div>{" "}
-      {/* Resize Handle (manual implementation) */}{" "}
+      {/* Resize Handle (manual implementation) */}
       <div
-        className="absolute right-1 bottom-1 flex h-4 w-4 cursor-se-resize items-center justify-center"
+        className="absolute right-1 bottom-1 flex h-4 w-4 cursor-se-resize select-none items-center justify-center"
         onMouseDown={handleMouseDown}
         title="Drag to resize"
+        style={{ userSelect: "none", WebkitUserSelect: "none" }}
+        draggable={false}
       >
-        <FaUpRightAndDownLeftFromCenter className="scale-x-[-1] text-gray-400/70 text-xs transition-colors hover:text-gray-600" />
+        <FaUpRightAndDownLeftFromCenter className="pointer-events-none scale-x-[-1] text-gray-400/70 text-xs transition-colors hover:text-gray-600" />
       </div>
     </article>
   );

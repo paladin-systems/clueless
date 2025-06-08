@@ -22,7 +22,8 @@ export class PerformanceTimer {
 }
 
 // Debounce utility for expensive operations
-export function debounce<T extends (...args: unknown[]) => unknown>(
+// biome-ignore lint/suspicious/noExplicitAny: Generic utility function needs flexible typing
+export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
 ): (...args: Parameters<T>) => void {
@@ -35,7 +36,8 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
 }
 
 // Throttle utility for limiting function calls
-export function throttle<T extends (...args: unknown[]) => unknown>(
+// biome-ignore lint/suspicious/noExplicitAny: Generic utility function needs flexible typing
+export function throttle<T extends (...args: any[]) => any>(
   func: T,
   limit: number,
 ): (...args: Parameters<T>) => void {
@@ -76,6 +78,46 @@ export function withPerformanceLogging<P extends object>(
 
     return React.createElement(WrappedComponent, props);
   };
+}
+
+// Specialized debounced resize function for note operations
+export function createDebouncedResize<T extends (...args: unknown[]) => unknown>(
+  func: T,
+  wait = 150, // Default 150ms for resize operations
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout;
+  let isFirstCall = true;
+
+  return (...args: Parameters<T>) => {
+    // Clear any existing timeout
+    clearTimeout(timeout);
+
+    // For the first call, execute immediately for responsive UI
+    if (isFirstCall) {
+      func(...args);
+      isFirstCall = false;
+      // Reset the flag after the debounce period
+      timeout = setTimeout(() => {
+        isFirstCall = true;
+      }, wait);
+      return;
+    }
+
+    // For subsequent calls within the debounce period, delay execution
+    timeout = setTimeout(() => {
+      func(...args);
+      isFirstCall = true;
+    }, wait);
+  };
+}
+
+// Specialized debounced function for note operations that need immediate UI feedback
+// biome-ignore lint/suspicious/noExplicitAny: Generic utility function needs flexible typing
+export function createDebouncedNoteUpdate<T extends (...args: any[]) => any>(
+  func: T,
+  wait = 150, // Default 150ms for note operations
+): (...args: Parameters<T>) => void {
+  return debounce(func, wait);
 }
 
 // Memory usage monitoring

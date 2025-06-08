@@ -9,6 +9,8 @@ import path from "node:path";
 import { type Blob as GenAIBlob, GoogleGenAI, Modality, type Session } from "@google/genai";
 import { RtAudio, type RtAudioErrorType, RtAudioFormat, type RtAudioStreamFlags } from "audify"; // Import audify, RtAudioErrorType, and RtAudioStreamFlags
 import { BrowserWindow, app, desktopCapturer, ipcMain, shell } from "electron";
+import { initializePouchDB } from "./database";
+import { removeDatabaseIPC, setupDatabaseIPC } from "./database/ipcHandlers";
 import { audioLogger, geminiLogger, mainLogger } from "./utils/logger";
 
 // Constants
@@ -145,7 +147,20 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-function createWindow() {
+async function createWindow() {
+  // Initialize PouchDB for the main process
+  try {
+    await initializePouchDB();
+    mainLogger.info("PouchDB initialized successfully in main process");
+
+    // Setup database IPC handlers
+    setupDatabaseIPC();
+    mainLogger.info("Database IPC handlers setup completed");
+  } catch (error) {
+    mainLogger.error({ error }, "Failed to initialize PouchDB in main process");
+    // Continue anyway - the app may still function with limited database capabilities
+  }
+
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
@@ -188,6 +203,7 @@ function createWindow() {
   // Clean up audio streams and session on close
   mainWindow.on("closed", async () => {
     await stopAllAudioStreamsAndSession();
+    removeDatabaseIPC();
     mainWindow = null;
   });
 }
@@ -295,7 +311,11 @@ async function stopAllAudioStreamsAndSession() {
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-app.on("ready", createWindow);
+app.on("ready", () => {
+  createWindow().catch((error) => {
+    mainLogger.error({ error }, "Failed to create window");
+  });
+});
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
@@ -613,16 +633,37 @@ Use previous context when relevant but prioritize responding to the most recent 
                       typeof parsedJson === "object" &&
                       parsedJson !== null &&
                       typeof parsedJson.content === "string" &&
-                      parsedJson.content.trim().length >= 10 && // Minimum 10 characters for meaningful content
-                      ["answer", "advice", "follow-up"].includes(parsedJson.category)
+                      parsedJson.content.trim().length >= 10 // Minimum 10 characters for meaningful content
                     ) {
-                      geminiLogger.info({ parsedJson }, "Valid structured response, sending");
-                      parsedResponse = { ...parsedJson, timestamp: Date.now() };
+                      // Determine category - handle both expected format and Gemini's actual format
+                      let category = "answer"; // default
+                      if (
+                        parsedJson.category &&
+                        ["answer", "advice", "follow-up"].includes(parsedJson.category)
+                      ) {
+                        category = parsedJson.category;
+                      } else if (parsedJson.advice) {
+                        category = "advice";
+                      } else if (parsedJson.followUp || parsedJson["follow-up"]) {
+                        category = "follow-up";
+                      }
+
+                      geminiLogger.info(
+                        { parsedJson, derivedCategory: category },
+                        "Valid structured response, sending",
+                      );
+                      parsedResponse = {
+                        content: parsedJson.content,
+                        category: category,
+                        timestamp: Date.now(),
+                      };
                     } else {
                       geminiLogger.warn(
                         {
                           contentLength: parsedJson?.content?.trim().length,
                           category: parsedJson?.category,
+                          hasAdviceField: !!parsedJson?.advice,
+                          parsedJson: parsedJson,
                         },
                         "JSON structure validation failed, expected fields missing, invalid, or content too short",
                       );

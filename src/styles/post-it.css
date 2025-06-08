@@ -9,6 +9,10 @@
 .post-it.dragging,
 .post-it.resizing {
   transition: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
 /* Category-based styles */
@@ -44,12 +48,12 @@
 }
 
 /* Hover and interactive states */
-.post-it:hover:not(.dragging) {
+.post-it:hover:not(.dragging):not(.resizing) {
   @apply shadow-xl;
   transform: scale(1.02) !important;
 }
 
-.post-it:active:not(.dragging) {
+.post-it:active:not(.dragging):not(.resizing) {
   @apply shadow-md;
   transform: scale(0.98) !important;
 }
@@ -88,6 +92,10 @@
 .post-it .react-resizable-handle {
   @apply absolute bottom-1 right-1 w-4 h-4 cursor-se-resize;
   @apply transition-opacity duration-200 opacity-0;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
 .post-it:hover .react-resizable-handle,

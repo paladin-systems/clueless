@@ -1,6 +1,10 @@
 import { type IpcRendererEvent, contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("electron", {
+  // Generic IPC invoke method for database operations
+  invoke: (channel: string, ...args: unknown[]): Promise<unknown> =>
+    ipcRenderer.invoke(channel, ...args),
+
   captureScreen: (sendToGemini = false): Promise<Buffer> =>
     ipcRenderer.invoke("capture-screen", sendToGemini),
   openSettings: (type: "sound" | "input" | "output"): void =>

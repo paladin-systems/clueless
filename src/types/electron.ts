@@ -8,6 +8,9 @@ export interface RecordingPayload {
 }
 
 export interface ElectronAPI {
+  // Generic IPC invoke method
+  invoke: (channel: string, ...args: unknown[]) => Promise<unknown>;
+
   // IPC communication
   on: ((
     channel: "audio-activity",
