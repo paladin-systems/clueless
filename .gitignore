@@ -32,3 +32,6 @@ lerna-debug.log*
 
 # Husky
 .husky/_
+
+# Coverage directory
+coverage

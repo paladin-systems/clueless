@@ -17,6 +17,7 @@ Clueless is a real-time AI-powered desktop assistant built with Electron, React,
 - **Audio Processing**: Audify (RtAudio), libsamplerate-js
 - **State Management**: Zustand v5 with shallow selectors
 - **Package Manager**: Bun
+- **Testing**: Vitest with React Testing Library, JSDOM, coverage reporting
 - **Code Quality**: Biome (linting + formatting), Husky + lint-staged
 
 ## Key Architecture Patterns
@@ -132,6 +133,57 @@ setStateValue: (value: Type) => set({ stateKey: value }),
 - `bun run package:portable`: Create executable
 - `bun run check:fix`: Format + lint with Biome
 
+## Testing Scripts
+- `bun run test`: Run tests in watch mode
+- `bun run test:run`: Run tests once
+- `bun run test:ui`: Run tests with visual interface
+- `bun run test:coverage`: Run tests with coverage report
+- `bun run test:watch`: Run tests in watch mode
+
+## Testing Guidelines
+
+### Test Framework
+- **Vitest** configured for React/TypeScript/Electron
+- **React Testing Library** for component testing
+- **JSDOM** environment for DOM simulation
+- **Coverage reporting** with v8 provider
+
+### Test Organization
+- Component tests: `src/components/**/__tests__/*.test.tsx`
+- Utility tests: `src/utils/**/__tests__/*.test.ts`
+- Test setup: [`src/test/setup.ts`](../src/test/setup.ts)
+- Configuration: [`vitest.config.ts`](../vitest.config.ts)
+
+### Testing Patterns
+```typescript
+// Component testing
+import { render, screen } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+
+describe('Component', () => {
+  it('renders correctly', () => {
+    render(<Component />)
+    expect(screen.getByText('text')).toBeInTheDocument()
+  })
+})
+
+// Utility testing with mocks
+import { vi, beforeEach, afterEach } from 'vitest'
+
+beforeEach(() => {
+  vi.useFakeTimers()
+})
+
+afterEach(() => {
+  vi.useRealTimers()
+})
+```
+
+### Mocked APIs
+- **Electron APIs**: All renderer process APIs mocked
+- **PouchDB**: Database operations mocked
+- **DOM APIs**: ResizeObserver, IntersectionObserver, matchMedia
+
 ## Key Features to Consider
 - Post-it note canvas with drag & drop
 - Real-time voice interaction
@@ -140,7 +192,7 @@ setStateValue: (value: Type) => set({ stateKey: value }),
 - Settings modal with preferences
 - Export/import functionality
 
-When writing code for this project, prioritize performance, type safety, and maintainable patterns consistent with the existing codebase.
+When writing code for this project, prioritize performance, type safety, maintainable patterns, and comprehensive testing consistent with the existing codebase.
 
 ## Maintenance Note
 **Remember to update this file when making significant changes to:**
