@@ -27,6 +27,11 @@ export interface AudioIndicator {
   type: "mic" | "system";
 }
 
+export interface AudioLevels {
+  mic: AudioIndicator;
+  system: AudioIndicator;
+}
+
 export interface ViewOptions {
   layout: "grid" | "cascade";
   opacity: number;

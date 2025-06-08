@@ -140,13 +140,13 @@ const AppLayout: React.FC = () => {
         },
       }));
 
-      // Use a longer interval to reduce CPU usage
+      // Update timer every second for responsive UI
       timer = setInterval(() => {
         setSessionInfo((prev) => ({
           ...prev,
           duration: prev.startTime ? Date.now() - prev.startTime : 0,
         }));
-      }, 5000); // Update every 5 seconds instead of 1 second
+      }, 1000); // Update every 1 second for responsive timer
     } else {
       setSessionInfo((prev) => ({
         ...prev,

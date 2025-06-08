@@ -2,20 +2,33 @@
 @import "./styles/focus.css";
 @import "./styles/post-it.css";
 @plugin "@tailwindcss/typography";
+@plugin "../hero.ts";
+@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+@custom-variant dark (&:is(.dark *));
 
 /* Base styles for the app */
 @layer base {
   html {
     /* Make html background transparent */
-    background-color: transparent;
+    background-color: transparent !important;
     color: var(--color-white);
   }
 
   body {
     /* Make body background transparent initially */
-    background-color: transparent;
+    background-color: transparent !important;
     min-height: 100vh;
     background-attachment: fixed;
+  }
+
+  /* Ensure root div stays transparent */
+  #root {
+    background-color: transparent !important;
+  }
+
+  /* Override any HeroUI background that might interfere */
+  .dark {
+    background-color: transparent !important;
   }
 
   /* Style select elements for readability */

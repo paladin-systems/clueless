@@ -1,4 +1,5 @@
 import "./renderer.css";
+import { HeroUIProvider } from "@heroui/react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
 import AppLayout from "./components/AppLayout";
@@ -6,9 +7,13 @@ import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 // Simple App wrapper component with error boundary
 const App: React.FC = () => (
-  <ErrorBoundary>
-    <AppLayout />
-  </ErrorBoundary>
+  <HeroUIProvider>
+    <div className="dark bg-transparent text-foreground">
+      <ErrorBoundary>
+        <AppLayout />
+      </ErrorBoundary>
+    </div>
+  </HeroUIProvider>
 );
 
 // Get root element and render app

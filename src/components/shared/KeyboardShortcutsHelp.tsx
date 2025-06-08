@@ -1,17 +1,17 @@
 import clsx from "clsx";
 import React from "react";
 import {
-  FaArrowsUpDownLeftRight,
-  FaCamera,
-  FaEye,
-  FaGear,
-  FaKeyboard,
-  FaNoteSticky,
-  FaPlay,
-  FaTableCells,
-  FaTrash,
-  FaXmark,
-} from "react-icons/fa6";
+  PiArrowsOutCardinal,
+  PiCamera,
+  PiEye,
+  PiGearSix,
+  PiKeyboard,
+  PiNotePencil,
+  PiPlay,
+  PiSquaresFour,
+  PiTrash,
+  PiX,
+} from "react-icons/pi";
 import { useModalFocus } from "../../hooks/useModalFocus";
 
 interface Shortcut {
@@ -27,13 +27,13 @@ const shortcuts: Shortcut[] = [
     keys: ["Ctrl/⌘", "R"],
     description: "Start/Stop Recording",
     category: "recording",
-    icon: <FaPlay className="text-green-500 text-xs" />,
+    icon: <PiPlay className="text-green-500 text-xs" />,
   },
   {
     keys: ["Ctrl/⌘", "Shift", "C"],
     description: "Capture Screen",
     category: "recording",
-    icon: <FaCamera className="text-blue-500 text-xs" />,
+    icon: <PiCamera className="text-blue-500 text-xs" />,
   },
 
   // Layout controls
@@ -41,37 +41,37 @@ const shortcuts: Shortcut[] = [
     keys: ["?"],
     description: "Toggle Keyboard Shortcuts",
     category: "layout",
-    icon: <FaKeyboard className="text-gray-400 text-xs" />,
+    icon: <PiKeyboard className="text-gray-400 text-xs" />,
   },
   {
     keys: ["Ctrl/⌘", ","],
     description: "Open Settings",
     category: "layout",
-    icon: <FaGear className="text-gray-400 text-xs" />,
+    icon: <PiGearSix className="text-gray-400 text-xs" />,
   },
   {
     keys: ["Ctrl/⌘", "L"],
     description: "Toggle Layout (Grid/Cascade)",
     category: "layout",
-    icon: <FaTableCells className="text-purple-500 text-xs" />,
+    icon: <PiSquaresFour className="text-purple-500 text-xs" />,
   },
   {
     keys: ["Ctrl/⌘", "T"],
     description: "Toggle Always on Top",
     category: "layout",
-    icon: <FaEye className="text-indigo-500 text-xs" />,
+    icon: <PiEye className="text-indigo-500 text-xs" />,
   },
   {
     keys: ["Ctrl/⌘", "↑"],
     description: "Increase Opacity",
     category: "layout",
-    icon: <FaEye className="text-gray-400 text-xs" />,
+    icon: <PiEye className="text-gray-400 text-xs" />,
   },
   {
     keys: ["Ctrl/⌘", "↓"],
     description: "Decrease Opacity",
     category: "layout",
-    icon: <FaEye className="text-gray-400 text-xs" />,
+    icon: <PiEye className="text-gray-400 text-xs" />,
   },
 
   // Note management
@@ -79,19 +79,19 @@ const shortcuts: Shortcut[] = [
     keys: ["Ctrl/⌘", "Shift", "X"],
     description: "Clear All Notes",
     category: "notes",
-    icon: <FaTrash className="text-red-500 text-xs" />,
+    icon: <PiTrash className="text-red-500 text-xs" />,
   },
   {
     keys: ["Ctrl/⌘", "Shift", "I"],
     description: "Toggle Instructions",
     category: "notes",
-    icon: <FaNoteSticky className="text-xs text-yellow-500" />,
+    icon: <PiNotePencil className="text-xs text-yellow-500" />,
   },
   {
     keys: ["Tab"],
     description: "Navigate Between Notes",
     category: "notes",
-    icon: <FaNoteSticky className="text-blue-400 text-xs" />,
+    icon: <PiNotePencil className="text-blue-400 text-xs" />,
   },
 
   // Selected Note Controls
@@ -99,19 +99,19 @@ const shortcuts: Shortcut[] = [
     keys: ["↑/↓/←/→"],
     description: "Move Selected Note",
     category: "notes",
-    icon: <FaArrowsUpDownLeftRight className="text-green-400 text-xs" />,
+    icon: <PiArrowsOutCardinal className="text-green-400 text-xs" />,
   },
   {
     keys: ["Shift", "↑/↓/←/→"],
     description: "Resize Selected Note",
     category: "notes",
-    icon: <FaArrowsUpDownLeftRight className="text-orange-400 text-xs" />,
+    icon: <PiArrowsOutCardinal className="text-orange-400 text-xs" />,
   },
   {
     keys: ["Delete/Backspace"],
     description: "Delete Selected Note",
     category: "notes",
-    icon: <FaTrash className="text-red-400 text-xs" />,
+    icon: <PiTrash className="text-red-400 text-xs" />,
   },
 ];
 
@@ -155,7 +155,7 @@ const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
             className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
             aria-label="Close keyboard shortcuts"
           >
-            <FaXmark />
+            <PiX />
           </button>
         </div>{" "}
         <div className="grid grid-cols-2 gap-8">

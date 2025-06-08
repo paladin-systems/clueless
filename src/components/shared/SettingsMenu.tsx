@@ -2,14 +2,14 @@ import clsx from "clsx";
 import type React from "react";
 import { useEffect, useState } from "react";
 import {
-  FaChevronDown,
-  FaDesktop,
-  FaDownload,
-  FaEye,
-  FaMicrophone,
-  FaVolumeHigh,
-  FaXmark,
-} from "react-icons/fa6";
+  PiCaretDown,
+  PiDesktop,
+  PiDownloadSimple,
+  PiEye,
+  PiMicrophone,
+  PiSpeakerSimpleHigh,
+  PiX,
+} from "react-icons/pi";
 import { useModalFocus } from "../../hooks/useModalFocus";
 import { useStore } from "../../store";
 import type { AudioDevice, ViewOptions } from "../../types/ui";
@@ -151,7 +151,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
             aria-label="Close settings"
           >
-            <FaXmark />
+            <PiX />
           </button>
         </div>
 
@@ -160,7 +160,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           {/* Opacity Section */}
           <div className="space-y-2">
             <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <FaEye />
+              <PiEye />
               <span>Window Opacity</span>
             </h3>
             <div className="flex items-center space-x-4">
@@ -182,7 +182,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           {/* Window Behavior */}
           <div className="space-y-2">
             <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <FaDesktop />
+              <PiDesktop />
               <span>Window Behavior</span>
             </h3>
             <label className="flex items-center space-x-2 text-gray-300 text-sm">
@@ -199,7 +199,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           {/* Audio Input Device Selection */}
           <div className="space-y-2">
             <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <FaMicrophone />
+              <PiMicrophone />
               <span>Microphone Input</span>
             </h3>
             <select
@@ -226,7 +226,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
           {/* System Audio Device Selection */}
           <div className="space-y-2">
             <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <FaVolumeHigh />
+              <PiSpeakerSimpleHigh />
               <span>System Audio Input (Stereo Mix)</span>
             </h3>
             <select
@@ -281,7 +281,7 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
         {/* Export Notes Section */}
         <div className="space-y-2">
           <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-            <FaDownload />
+            <PiDownloadSimple />
             <span>Export Notes</span>
           </h3>{" "}
           <p className="mb-2 text-gray-500 text-xs">
@@ -304,10 +304,10 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
               )}
             >
               <div className="flex items-center space-x-2">
-                <FaDownload />
+                <PiDownloadSimple />
                 <span>Export Notes</span>
               </div>
-              <FaChevronDown
+              <PiCaretDown
                 className={clsx("transition-transform", showExportOptions && "rotate-180")}
               />
             </button>
