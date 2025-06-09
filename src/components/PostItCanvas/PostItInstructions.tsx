@@ -1,7 +1,8 @@
 import { Button, Card, CardBody, CardHeader, Kbd } from "@heroui/react";
 import type React from "react";
-import { FaKeyboard, FaXmark } from "react-icons/fa6";
+import { PiKeyboard, PiX } from "react-icons/pi";
 import { useStore } from "../../store";
+import Tooltip from "../shared/Tooltip";
 
 const PostItInstructions: React.FC = () => {
   const showInstructions = useStore((state) => state.viewOptions.showInstructions);
@@ -17,15 +18,17 @@ const PostItInstructions: React.FC = () => {
     <Card className="fixed right-4 bottom-4 max-w-xs shadow-large" style={{ zIndex: 1500 }}>
       <CardHeader className="flex items-start justify-between pb-2">
         <h3 className="font-medium text-md">Keyboard Controls</h3>
-        <Button
-          isIconOnly
-          size="sm"
-          variant="light"
-          onPress={hideInstructions}
-          aria-label="Close instructions"
-        >
-          <FaXmark />
-        </Button>
+        <Tooltip content="Close instructions" placement="left">
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            onPress={hideInstructions}
+            aria-label="Close instructions"
+          >
+            <PiX />
+          </Button>
+        </Tooltip>
       </CardHeader>
 
       <CardBody className="pt-0">
@@ -51,9 +54,12 @@ const PostItInstructions: React.FC = () => {
 
           <div className="space-y-2 text-default-400 text-small">
             <p>Tab through notes to select and use arrow keys to move them.</p>
-            <p className="flex items-center gap-1">
-              Press ? for more shortcuts or click the <FaKeyboard className="inline" /> icon in the
-              top menu.
+            <p>
+              Press <Kbd keys={[]}>?</Kbd> for more shortcuts or click the icon{" "}
+              <Kbd keys={[]} className="p-0.5">
+                <PiKeyboard className="inline h-4 w-4 align-middle" />
+              </Kbd>{" "}
+              in the top menu.
             </p>
             <Button
               size="sm"

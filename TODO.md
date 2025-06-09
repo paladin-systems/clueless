@@ -10,6 +10,8 @@
 - [ ] Background blur effect is not working properly
 - [ ] Make the AI able to edit previous notes, adding a note id
 - [ ] Bug, note boomerang when drag release
+- [ ] Window opacity and window behaviour is not working properly
+- [ ] Add config to white/dark mode
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 

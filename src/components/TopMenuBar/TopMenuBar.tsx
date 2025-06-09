@@ -12,6 +12,7 @@ import {
 } from "react-icons/pi";
 import type { AudioLevels, SessionInfo } from "../../types/ui";
 import AnimatedLogo from "../shared/AnimatedLogo";
+import Tooltip from "../shared/Tooltip";
 
 interface TopMenuBarProps {
   sessionInfo: SessionInfo;
@@ -101,60 +102,67 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
 
         {/* Audio Level Indicators */}
         <div className="flex items-center gap-3 border-default-200/30 border-l px-3">
-          <div className="flex items-center gap-1">
-            <PiMicrophone size={16} className="text-default-500" />
-            <div
-              className={`h-2 w-2 rounded-full transition-all duration-200 ${
-                audioLevels.mic.level > 0.1
-                  ? `bg-green-500 shadow-green-500/50 shadow-lg ${audioLevels.mic.level > 0.5 ? "animate-pulse" : ""}`
-                  : "bg-default-300"
-              }`}
-            />
-          </div>
-          <div className="flex items-center gap-1">
-            <PiSpeakerSimpleHigh size={16} className="text-default-500" />
-            <div
-              className={`h-2 w-2 rounded-full transition-all duration-200 ${
-                audioLevels.system.level > 0.1
-                  ? `bg-blue-500 shadow-blue-500/50 shadow-lg ${audioLevels.system.level > 0.5 ? "animate-pulse" : ""}`
-                  : "bg-default-300"
-              }`}
-            />
-          </div>
+          <Tooltip content="Microphone Level" placement="bottom">
+            <div className="flex items-center gap-1">
+              <PiMicrophone size={16} className="text-default-500" />
+              <div
+                className={`h-2 w-2 rounded-full transition-all duration-200 ${
+                  audioLevels.mic.level > 0.1
+                    ? `bg-green-500 shadow-green-500/50 shadow-lg ${audioLevels.mic.level > 0.5 ? "animate-pulse" : ""}`
+                    : "bg-default-300"
+                }`}
+              />
+            </div>
+          </Tooltip>
+          <Tooltip content="System Audio Level" placement="bottom">
+            <div className="flex items-center gap-1">
+              <PiSpeakerSimpleHigh size={16} className="text-default-500" />
+              <div
+                className={`h-2 w-2 rounded-full transition-all duration-200 ${
+                  audioLevels.system.level > 0.1
+                    ? `bg-blue-500 shadow-blue-500/50 shadow-lg ${audioLevels.system.level > 0.5 ? "animate-pulse" : ""}`
+                    : "bg-default-300"
+                }`}
+              />
+            </div>
+          </Tooltip>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 border-default-200/30 border-l px-3">
-          <Button
-            size="sm"
-            variant="light"
-            isIconOnly
-            onPress={onCapture}
-            className="h-8 w-8 text-xs"
-            title="Take Screenshot (Ctrl+Shift+S)"
-          >
-            <PiCamera size={18} />
-          </Button>
-          <Button
-            size="sm"
-            variant="light"
-            isIconOnly
-            onPress={onKeyboardHelpClick}
-            className="h-8 w-8 text-xs"
-            title="Keyboard Shortcuts (?)"
-          >
-            <PiKeyboard size={18} />
-          </Button>
-          <Button
-            size="sm"
-            variant="light"
-            isIconOnly
-            onPress={onSettingsClick}
-            className="h-8 w-8 text-xs"
-            title="Settings (Ctrl+,)"
-          >
-            <PiGearSix size={18} />
-          </Button>
+          <Tooltip content="Take Screenshot (Ctrl+Shift+S)" placement="bottom">
+            <Button
+              size="sm"
+              variant="light"
+              isIconOnly
+              onPress={onCapture}
+              className="h-8 w-8 text-xs"
+            >
+              <PiCamera size={18} />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Keyboard Shortcuts (?)" placement="bottom">
+            <Button
+              size="sm"
+              variant="light"
+              isIconOnly
+              onPress={onKeyboardHelpClick}
+              className="h-8 w-8 text-xs"
+            >
+              <PiKeyboard size={18} />
+            </Button>
+          </Tooltip>
+          <Tooltip content="Settings (Ctrl+,)" placement="bottom">
+            <Button
+              size="sm"
+              variant="light"
+              isIconOnly
+              onPress={onSettingsClick}
+              className="h-8 w-8 text-xs"
+            >
+              <PiGearSix size={18} />
+            </Button>
+          </Tooltip>
         </div>
       </NavbarContent>
     </Navbar>

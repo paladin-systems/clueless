@@ -9,6 +9,7 @@ import type { PostItNote } from "../../types/ui";
 import { uiLogger } from "../../utils/logger";
 import { throttle } from "../../utils/performance";
 import { formatTimestamp } from "../../utils/timeUtils";
+import Tooltip from "../shared/Tooltip";
 
 interface Props {
   note: PostItNote & { zIndex?: number };
@@ -283,24 +284,25 @@ const DraggablePostIt: React.FC<Props> = ({
             <span className="text-default-400 text-xs">{formatTimestamp(note.timestamp)}</span>
           </div>
           {/* Delete button */}
-          <Button
-            isIconOnly
-            size="sm"
-            variant="light"
-            color="danger"
-            onPress={() => {
-              uiLogger.debug({ noteId: note.id }, "Delete button clicked");
-              onDelete?.();
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            className="close-button h-6 w-6 min-w-6"
-            title="Delete note"
-            aria-label="Delete note"
-          >
-            <FaXmark className="text-xs" />
-          </Button>
+          <Tooltip content="Delete note" placement="bottom">
+            <Button
+              isIconOnly
+              size="sm"
+              variant="light"
+              color="danger"
+              onPress={() => {
+                uiLogger.debug({ noteId: note.id }, "Delete button clicked");
+                onDelete?.();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="close-button h-6 w-6 min-w-6"
+              aria-label="Delete note"
+            >
+              <FaXmark className="text-xs" />
+            </Button>
+          </Tooltip>
         </div>
       </CardHeader>
       {/* Note Content */}
@@ -370,15 +372,16 @@ const DraggablePostIt: React.FC<Props> = ({
           </ReactMarkdown>
         </div>
         {/* Resize Handle (manual implementation) */}
-        <div
-          className="absolute right-1 bottom-1 flex h-4 w-4 cursor-se-resize select-none items-center justify-center"
-          onMouseDown={handleMouseDown}
-          title="Drag to resize"
-          style={{ userSelect: "none", WebkitUserSelect: "none" }}
-          draggable={false}
-        >
-          <FaUpRightAndDownLeftFromCenter className="pointer-events-none scale-x-[-1] text-default-400/70 text-xs transition-colors hover:text-default-600" />
-        </div>
+        <Tooltip content="Drag to resize" placement="top">
+          <div
+            className="absolute right-1 bottom-1 flex h-4 w-4 cursor-se-resize select-none items-center justify-center"
+            onMouseDown={handleMouseDown}
+            style={{ userSelect: "none", WebkitUserSelect: "none" }}
+            draggable={false}
+          >
+            <FaUpRightAndDownLeftFromCenter className="pointer-events-none scale-x-[-1] text-default-400/70 text-xs transition-colors hover:text-default-600" />
+          </div>
+        </Tooltip>
       </CardBody>
     </Card>
   );
