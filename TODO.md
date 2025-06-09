@@ -12,6 +12,7 @@
 - [ ] Bug, note boomerang when drag release
 - [ ] Window opacity and window behaviour is not working properly
 - [ ] Add config to white/dark mode
+- [ ] Whith recent changes the tab functionality to select notes is not working properly, we should fix it
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 

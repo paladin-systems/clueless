@@ -130,7 +130,7 @@ const TopMenuBar: React.FC<TopMenuBarProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 border-default-200/30 border-l px-3">
-          <Tooltip content="Take Screenshot (Ctrl+Shift+S)" placement="bottom">
+          <Tooltip content="Capture Screen (Ctrl+Shift+S)" placement="bottom">
             <Button
               size="sm"
               variant="light"
