@@ -13,7 +13,7 @@
 - [ ] Background blur effect is not working properly
 - [ ] Is showing window dialog behind the top menu bar, we should hide the dialog
 - [ ] Make the AI able to edit previous notes, adding a note id
-- [ ] Disable Auto-arrange button when there is no post-it notes
+- [ ] Bug, note boomerang when drag release
 
 ## 🧠 Memory & Context Management (RAG Implementation)
 

@@ -169,21 +169,16 @@ async function createWindow() {
     hasShadow: false,
     resizable: false, // Prevent window from being resized
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"), // Vite builds preload here
-      nodeIntegration: false, // Keep false
-      contextIsolation: true, // Keep true
+      preload: path.join(__dirname, "preload.js"),
+      nodeIntegration: false,
+      contextIsolation: true,
     },
-    frame: false, // Keep false for transparency
+    frame: true, // Enable frame to hide Title Bar
     transparent: true, // Enable window transparency
     autoHideMenuBar: true, // Hide the menu bar
     fullscreen: true, // Set to true for fullscreen
     alwaysOnTop: true, // Keep window always on top for overlay behavior
     skipTaskbar: true, // Hide from taskbar for true overlay experience
-    // Configuration for overlay window (example)
-    // frame: false,
-    // transparent: true,
-    // alwaysOnTop: true,
-    // skipTaskbar: true,
   });
   // Load the index.html of the app.
   if (isDev) {
