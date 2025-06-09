@@ -187,6 +187,10 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
       backdrop="opaque"
       isDismissable={true}
       hideCloseButton={false}
+      classNames={{
+        backdrop: "z-[2000]",
+        wrapper: "z-[2000]",
+      }}
     >
       <ModalContent>
         {(_onClose) => (

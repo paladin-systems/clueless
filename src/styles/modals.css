@@ -1,23 +1,21 @@
-/* Modal z-index overrides to ensure they appear above post-it notes */
+/* Z-index layering constants for consistent hierarchy */
 
 /* Set CSS custom properties for consistent z-index layering */
 :root {
   --post-it-base-z-index: 100;
   --post-it-max-z-index: 1000;
+  --keyboard-controls-z-index: 1500;
   --modal-backdrop-z-index: 2000;
   --modal-content-z-index: 2001;
   --dropdown-z-index: 2010;
   --tooltip-z-index: 2020;
 }
 
-/* Only target modal backdrop and wrapper to ensure they appear above post-its */
-[data-slot="backdrop"] {
-  z-index: var(--modal-backdrop-z-index) !important;
-}
-
-[data-slot="wrapper"] {
-  z-index: var(--modal-backdrop-z-index) !important;
-}
-
-/* Let other components use their default z-index behavior within modals */
-/* Only override if absolutely necessary */
+/* Z-index hierarchy:
+ * 1. Post-it notes: 100-1000
+ * 2. Keyboard controls: 1500
+ * 3. Modal backdrops: 2000
+ * 4. Modal content: 2001
+ * 5. Dropdowns: 2010
+ * 6. Tooltips: 2020
+ */

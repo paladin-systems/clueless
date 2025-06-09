@@ -14,10 +14,7 @@ const PostItInstructions: React.FC = () => {
   if (!showInstructions) return null;
 
   return (
-    <Card
-      className="fixed right-4 bottom-4 max-w-xs shadow-large"
-      style={{ zIndex: 9007199254740991 }}
-    >
+    <Card className="fixed right-4 bottom-4 max-w-xs shadow-large" style={{ zIndex: 1500 }}>
       <CardHeader className="flex items-start justify-between pb-2">
         <h3 className="font-medium text-md">Keyboard Controls</h3>
         <Button
