@@ -1,18 +1,32 @@
-import clsx from "clsx";
+import {
+  Button,
+  Checkbox,
+  Divider,
+  Dropdown,
+  DropdownItem,
+  DropdownMenu,
+  DropdownTrigger,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+  Select,
+  SelectItem,
+  Slider,
+} from "@heroui/react";
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   PiCaretDown,
   PiDesktop,
   PiDownloadSimple,
   PiEye,
   PiMicrophone,
-  PiSpeakerSimpleHigh,
-  PiX,
+  PiQuestion,
 } from "react-icons/pi";
 import { useModalFocus } from "../../hooks/useModalFocus";
 import { useStore } from "../../store";
-import type { AudioDevice, ViewOptions } from "../../types/ui";
+import type { AudioDevice } from "../../types/ui";
 import { type ExportFormat, exportNotes } from "../../utils/exportUtils";
 import { uiLogger } from "../../utils/logger";
 // Import the global window.electron definition
@@ -25,7 +39,9 @@ interface Props {
 
 const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const [showExportOptions, setShowExportOptions] = useState(false);
+  const [audioDevicesLoaded, setAudioDevicesLoaded] = useState(false);
 
+  // Separate store selectors to avoid infinite loops
   const viewOptions = useStore((state) => state.viewOptions);
   const updateViewOptions = useStore((state) => state.updateViewOptions);
   const micAudioDevices = useStore((state) => state.micAudioDevices);
@@ -38,25 +54,59 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
   const setSystemAudioDevices = useStore((state) => state.setSystemAudioDevices);
   const notes = useStore((state) => state.notes);
 
-  const handleOpacityChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    updateViewOptions({
-      opacity: Number(event.target.value),
-    });
-  };
+  // Memoize notes count to prevent unnecessary re-renders
+  const notesCount = useMemo(() => notes.length, [notes.length]);
 
-  const _handleLayoutChange = (layout: ViewOptions["layout"]) => {
-    updateViewOptions({ layout });
-  };
-  const handleAlwaysOnTopChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    updateViewOptions({
-      alwaysOnTop: event.target.checked,
-    });
-  };
-  const handleExport = (format: ExportFormat) => {
-    uiLogger.info("Exporting notes", { format, totalNotes: notes.length });
-    exportNotes(notes, format);
-    setShowExportOptions(false);
-  };
+  // Memoize handlers to prevent re-creation on every render
+  const handleOpacityChange = useCallback(
+    (value: number | number[]) => {
+      updateViewOptions({ opacity: value as number });
+    },
+    [updateViewOptions],
+  );
+
+  const handleAlwaysOnTopChange = useCallback(
+    (checked: boolean) => {
+      updateViewOptions({ alwaysOnTop: checked });
+    },
+    [updateViewOptions],
+  );
+
+  const handleShowInstructionsChange = useCallback(
+    (checked: boolean) => {
+      updateViewOptions({ showInstructions: checked });
+    },
+    [updateViewOptions],
+  );
+
+  const handleMicDeviceChange = useCallback(
+    (keys: "all" | Set<React.Key>) => {
+      const key = Array.from(keys as Set<string>)[0];
+      if (key) setSelectedMicDevice(Number(key));
+    },
+    [setSelectedMicDevice],
+  );
+
+  const handleSystemDeviceChange = useCallback(
+    (keys: "all" | Set<React.Key>) => {
+      const key = Array.from(keys as Set<string>)[0];
+      if (key) setSelectedSystemDevice(Number(key));
+    },
+    [setSelectedSystemDevice],
+  );
+
+  const handleOpenSoundSettings = useCallback(() => {
+    window.electron.openSettings("sound");
+  }, []);
+
+  const handleExport = useCallback(
+    (format: ExportFormat) => {
+      uiLogger.info("Exporting notes", { format, totalNotes: notesCount });
+      exportNotes(notes, format);
+      setShowExportOptions(false);
+    },
+    [notes, notesCount],
+  );
 
   // Close export dropdown when clicking elsewhere
   useEffect(() => {
@@ -75,9 +125,12 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
     }
   }, [showExportOptions]);
 
-  const modalRef = useModalFocus({ isOpen, onClose });
+  const _modalRef = useModalFocus({ isOpen, onClose });
 
+  // Load audio devices only when modal opens and hasn't been loaded yet
   useEffect(() => {
+    if (!isOpen || audioDevicesLoaded) return;
+
     const electron = window.electron;
     if (electron) {
       electron
@@ -104,13 +157,18 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
             if (!selectedSystemDeviceId && devices.defaultOutput !== null) {
               setSelectedSystemDevice(devices.defaultOutput);
             }
+
+            setAudioDevicesLoaded(true);
           },
         )
         .catch((error: Error) => {
           uiLogger.error("Failed to list audio devices", { error });
+          setAudioDevicesLoaded(true); // Mark as loaded even on error to prevent retries
         });
     }
   }, [
+    isOpen,
+    audioDevicesLoaded,
     selectedMicDeviceId,
     selectedSystemDeviceId,
     setMicAudioDevices,
@@ -119,252 +177,204 @@ const SettingsMenu: React.FC<Props> = ({ isOpen, onClose }) => {
     setSelectedSystemDevice,
   ]);
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      ref={modalRef}
-      style={{ zIndex: Number.MAX_SAFE_INTEGER }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      onKeyDown={(e) => e.key === "Escape" && onClose()}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="settings-title"
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="2xl"
+      scrollBehavior="inside"
+      placement="center"
+      backdrop="opaque"
+      isDismissable={true}
+      hideCloseButton={false}
     >
-      {" "}
-      <div
-        className={clsx(
-          "max-h-[80vh] w-96 max-w-lg overflow-y-auto rounded-lg border border-gray-700/50 bg-gray-900/95 p-6 shadow-xl",
-          "transform transition-all duration-200",
-          "fade-in zoom-in-95 animate-in",
-          "data-[state=closed]:fade-out data-[state=closed]:zoom-out-95 data-[state=closed]:animate-out",
-        )}
-      >
-        <div className="mb-6 flex items-center justify-between">
-          <h2 id="settings-title" className="font-semibold text-lg text-white">
-            Settings
-          </h2>{" "}
-          <button
-            type="button"
-            onClick={onClose}
-            className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
-            aria-label="Close settings"
-          >
-            <PiX />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          {" "}
-          {/* Opacity Section */}
-          <div className="space-y-2">
-            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <PiEye />
-              <span>Window Opacity</span>
-            </h3>
-            <div className="flex items-center space-x-4">
-              <input
-                type="range"
-                min="0.3"
-                max="1"
-                step="0.1"
-                value={viewOptions.opacity}
-                onChange={handleOpacityChange}
-                className="flex-grow"
-                aria-label="Window opacity"
-              />
-              <span className="w-12 text-gray-300 text-sm">
-                {Math.round(viewOptions.opacity * 100)}%
-              </span>
-            </div>
-          </div>{" "}
-          {/* Window Behavior */}
-          <div className="space-y-2">
-            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <PiDesktop />
-              <span>Window Behavior</span>
-            </h3>
-            <label className="flex items-center space-x-2 text-gray-300 text-sm">
-              <input
-                type="checkbox"
-                checked={viewOptions.alwaysOnTop}
-                onChange={handleAlwaysOnTopChange}
-                className="rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-900"
-                aria-label="Always on top"
-              />
-              <span>Always on Top</span>
-            </label>
-          </div>{" "}
-          {/* Audio Input Device Selection */}
-          <div className="space-y-2">
-            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <PiMicrophone />
-              <span>Microphone Input</span>
-            </h3>
-            <select
-              value={selectedMicDeviceId || ""}
-              onChange={(e) => setSelectedMicDevice(Number(e.target.value))}
-              className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Select microphone input device"
-            >
-              {micAudioDevices.length === 0 && (
-                <option value="">No microphone devices found</option>
-              )}
-              {micAudioDevices.map((device) => (
-                <option key={device.id} value={device.id}>
-                  {device.name} {device.isDefault ? "(Default)" : ""}
-                </option>
-              ))}
-            </select>
-            {micAudioDevices.length === 0 && (
-              <p className="text-red-400 text-xs">
-                No microphone devices detected. Please check your system settings.
-              </p>
-            )}
-          </div>{" "}
-          {/* System Audio Device Selection */}
-          <div className="space-y-2">
-            <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-              <PiSpeakerSimpleHigh />
-              <span>System Audio Input (Stereo Mix)</span>
-            </h3>
-            <select
-              value={selectedSystemDeviceId || ""}
-              onChange={(e) => setSelectedSystemDevice(Number(e.target.value))}
-              className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Select system audio input device"
-            >
-              {systemAudioDevices.length === 0 && (
-                <option value="">No system audio devices found</option>
-              )}
-              {systemAudioDevices.map((device) => (
-                <option key={device.id} value={device.id}>
-                  {device.name} {device.isDefault ? "(Default)" : ""}
-                </option>
-              ))}
-            </select>
-            {systemAudioDevices.length === 0 && (
-              <p className="text-red-400 text-xs">
-                No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled in
-                Sound Control Panel.{" "}
-                <button
-                  type="button"
-                  onClick={() => window.electron.openSettings("sound")}
-                  className="ml-1 cursor-pointer text-blue-400 hover:underline"
-                >
-                  Open Sound Settings
-                </button>
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Instructions */}
-        <div className="space-y-2">
-          <h3 className="font-medium text-gray-300 text-sm">Help & Instructions</h3>
-          <label className="flex items-center space-x-2 text-gray-300 text-sm">
-            <input
-              type="checkbox"
-              checked={viewOptions.showInstructions}
-              onChange={(e) => updateViewOptions({ showInstructions: e.target.checked })}
-              className="rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500 focus:ring-offset-gray-900"
-              aria-label="Show keyboard instructions"
-            />
-            <span>Show Keyboard Instructions</span>
-          </label>
-          <p className="text-gray-500 text-xs">
-            Display helpful keyboard shortcuts for moving and managing post-it notes
-          </p>{" "}
-        </div>
-
-        {/* Export Notes Section */}
-        <div className="space-y-2">
-          <h3 className="flex items-center space-x-2 font-medium text-gray-300 text-sm">
-            <PiDownloadSimple />
-            <span>Export Notes</span>
-          </h3>{" "}
-          <p className="mb-2 text-gray-500 text-xs">
-            Export your {notes.length} note{notes.length !== 1 ? "s" : ""} in various formats
-          </p>
-          <div className="export-dropdown-container relative">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                uiLogger.debug("Export button clicked", { showExportOptions });
-                setShowExportOptions(!showExportOptions);
-              }}
-              disabled={notes.length === 0}
-              className={clsx(
-                "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors",
-                notes.length === 0
-                  ? "cursor-not-allowed bg-gray-700 text-gray-500"
-                  : "bg-blue-600 text-white hover:bg-blue-700",
-              )}
-            >
-              <div className="flex items-center space-x-2">
-                <PiDownloadSimple />
-                <span>Export Notes</span>
-              </div>
-              <PiCaretDown
-                className={clsx("transition-transform", showExportOptions && "rotate-180")}
-              />
-            </button>
-            {showExportOptions && notes.length > 0 && (
-              <div className="absolute top-full right-0 left-0 z-10 mt-1 rounded-lg border border-gray-700 bg-gray-800 shadow-xl">
-                <div className="space-y-0.5 p-1">
-                  {" "}
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleExport("json");
-                    }}
-                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
-                  >
-                    <strong>JSON</strong> - Structured data with metadata
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleExport("markdown");
-                    }}
-                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
-                  >
-                    <strong>Markdown</strong> - Formatted documentation
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleExport("text");
-                    }}
-                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
-                  >
-                    <strong>Plain Text</strong> - Simple text format
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleExport("csv");
-                    }}
-                    className="w-full rounded px-2 py-1.5 text-left text-gray-300 text-sm transition-colors hover:bg-gray-700"
-                  >
-                    <strong>CSV</strong> - Spreadsheet compatible
-                  </button>
+      <ModalContent>
+        {(_onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              <h2 className="font-semibold text-xl">Settings</h2>
+            </ModalHeader>
+            <ModalBody className="gap-6 pb-6">
+              {/* Window Opacity */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 font-medium text-sm">
+                  <PiEye />
+                  <span>Window Opacity</span>
                 </div>
+                <Slider
+                  label="Window Opacity"
+                  step={0.1}
+                  minValue={0.3}
+                  maxValue={1}
+                  value={viewOptions.opacity}
+                  onChange={handleOpacityChange}
+                  className="max-w-md"
+                  formatOptions={{ style: "percent" }}
+                  showTooltip={true}
+                />
               </div>
-            )}{" "}
-          </div>
-          {notes.length === 0 && (
-            <p className="text-amber-400 text-xs">Create some notes first to enable export</p>
-          )}
-        </div>
-      </div>
-    </div>
+
+              <Divider />
+
+              {/* Window Behavior */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 font-medium text-sm">
+                  <PiDesktop />
+                  <span>Window Behavior</span>
+                </div>
+                <Checkbox
+                  isSelected={viewOptions.alwaysOnTop}
+                  onValueChange={handleAlwaysOnTopChange}
+                >
+                  Always on Top
+                </Checkbox>
+              </div>
+
+              <Divider />
+
+              {/* Audio Devices */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 font-medium text-sm">
+                  <PiMicrophone />
+                  <span>Audio Devices</span>
+                </div>
+
+                <Select
+                  label="Microphone Input"
+                  selectedKeys={selectedMicDeviceId ? [selectedMicDeviceId.toString()] : []}
+                  onSelectionChange={handleMicDeviceChange}
+                  placeholder={
+                    micAudioDevices.length === 0 ? "No devices found" : "Select a device"
+                  }
+                  isDisabled={micAudioDevices.length === 0}
+                >
+                  {micAudioDevices.map((device) => (
+                    <SelectItem
+                      key={device.id}
+                      textValue={`${device.name}${device.isDefault ? " (Default)" : ""}`}
+                    >
+                      {device.name} {device.isDefault ? "(Default)" : ""}
+                    </SelectItem>
+                  ))}
+                </Select>
+
+                <Select
+                  label="System Audio Input (Stereo Mix)"
+                  selectedKeys={selectedSystemDeviceId ? [selectedSystemDeviceId.toString()] : []}
+                  onSelectionChange={handleSystemDeviceChange}
+                  placeholder={
+                    systemAudioDevices.length === 0 ? "No devices found" : "Select a device"
+                  }
+                  isDisabled={systemAudioDevices.length === 0}
+                >
+                  {systemAudioDevices.map((device) => (
+                    <SelectItem
+                      key={device.id}
+                      textValue={`${device.name}${device.isDefault ? " (Default)" : ""}`}
+                    >
+                      {device.name} {device.isDefault ? "(Default)" : ""}
+                    </SelectItem>
+                  ))}
+                </Select>
+
+                {systemAudioDevices.length === 0 && (
+                  <div className="text-danger text-small">
+                    <p>
+                      No system audio devices detected. On Windows, ensure "Stereo Mix" is enabled.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="light"
+                      color="primary"
+                      onPress={handleOpenSoundSettings}
+                      className="mt-2"
+                    >
+                      Open Sound Settings
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <Divider />
+
+              {/* Help & Instructions */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 font-medium text-sm">
+                  <PiQuestion />
+                  <span>Help & Instructions</span>
+                </div>
+                <Checkbox
+                  isSelected={viewOptions.showInstructions}
+                  onValueChange={handleShowInstructionsChange}
+                >
+                  Show Keyboard Instructions
+                </Checkbox>
+              </div>
+
+              <Divider />
+
+              {/* Export Notes */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 font-medium text-sm">
+                  <PiDownloadSimple />
+                  <span>Export Notes ({notesCount})</span>
+                </div>
+
+                <Dropdown>
+                  <DropdownTrigger>
+                    <Button
+                      variant="flat"
+                      color="primary"
+                      isDisabled={notesCount === 0}
+                      endContent={<PiCaretDown />}
+                      startContent={<PiDownloadSimple />}
+                    >
+                      Export Notes
+                    </Button>
+                  </DropdownTrigger>
+                  <DropdownMenu aria-label="Export format">
+                    <DropdownItem
+                      key="json"
+                      description="Structured data with metadata"
+                      onPress={() => handleExport("json")}
+                    >
+                      JSON
+                    </DropdownItem>
+                    <DropdownItem
+                      key="markdown"
+                      description="Formatted documentation"
+                      onPress={() => handleExport("markdown")}
+                    >
+                      Markdown
+                    </DropdownItem>
+                    <DropdownItem
+                      key="text"
+                      description="Simple text format"
+                      onPress={() => handleExport("text")}
+                    >
+                      Plain Text
+                    </DropdownItem>
+                    <DropdownItem
+                      key="csv"
+                      description="Spreadsheet compatible"
+                      onPress={() => handleExport("csv")}
+                    >
+                      CSV
+                    </DropdownItem>
+                  </DropdownMenu>
+                </Dropdown>
+
+                {notesCount === 0 && (
+                  <p className="text-small text-warning">
+                    Create some notes first to enable export
+                  </p>
+                )}
+              </div>
+            </ModalBody>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   );
 };
 

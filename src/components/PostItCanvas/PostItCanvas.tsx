@@ -1,5 +1,6 @@
 import { DndContext, type DragEndEvent } from "@dnd-kit/core";
 import { restrictToParentElement } from "@dnd-kit/modifiers";
+import { Button } from "@heroui/react";
 import clsx from "clsx";
 import type React from "react";
 import { useCallback, useEffect, useState } from "react";
@@ -160,10 +161,11 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
   const getZIndex = (note: PostItNote): number => {
     // If note already has a zIndex from interactions, use it
     if (note.zIndex) {
-      return note.zIndex;
+      return Math.min(note.zIndex, 1000); // Cap at 1000 to stay below modals
     }
-    // Otherwise, use timestamp as base z-index (newer notes get higher z-index)
-    return note.timestamp;
+    // Otherwise, use a reasonable z-index based on creation order (1-1000 range)
+    const noteIndex = notes.findIndex((n) => n.id === note.id);
+    return Math.min(100 + noteIndex, 1000); // Start at 100, max 1000
   };
 
   // Handle canvas click to deselect notes
@@ -227,21 +229,21 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
       >
         {" "}
         {/* Auto-arrange Button */}
-        <div
-          className="absolute top-4 right-4 z-[9999] flex space-x-2"
-          style={{ zIndex: 9007199254740990 }}
-        >
-          <button
-            type="button"
-            onClick={() => organizeNotes(notes, canvasBounds)}
-            className="glass-button-secondary px-2 py-1 text-xs"
-            disabled={notes.length === 0}
+        <div className="absolute top-4 right-4 z-[1000] flex gap-2">
+          <Button
+            size="sm"
+            variant="flat"
+            color="primary"
+            onPress={() => organizeNotes(notes, canvasBounds)}
+            isDisabled={notes.length === 0}
           >
             Auto-arrange
-          </button>
-          <button
-            type="button"
-            onClick={() => {
+          </Button>
+          <Button
+            size="sm"
+            variant="flat"
+            color="danger"
+            onPress={() => {
               if (
                 notes.length > 0 &&
                 window.confirm(
@@ -251,11 +253,10 @@ const PostItCanvas: React.FC<PostItCanvasProps> = ({
                 removeAllNotes();
               }
             }}
-            className="glass-button-secondary px-2 py-1 text-red-400 text-xs hover:text-red-300"
-            disabled={notes.length === 0}
+            isDisabled={notes.length === 0}
           >
             Remove All
-          </button>
+          </Button>
         </div>
         {/* Post-it Notes */}
         {notes.map((note) => (

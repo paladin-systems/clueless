@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { Divider, Kbd, Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/react";
 import React from "react";
 import {
   PiArrowsOutCardinal,
@@ -10,9 +10,7 @@ import {
   PiPlay,
   PiSquaresFour,
   PiTrash,
-  PiX,
 } from "react-icons/pi";
-import { useModalFocus } from "../../hooks/useModalFocus";
 
 interface Shortcut {
   keys: string[];
@@ -121,169 +119,134 @@ interface Props {
 }
 
 const KeyboardShortcutsHelp: React.FC<Props> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
-  const modalRef = useModalFocus({ isOpen, onClose });
-
   return (
-    <div
-      ref={modalRef}
-      style={{ zIndex: Number.MAX_SAFE_INTEGER }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      onKeyDown={(e) => e.key === "Escape" && onClose()}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="keyboard-shortcuts-title"
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="3xl"
+      scrollBehavior="inside"
+      placement="center"
+      backdrop="opaque"
+      isDismissable={true}
+      hideCloseButton={false}
     >
-      {" "}
-      <div
-        className={clsx(
-          "w-[800px] max-w-6xl rounded-lg border border-gray-700/50 bg-gray-900/95 p-6 pb-8 shadow-xl",
-          "transform transition-all duration-200",
-          "fade-in zoom-in-95 animate-in",
-          "data-[state=closed]:fade-out data-[state=closed]:zoom-out-95 data-[state=closed]:animate-out",
-        )}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="keyboard-shortcuts-title" className="font-semibold text-lg text-white">
-            Keyboard Shortcuts
-          </h2>{" "}
-          <button
-            type="button"
-            onClick={onClose}
-            className="cursor-pointer rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
-            aria-label="Close keyboard shortcuts"
-          >
-            <PiX />
-          </button>
-        </div>{" "}
-        <div className="grid grid-cols-2 gap-8">
-          {/* Left Column */}
-          <div className="space-y-6">
-            {/* Recording Controls */}
-            <div>
-              <h3 className="mb-2 font-medium text-gray-300 text-sm">Recording</h3>
-              <div className="space-y-2">
-                {shortcuts
-                  .filter((s) => s.category === "recording")
-                  .map((shortcut) => (
-                    <div
-                      key={`${shortcut.category}-${shortcut.keys.join("-")}`}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <div className="flex items-center space-x-2">
-                        {shortcut.icon && shortcut.icon}
-                        <span className="text-gray-300">{shortcut.description}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
-                            <kbd
-                              className={clsx(
-                                "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
-                                "border border-gray-700 shadow-inner",
-                                "transition-transform active:scale-95",
-                              )}
-                            >
-                              {key}
-                            </kbd>
-                            {keyIndex < shortcut.keys.length - 1 && (
-                              <span className="text-gray-600">+</span>
-                            )}
-                          </React.Fragment>
+      <ModalContent>
+        {(_onClose) => (
+          <>
+            <ModalHeader className="flex flex-col gap-1">
+              <h2 className="font-semibold text-xl">Keyboard Shortcuts</h2>
+            </ModalHeader>
+            <ModalBody className="gap-6 pb-6">
+              <div className="relative grid grid-cols-1 gap-8 md:grid-cols-2">
+                {/* Left Column: Recording & Layout */}
+                <div className="space-y-6">
+                  {/* Recording Controls */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-md">Recording</h3>
+                    <div className="space-y-3">
+                      {shortcuts
+                        .filter((s) => s.category === "recording")
+                        .map((shortcut) => (
+                          <div
+                            key={`${shortcut.category}-${shortcut.keys.join("-")}`}
+                            className="flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              {shortcut.icon && shortcut.icon}
+                              <span className="text-sm">{shortcut.description}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {shortcut.keys.map((key, keyIndex) => (
+                                <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
+                                  <Kbd keys={[]} className="text-xs">
+                                    {key}
+                                  </Kbd>
+                                  {keyIndex < shortcut.keys.length - 1 && (
+                                    <span className="text-default-400">+</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </div>
                         ))}
-                      </div>
                     </div>
-                  ))}
-              </div>
-            </div>
+                  </div>
 
-            {/* Layout Controls */}
-            <div>
-              <h3 className="mb-2 font-medium text-gray-300 text-sm">Layout</h3>
-              <div className="space-y-2">
-                {shortcuts
-                  .filter((s) => s.category === "layout")
-                  .map((shortcut) => (
-                    <div
-                      key={`${shortcut.category}-${shortcut.keys.join("-")}`}
-                      className="flex items-center justify-between text-sm"
-                    >
-                      <div className="flex items-center space-x-2">
-                        {shortcut.icon && shortcut.icon}
-                        <span className="text-gray-300">{shortcut.description}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        {shortcut.keys.map((key, keyIndex) => (
-                          <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
-                            <kbd
-                              className={clsx(
-                                "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
-                                "border border-gray-700 shadow-inner",
-                                "transition-transform active:scale-95",
-                              )}
-                            >
-                              {key}
-                            </kbd>
-                            {keyIndex < shortcut.keys.length - 1 && (
-                              <span className="text-gray-600">+</span>
-                            )}
-                          </React.Fragment>
+                  {/* Layout Controls */}
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-md">Layout</h3>
+                    <div className="space-y-3">
+                      {shortcuts
+                        .filter((s) => s.category === "layout")
+                        .map((shortcut) => (
+                          <div
+                            key={`${shortcut.category}-${shortcut.keys.join("-")}`}
+                            className="flex items-center justify-between"
+                          >
+                            <div className="flex items-center gap-2">
+                              {shortcut.icon && shortcut.icon}
+                              <span className="text-sm">{shortcut.description}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              {shortcut.keys.map((key, keyIndex) => (
+                                <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
+                                  <Kbd keys={[]} className="text-xs">
+                                    {key}
+                                  </Kbd>
+                                  {keyIndex < shortcut.keys.length - 1 && (
+                                    <span className="text-default-400">+</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </div>
                         ))}
-                      </div>
                     </div>
-                  ))}
-              </div>
-            </div>
-          </div>
+                  </div>
+                </div>
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 w-px bg-gray-700" />
-            <div className="pl-8">
-              {/* Note Management */}
-              <div>
-                <h3 className="mb-2 font-medium text-gray-300 text-sm">Notes</h3>
-                <div className="space-y-2">
-                  {shortcuts
-                    .filter((s) => s.category === "notes")
-                    .map((shortcut) => (
-                      <div
-                        key={`${shortcut.category}-${shortcut.keys.join("-")}`}
-                        className="flex items-center justify-between text-sm"
-                      >
-                        <div className="flex items-center space-x-2">
-                          {shortcut.icon && shortcut.icon}
-                          <span className="text-gray-300">{shortcut.description}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          {shortcut.keys.map((key, keyIndex) => (
-                            <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
-                              <kbd
-                                className={clsx(
-                                  "min-w-[24px] rounded bg-gray-800 px-2 py-1 text-center text-gray-300 text-xs",
-                                  "border border-gray-700 shadow-inner",
-                                  "transition-transform active:scale-95",
+                {/* Right Column: Notes */}
+                <div className="space-y-3 md:border-divider md:border-l md:pl-8">
+                  <h3 className="font-semibold text-md">Notes</h3>
+                  <div className="space-y-3">
+                    {shortcuts
+                      .filter((s) => s.category === "notes")
+                      .map((shortcut) => (
+                        <div
+                          key={`${shortcut.category}-${shortcut.keys.join("-")}`}
+                          className="flex items-center justify-between"
+                        >
+                          <div className="flex items-center gap-2">
+                            {shortcut.icon && shortcut.icon}
+                            <span className="text-sm">{shortcut.description}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {shortcut.keys.map((key, keyIndex) => (
+                              <React.Fragment key={`${shortcut.keys.join("-")}-${keyIndex}`}>
+                                <Kbd keys={[]} className="text-xs">
+                                  {key}
+                                </Kbd>
+                                {keyIndex < shortcut.keys.length - 1 && (
+                                  <span className="text-default-400">+</span>
                                 )}
-                              >
-                                {key}
-                              </kbd>
-                              {keyIndex < shortcut.keys.length - 1 && (
-                                <span className="text-gray-600">+</span>
-                              )}
-                            </React.Fragment>
-                          ))}
+                              </React.Fragment>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
+              {/* Horizontal Divider for mobile */}
+              <div className="md:hidden">
+                <Divider />
+              </div>
+            </ModalBody>
+          </>
+        )}
+      </ModalContent>
+    </Modal>
   );
 };
 

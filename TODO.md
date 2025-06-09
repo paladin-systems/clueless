@@ -2,16 +2,12 @@
 
 ## 🚀 Feature Enhancements
 
-- [ ] Improve the top menu bar UI
 - [ ] Fix auto-arrange, use dnd sorting library
 - [ ] Post-it notes are being added not in a random position one over the other, we should better format the position of the post-it notes when they are added
 - [ ] Post-it notes are being added too fast,  we should make sure Gemini waits a bit before adding a new post-it note, so that the user can read the previous one
 - [ ] Fix the selected note to z-index front
 - [ ] Fix click-through on the transparent background
-- [ ] Change to use Hero UI components for the main UI
-- [ ] Menu tooltip is shown behind the notes
 - [ ] Background blur effect is not working properly
-- [ ] Is showing window dialog behind the top menu bar, we should hide the dialog
 - [ ] Make the AI able to edit previous notes, adding a note id
 - [ ] Bug, note boomerang when drag release
 
@@ -63,13 +59,13 @@
   - [ ] Be able to continue conversations from previous sessions
 
 ### Configuration & Settings
-- [ ] **Configuration Window/Panel**
-  - [ ] Create settings UI with tabbed interface
+- [x] **Configuration Window/Panel** ✅ **PARTIALLY COMPLETED**
+  - [x] ~~Create settings UI with tabbed interface~~ (Using HeroUI Cards/sections)
   - [ ] Add Gemini API token configuration through UI
   - [ ] Implement API key validation and testing
   - [ ] Build model selection dropdown
   - [ ] Add temperature and response parameter controls
-  - [ ] Create audio input/output device selection
+  - [x] ~~Create audio input/output device selection~~ (Already implemented with HeroUI Select)
   - [ ] Add keyboard shortcuts customization
 
 ## 🕵️ Undetectable Configuration

@@ -1,4 +1,4 @@
-import clsx from "clsx";
+import { Spinner } from "@heroui/react";
 import type React from "react";
 
 interface Props {
@@ -7,25 +7,7 @@ interface Props {
 }
 
 const LoadingSpinner: React.FC<Props> = ({ size = "md", className }) => {
-  const sizeClasses = {
-    sm: "w-4 h-4 border-2",
-    md: "w-6 h-6 border-2",
-    lg: "w-8 h-8 border-3",
-  };
-
-  return (
-    <span
-      className={clsx(
-        "animate-spin rounded-full border-blue-500",
-        "border-t-transparent border-r-transparent",
-        sizeClasses[size],
-        className,
-      )}
-      aria-label="Loading"
-    >
-      <span className="sr-only">Loading...</span>
-    </span>
-  );
+  return <Spinner size={size} color="primary" className={className} aria-label="Loading" />;
 };
 
 export default LoadingSpinner;

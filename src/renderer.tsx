@@ -1,4 +1,5 @@
 import "./renderer.css";
+import "./styles/modals.css";
 import { HeroUIProvider } from "@heroui/react";
 import type React from "react";
 import { createRoot } from "react-dom/client";

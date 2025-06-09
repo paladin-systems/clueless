@@ -1,4 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
+import { Button, Card, CardBody, CardHeader, Chip } from "@heroui/react";
 import clsx from "clsx";
 import type React from "react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -242,51 +243,69 @@ const DraggablePostIt: React.FC<Props> = ({
   );
 
   return (
-    <article
+    <Card
       ref={setNodeRef}
       style={divStyle}
       className={clsx(
         "post-it",
         `category-${note.category}`,
-        isSelected && ["ring-2", "ring-blue-500", "selected"],
+        isSelected && ["ring-2", "ring-primary", "selected"],
         isDragging && "dragging", // Add dragging class
         isResizing && "resizing", // Add resizing class
+        "shadow-medium transition-shadow hover:shadow-large",
         className,
       )}
       onClick={handleClick}
       aria-label={`${note.category} note`}
       onKeyDown={handleKeyDown}
     >
-      {" "}
       {/* Note Header with Drag Handle */}
-      <div className="drag-handle" {...customListeners} {...attributes}>
-        <div className="flex items-center justify-between p-2">
-          <div className="flex items-center space-x-2">
-            <FaGripVertical className="text-gray-500 text-xs" />
-            <span className="font-medium text-gray-700 text-xs capitalize">{note.category}</span>
-            <span className="text-gray-500 text-xs">{formatTimestamp(note.timestamp)}</span>
+      <CardHeader className="drag-handle pb-1" {...customListeners} {...attributes}>
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FaGripVertical className="text-default-400 text-xs" />
+            <Chip
+              size="sm"
+              variant="flat"
+              color={
+                note.category === "answer"
+                  ? "primary"
+                  : note.category === "advice"
+                    ? "warning"
+                    : note.category === "follow-up"
+                      ? "success"
+                      : "default"
+              }
+              className="text-xs capitalize"
+            >
+              {note.category}
+            </Chip>
+            <span className="text-default-400 text-xs">{formatTimestamp(note.timestamp)}</span>
           </div>
-          <div className="h-6 w-6" />
+          {/* Delete button */}
+          <Button
+            isIconOnly
+            size="sm"
+            variant="light"
+            color="danger"
+            onPress={() => {
+              uiLogger.debug({ noteId: note.id }, "Delete button clicked");
+              onDelete?.();
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            className="close-button h-6 w-6 min-w-6"
+            title="Delete note"
+            aria-label="Delete note"
+          >
+            <FaXmark className="text-xs" />
+          </Button>
         </div>
-      </div>
-      {/* Delete button positioned absolutely outside of drag handle */}
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          uiLogger.debug({ noteId: note.id }, "Delete button clicked");
-          onDelete?.();
-        }}
-        className="absolute top-2 right-2 z-10 rounded-full bg-white/80 p-1 text-gray-400 shadow-sm transition-colors duration-150 hover:bg-red-50 hover:text-red-500"
-        title="Delete note"
-        aria-label="Delete note"
-      >
-        <FaXmark className="text-xs" />
-      </button>
+      </CardHeader>
       {/* Note Content */}
-      <div className="flex h-[calc(100%-2.5rem)] flex-col p-4">
-        <div className="prose prose-sm max-w-none flex-grow overflow-auto text-gray-800">
+      <CardBody className="flex h-[calc(100%-3.5rem)] flex-col pt-0">
+        <div className="prose prose-sm max-w-none flex-grow overflow-auto">
           <ReactMarkdown
             components={{
               // Customize heading styles to fit post-it size
@@ -350,18 +369,18 @@ const DraggablePostIt: React.FC<Props> = ({
             {note.content}
           </ReactMarkdown>
         </div>
-      </div>{" "}
-      {/* Resize Handle (manual implementation) */}
-      <div
-        className="absolute right-1 bottom-1 flex h-4 w-4 cursor-se-resize select-none items-center justify-center"
-        onMouseDown={handleMouseDown}
-        title="Drag to resize"
-        style={{ userSelect: "none", WebkitUserSelect: "none" }}
-        draggable={false}
-      >
-        <FaUpRightAndDownLeftFromCenter className="pointer-events-none scale-x-[-1] text-gray-400/70 text-xs transition-colors hover:text-gray-600" />
-      </div>
-    </article>
+        {/* Resize Handle (manual implementation) */}
+        <div
+          className="absolute right-1 bottom-1 flex h-4 w-4 cursor-se-resize select-none items-center justify-center"
+          onMouseDown={handleMouseDown}
+          title="Drag to resize"
+          style={{ userSelect: "none", WebkitUserSelect: "none" }}
+          draggable={false}
+        >
+          <FaUpRightAndDownLeftFromCenter className="pointer-events-none scale-x-[-1] text-default-400/70 text-xs transition-colors hover:text-default-600" />
+        </div>
+      </CardBody>
+    </Card>
   );
 };
 

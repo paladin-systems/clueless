@@ -405,9 +405,9 @@ const AppLayout: React.FC = () => {
 
       {/* Loading Indicator */}
       {geminiState.isBuildingResponse && (
-        <div className="fixed bottom-4 left-4 flex items-center space-x-2 rounded-lg border border-gray-700/50 bg-gray-900/95 p-3 backdrop-blur-sm">
+        <div className="fixed bottom-4 left-4 flex items-center gap-3 rounded-lg border border-divider bg-background/80 p-3 shadow-medium backdrop-blur-md">
           <LoadingSpinner size="sm" />
-          <span className="text-gray-300 text-sm">
+          <span className="text-foreground text-sm">
             {audioState.audioStatus || "Processing response..."}
           </span>
         </div>

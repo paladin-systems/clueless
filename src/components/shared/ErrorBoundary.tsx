@@ -1,3 +1,4 @@
+import { Button, Card, CardBody, CardHeader, Code } from "@heroui/react";
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { uiLogger } from "../../utils/logger";
 
@@ -50,35 +51,33 @@ class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-900/95 backdrop-blur-sm">
-          <div className="max-w-lg rounded-lg bg-gray-800 p-6 shadow-xl">
-            <h2 className="mb-4 font-semibold text-white text-xl">Something went wrong</h2>
-            <div className="mb-4 max-h-48 overflow-auto rounded bg-gray-900 p-4">
-              <pre className="text-red-400 text-sm">{this.state.error?.toString()}</pre>
-              {this.state.errorInfo && (
-                <pre className="mt-2 text-gray-400 text-xs">
-                  {this.state.errorInfo.componentStack}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <Card className="mx-4 w-full max-w-lg">
+            <CardHeader>
+              <h2 className="font-semibold text-danger text-xl">Something went wrong</h2>
+            </CardHeader>
+            <CardBody className="gap-4">
+              <Code className="max-h-48 w-full overflow-auto" color="danger" size="sm">
+                <pre className="whitespace-pre-wrap">
+                  {this.state.error?.toString()}
+                  {this.state.errorInfo && (
+                    <>
+                      {"\n\n"}
+                      {this.state.errorInfo.componentStack}
+                    </>
+                  )}
                 </pre>
-              )}
-            </div>
-            <div className="flex justify-end space-x-3">
-              {" "}
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                className="cursor-pointer rounded bg-gray-700 px-4 py-2 text-gray-300 transition-colors hover:bg-gray-600"
-              >
-                Reload Page
-              </button>
-              <button
-                type="button"
-                onClick={this.handleRetry}
-                className="cursor-pointer rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
+              </Code>
+              <div className="flex justify-end gap-2">
+                <Button variant="flat" onPress={() => window.location.reload()}>
+                  Reload Page
+                </Button>
+                <Button color="primary" onPress={this.handleRetry}>
+                  Try Again
+                </Button>
+              </div>
+            </CardBody>
+          </Card>
         </div>
       );
     }

@@ -106,13 +106,6 @@
   }
 
   /* Loading animations */
-  .animate-in {
-    animation: fade-in 0.2s ease-out forwards;
-  }
-
-  .animate-out {
-    animation: fade-out 0.2s ease-in forwards;
-  }
 
   @keyframes fade-in {
     from {
