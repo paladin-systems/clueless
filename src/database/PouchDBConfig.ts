@@ -11,12 +11,12 @@ const getDatabasePath = (): string => {
   return path.join(userDataPath, "pouchdb", isDev ? "development" : "production", DATABASE_NAME);
 };
 
-export const pouchDBConfig = {
+export const getPouchDBConfig = () => ({
   name: getDatabasePath(),
   adapter: "leveldb",
   auto_compaction: true,
   revs_limit: 10, // Keep only 10 revisions to save space
-};
+});
 
 // Index definitions for optimized queries
 export const INDEXES = [

@@ -1,7 +1,7 @@
 import PouchDB from "pouchdb";
 import type { PostItNote } from "../types/ui";
 import { storageLogger } from "../utils/logger";
-import { INDEXES, QUERIES, pouchDBConfig } from "./PouchDBConfig";
+import { INDEXES, QUERIES, getPouchDBConfig } from "./PouchDBConfig";
 import {
   type PostItNoteDocument,
   transformFromDocument,
@@ -42,10 +42,11 @@ export class PouchDBService {
       storageLogger.info("Initializing PouchDB...");
 
       // Create database instance
-      this.db = new PouchDB<PostItNoteDocument>(pouchDBConfig.name, {
-        adapter: pouchDBConfig.adapter,
-        auto_compaction: pouchDBConfig.auto_compaction,
-        revs_limit: pouchDBConfig.revs_limit,
+      const config = getPouchDBConfig();
+      this.db = new PouchDB<PostItNoteDocument>(config.name, {
+        adapter: config.adapter,
+        auto_compaction: config.auto_compaction,
+        revs_limit: config.revs_limit,
       });
 
       // Create indexes for optimized queries
@@ -101,6 +102,7 @@ export class PouchDBService {
   // CRUD Operations
 
   async createNote(note: PostItNote): Promise<void> {
+    await this.initialize();
     if (!this.db) throw new Error("Database not initialized");
 
     try {
@@ -114,6 +116,7 @@ export class PouchDBService {
   }
 
   async getNote(id: string): Promise<PostItNote | null> {
+    await this.initialize();
     if (!this.db) throw new Error("Database not initialized");
 
     try {
@@ -137,6 +140,8 @@ export class PouchDBService {
   }
 
   async getAllNotes(): Promise<PostItNote[]> {
+    // Ensure database is fully initialized
+    await this.initialize();
     if (!this.db) throw new Error("Database not initialized");
 
     try {
@@ -153,6 +158,7 @@ export class PouchDBService {
   }
 
   async updateNote(id: string, updates: Partial<PostItNote>): Promise<void> {
+    await this.initialize();
     if (!this.db) throw new Error("Database not initialized");
 
     try {
@@ -184,6 +190,7 @@ export class PouchDBService {
   }
 
   async deleteNote(id: string): Promise<void> {
+    await this.initialize();
     if (!this.db) throw new Error("Database not initialized");
 
     try {
@@ -203,6 +210,7 @@ export class PouchDBService {
   }
 
   async deleteAllNotes(): Promise<void> {
+    await this.initialize();
     if (!this.db) throw new Error("Database not initialized");
 
     try {
