@@ -4,7 +4,7 @@ import { useShallow } from "zustand/shallow";
 import { useElectronEvents } from "../hooks/useElectronEvents";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useStore } from "../store";
-import type { PostItNote, SessionInfo } from "../types/ui";
+import type { AudioDevice, PostItNote, SessionInfo } from "../types/ui";
 import { rendererLogger } from "../utils/logger";
 import PostItCanvas from "./PostItCanvas/PostItCanvas";
 import TopMenuBar from "./TopMenuBar/TopMenuBar";
@@ -64,11 +64,72 @@ const AppLayout: React.FC = () => {
       updateNoteSize: state.updateNoteSize,
       loadNotesFromStorage: state.loadNotesFromStorage,
       syncNotesToStorage: state.syncNotesToStorage,
+      setMicAudioDevices: state.setMicAudioDevices,
+      setSystemAudioDevices: state.setSystemAudioDevices,
+      setSelectedMicDevice: state.setSelectedMicDevice,
+      setSelectedSystemDevice: state.setSelectedSystemDevice,
     })),
   );
 
   // Database storage is handled automatically by the IPC-based PouchDB store
   const [_isStorageReady, setIsStorageReady] = useState(false);
+  const [audioDevicesLoaded, setAudioDevicesLoaded] = useState(false);
+
+  // Initialize audio devices on app startup
+  useEffect(() => {
+    if (audioDevicesLoaded) return;
+
+    const electron = window.electron;
+    if (electron) {
+      electron
+        .listAudioDevices()
+        .then(
+          (devices: {
+            devices: AudioDevice[];
+            defaultInput: number | null;
+            defaultOutput: number | null;
+          }) => {
+            const micDevices = devices.devices.filter((d) => d.inputChannels > 0);
+            const systemDevices = devices.devices.filter((d) => d.outputChannels > 0);
+
+            actions.setMicAudioDevices(
+              micDevices.map((d) => ({ ...d, isDefault: d.id === devices.defaultInput })),
+            );
+            actions.setSystemAudioDevices(
+              systemDevices.map((d) => ({ ...d, isDefault: d.id === devices.defaultOutput })),
+            );
+
+            // Auto-select default devices if none selected
+            if (!audioState.selectedMicDeviceId && devices.defaultInput !== null) {
+              actions.setSelectedMicDevice(devices.defaultInput);
+            }
+            if (!audioState.selectedSystemDeviceId && devices.defaultOutput !== null) {
+              actions.setSelectedSystemDevice(devices.defaultOutput);
+            }
+
+            setAudioDevicesLoaded(true);
+            rendererLogger.info(
+              {
+                defaultInput: devices.defaultInput,
+                defaultOutput: devices.defaultOutput,
+                micDeviceCount: micDevices.length,
+                systemDeviceCount: systemDevices.length,
+              },
+              "Audio devices loaded and defaults selected",
+            );
+          },
+        )
+        .catch((error: Error) => {
+          rendererLogger.error({ error }, "Failed to list audio devices on startup");
+          setAudioDevicesLoaded(true); // Mark as loaded even on error to prevent retries
+        });
+    }
+  }, [
+    audioDevicesLoaded,
+    audioState.selectedMicDeviceId,
+    audioState.selectedSystemDeviceId,
+    actions,
+  ]);
 
   // Wait for storage initialization
   useEffect(() => {

@@ -36,6 +36,7 @@ export class IPCHandlers {
   private setupAudioHandlers(): void {
     // List audio devices
     ipcMain.handle("list-audio-devices", () => {
+      audioLogger.info("IPC: list-audio-devices called");
       return this.audioManager.listAudioDevices();
     });
 
@@ -43,7 +44,10 @@ export class IPCHandlers {
     ipcMain.handle(
       "start-audio-capture",
       async (_event, micDeviceId: number, systemDeviceId: number) => {
-        audioLogger.info({ micDeviceId, systemDeviceId }, "Starting audio capture using RtAudio");
+        audioLogger.info(
+          { micDeviceId, systemDeviceId },
+          "IPC: start-audio-capture called - Starting audio capture using RtAudio",
+        );
 
         if (!this.geminiManager.isInitialized()) {
           mainLogger.error("Gemini AI client not initialized. Cannot start capture");

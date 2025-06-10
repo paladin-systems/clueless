@@ -22,8 +22,19 @@ export class GeminiManager {
     this.mainWindow = mainWindow;
 
     const apiKey = getGeminiApiKey();
+    geminiLogger.info(
+      {
+        apiKey: apiKey ? `${apiKey.substring(0, 10)}...` : "undefined",
+        envVar: process.env.GEMINI_API_KEY
+          ? `${process.env.GEMINI_API_KEY.substring(0, 10)}...`
+          : "undefined",
+      },
+      "Checking Gemini API key",
+    );
+
     if (apiKey) {
       this.genAI = new GoogleGenAI({ apiKey });
+      geminiLogger.info("GoogleGenAI client initialized successfully");
     } else {
       geminiLogger.error(
         "Gemini API key not found. Please set the GEMINI_API_KEY environment variable.",

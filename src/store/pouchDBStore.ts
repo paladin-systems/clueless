@@ -3,7 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import { ipcDatabaseService } from "../database/ipcDatabaseService";
 import type { GeminiResponse } from "../types/gemini";
 import type { NotePosition, PostItNote, ViewOptions } from "../types/ui";
-import { storageLogger } from "../utils/logger";
+import { rendererLogger, storageLogger } from "../utils/logger";
 import { debounce } from "../utils/performance";
 
 export interface AppState {
@@ -192,7 +192,18 @@ export const usePouchDBStore = create<AppState>()(
 
       startRecording: async () => {
         const { selectedMicDeviceId, selectedSystemDeviceId } = get();
-        if (!selectedMicDeviceId || !selectedSystemDeviceId) return;
+        rendererLogger.info(
+          { selectedMicDeviceId, selectedSystemDeviceId },
+          "startRecording called - checking device selection",
+        );
+
+        if (!selectedMicDeviceId || !selectedSystemDeviceId) {
+          rendererLogger.warn(
+            { selectedMicDeviceId, selectedSystemDeviceId },
+            "Cannot start recording - missing device selection",
+          );
+          return;
+        }
 
         try {
           const success = await window.electron.startAudioCapture(
